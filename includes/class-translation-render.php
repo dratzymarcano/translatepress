@@ -162,6 +162,12 @@ class TRP_Translation_Render{
                 ),
                 array(
                     'type'          => 'meta_desc',
+                    'attribute'     => 'name',
+                    'value'         => 'keywords',
+                    'description'   => esc_html__( 'Keywords', 'translatepress-multilingual' )
+                ),
+                array(
+                    'type'          => 'meta_desc',
                     'attribute'     => 'property',
                     'value'         => 'article:section',
                     'description'   => esc_html__( 'Article Section', 'translatepress-multilingual' )

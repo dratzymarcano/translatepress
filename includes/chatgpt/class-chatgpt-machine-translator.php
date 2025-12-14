@@ -20,14 +20,34 @@ class TRP_ChatGPT_Machine_Translator extends TRP_Machine_Translator {
         $strings_text = implode("\n", $strings_array);
         $prompt = "Translate the following text from {$source_language} to {$language_code}. Maintain the original formatting and placeholders. Return only the translated text, line by line corresponding to the input:\n\n" . $strings_text;
 
+        $messages = array();
+
+        // Add System Prompt if available
+        $system_content = "";
+        if ( !empty( $this->settings['chatgpt-system-prompt'] ) ) {
+            $system_content .= $this->settings['chatgpt-system-prompt'] . "\n";
+        }
+
+        // Add Glossary if available
+        if ( !empty( $this->settings['chatgpt-glossary'] ) ) {
+            $system_content .= "Do not translate the following words or phrases: " . $this->settings['chatgpt-glossary'] . ".\n";
+        }
+
+        if ( !empty( $system_content ) ) {
+            $messages[] = array(
+                'role' => 'system',
+                'content' => trim($system_content)
+            );
+        }
+
+        $messages[] = array(
+            'role' => 'user',
+            'content' => $prompt
+        );
+
         $body = array(
             'model' => 'gpt-3.5-turbo', // Or gpt-4
-            'messages' => array(
-                array(
-                    'role' => 'user',
-                    'content' => $prompt
-                )
-            )
+            'messages' => $messages
         );
 
         $response = wp_remote_post( 'https://api.openai.com/v1/chat/completions', array(

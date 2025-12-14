@@ -43,6 +43,7 @@ class TRP_Translate_Press{
     protected $check_invalid_text;
     protected $woocommerce_emails;
     protected $preferred_user_language;
+    protected $background_translator;
     protected $gutenberg_blocks;
 
     public $tp_product_name = array();
@@ -144,6 +145,7 @@ class TRP_Translate_Press{
         require_once TRP_PLUGIN_DIR . 'assets/lib/tp-add-ons-listing/tp-add-ons-listing.php';
         require_once TRP_PLUGIN_DIR . 'includes/class-plugin-optin.php';
         require_once TRP_PLUGIN_DIR . 'includes/class-preferred-user-language.php';
+        require_once TRP_PLUGIN_DIR . 'includes/class-background-translator.php';
         require_once TRP_PLUGIN_DIR . 'includes/gutenberg-blocks/class-gutenberg-blocks.php';
 
         if ( did_action( 'elementor/loaded' ) )
@@ -192,6 +194,7 @@ class TRP_Translate_Press{
         $this->check_invalid_text         = new TRP_Check_Invalid_Text( );
         $this->woocommerce_emails         = new TRP_Woocommerce_Emails();
         $this->preferred_user_language    = new TRP_Preferred_User_Language();
+        $this->background_translator      = new TRP_Background_Translator( $this->settings->get_settings() );
 
         //Gutenberg Blocks
         global $wp_version;

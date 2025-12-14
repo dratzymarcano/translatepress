@@ -51,6 +51,18 @@ function trp_openrouter_add_settings( $mt_settings ){
             }
             ?>
         </div>
+        
+        <br>
+        <span class="trp-primary-text-bold"><?php esc_html_e( 'System Prompt (Context & Tone)', 'translatepress-multilingual' ); ?> </span>
+        <p class="trp-description-text"><?php esc_html_e( 'Instruct the AI on how to translate (e.g., "You are a professional translator. Use a formal tone.").', 'translatepress-multilingual' ); ?></p>
+        <textarea id="trp-chatgpt-system-prompt" class="trp-textarea" name="trp_machine_translation_settings[chatgpt-system-prompt]" rows="3" style="width: 100%;"><?php if( !empty( $mt_settings['chatgpt-system-prompt'] ) ) echo esc_textarea( $mt_settings['chatgpt-system-prompt']);?></textarea>
+
+        <br><br>
+        <span class="trp-primary-text-bold"><?php esc_html_e( 'Glossary / Do Not Translate', 'translatepress-multilingual' ); ?> </span>
+        <p class="trp-description-text"><?php esc_html_e( 'Enter words or phrases that should NOT be translated (comma separated). E.g., "BrandName, ProductX".', 'translatepress-multilingual' ); ?></p>
+        <textarea id="trp-chatgpt-glossary" class="trp-textarea" name="trp_machine_translation_settings[chatgpt-glossary]" rows="2" style="width: 100%;"><?php if( !empty( $mt_settings['chatgpt-glossary'] ) ) echo esc_textarea( $mt_settings['chatgpt-glossary']);?></textarea>
+
+
 
         <?php
         if ( $show_errors && 'openrouter' === $translation_engine ) {
