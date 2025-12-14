@@ -225,7 +225,7 @@ class LRP_Translation_Manager {
         if ( !$free_version ){
             $license_status = lrp_get_license_status();
             if ( $license_status != 'valid' && $license_status != 'free-version' ) {
-                $linguapress_product = ( defined( 'TRANSLATE_PRESS' ) ) ? TRANSLATE_PRESS : "LinguaPress";
+                $linguapress_product = ( defined( 'LINGUA_PRESS' ) ) ? LINGUA_PRESS : "LinguaPress";
                 switch ( $license_status ) {
                     case 'expired':
                         {

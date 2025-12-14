@@ -14,8 +14,8 @@
     $lrp_addons_listing->images_folder = LRP_PLUGIN_URL.'assets/images/';
     $lrp_addons_listing->text_domain = 'linguapress';
 
-    if( defined( 'TRANSLATE_PRESS' ) )
-        $lrp_addons_listing->current_version = TRANSLATE_PRESS;
+    if( defined( 'LINGUA_PRESS' ) )
+        $lrp_addons_listing->current_version = LINGUA_PRESS;
     else
         $lrp_addons_listing->current_version = 'LinguaPress';//in free version we do not define the constant as free version needs to be active always
     $lrp_addons_listing->tooltip_header = __( 'LinguaPress Add-ons', 'linguapress' );

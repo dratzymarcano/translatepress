@@ -20,7 +20,7 @@ function lrp_mtapi_add_settings( $mt_settings ){
 
     if (!isset($details['valid'][0])) $status = false;
 
-    $linguapress_version_name = (defined('TRANSLATE_PRESS')) ? TRANSLATE_PRESS : 'LinguaPress';
+    $linguapress_version_name = (defined('LINGUA_PRESS')) ? LINGUA_PRESS : 'LinguaPress';
 
     //dd($status);
 	//dd(array($license, $status, $details));

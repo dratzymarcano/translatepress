@@ -1555,7 +1555,7 @@ class LRP_Upgrade {
 
     public function is_pro_minimum_version_met(){
 
-        if ( !class_exists( 'LRP_Handle_Included_Addons') || TRANSLATE_PRESS === 'LinguaPress - Dev' )
+        if ( !class_exists( 'LRP_Handle_Included_Addons') || LINGUA_PRESS === 'LinguaPress - Dev' )
             return true; // Free or development version installed
 
         // File added when we redesigned TP Settings, this is what we look for and extra-language addon is active
@@ -1570,7 +1570,7 @@ class LRP_Upgrade {
             'LinguaPress - Developer' => 'linguapress-developer'
         ];
 
-        $pro_plugin_path = trailingslashit( WP_PLUGIN_DIR ) . $pro_version_map[TRANSLATE_PRESS];
+        $pro_plugin_path = trailingslashit( WP_PLUGIN_DIR ) . $pro_version_map[LINGUA_PRESS];
 
         if( file_exists( trailingslashit( $pro_plugin_path ) . 'add-ons-advanced/extra-languages/assets/js/lrp-back-end-script-pro.js' )){
             return true;
@@ -1587,10 +1587,10 @@ class LRP_Upgrade {
         if ( $this->is_pro_minimum_version_met() )
             return;
 
-        $minimum_version = TRANSLATE_PRESS === 'LinguaPress - Personal' ? self::MINIMUM_PERSONAL_VERSION : self::MINIMUM_DEVELOPER_VERSION;
+        $minimum_version = LINGUA_PRESS === 'LinguaPress - Personal' ? self::MINIMUM_PERSONAL_VERSION : self::MINIMUM_DEVELOPER_VERSION;
 
         echo '<div class="notice notice-error">
-                <p>' . wp_kses( sprintf( __('We’ve redesigned the <strong>%1$s</strong> settings for a better experience!<br>To ensure full compatibility with the new settings structure and avoid potential layout discrepancies, please update to version <strong>%2$s</strong> or newer.<br>Your current version of <strong>%1$s</strong> may not fully support these improvements, but the plugin will continue to function as expected.', 'linguapress'), TRANSLATE_PRESS, $minimum_version ), [ 'strong' => [], 'br' => [] ] ) . '</p>' .
+                <p>' . wp_kses( sprintf( __('We’ve redesigned the <strong>%1$s</strong> settings for a better experience!<br>To ensure full compatibility with the new settings structure and avoid potential layout discrepancies, please update to version <strong>%2$s</strong> or newer.<br>Your current version of <strong>%1$s</strong> may not fully support these improvements, but the plugin will continue to function as expected.', 'linguapress'), LINGUA_PRESS, $minimum_version ), [ 'strong' => [], 'br' => [] ] ) . '</p>' .
              '</div>';
         }
     }

@@ -69,6 +69,7 @@ class LRP_Lingua_Press{
         define( 'LRP_PLUGIN_BASE', plugin_basename( __DIR__ . '/index.php' ) );
         define( 'LRP_PLUGIN_SLUG', 'linguapress' );
         define( 'LRP_PLUGIN_VERSION', '1.0.0' );
+        define( 'LINGUA_PRESS', 'LinguaPress' );
 
 	    wp_cache_add_non_persistent_groups(array('lrp'));
 
@@ -202,7 +203,7 @@ class LRP_Lingua_Press{
     /**
      * We use this function to detect if we have any addons that require a license
      * Used throughout the plugin to detect the version for notifications, license checks, different messages.
-     * Sets $this->tp_product_name that is different from TRANSLATE_PRESS constant.
+     * Sets $this->tp_product_name that is different from LINGUA_PRESS constant.
      */
     public function set_tp_product_name(){
 

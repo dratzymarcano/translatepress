@@ -61,7 +61,7 @@ if ( !class_exists('LRP_Handle_Included_Addons') ){
          * @return void
          */
         function lrp_main_plugin_minimum_version_check(){
-            if ( defined('TRANSLATE_PRESS') && TRANSLATE_PRESS === 'LinguaPress - Dev' ) return;
+            if ( defined('LINGUA_PRESS') && LINGUA_PRESS === 'LinguaPress - Dev' ) return;
 
             if ( ! function_exists( 'get_plugin_data' ) ) {
                 require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
