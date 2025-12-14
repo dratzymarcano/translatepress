@@ -5,8 +5,8 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
-    class TRP_String_Translation_API_Post_Slug
+if( !class_exists('LRP_String_Translation_API_Post_Slug') ) {
+    class LRP_String_Translation_API_Post_Slug
     {
         protected $type = 'postslug';
         protected $config;
@@ -19,17 +19,17 @@ if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
         public function __construct($settings)
         {
             $this->settings = $settings;
-            $this->helper = new TRP_String_Translation_Helper();
-            $this->meta_based_strings = new TRP_IN_SP_Meta_Based_Strings();
-            $this->option_based_strings = new TRP_IN_SP_Option_Based_Strings();
-            $this->slug_query = new TRP_Slug_Query();
+            $this->helper = new LRP_String_Translation_Helper();
+            $this->meta_based_strings = new LRP_IN_SP_Meta_Based_Strings();
+            $this->option_based_strings = new LRP_IN_SP_Option_Based_Strings();
+            $this->slug_query = new LRP_Slug_Query();
         }
 
         public function get_strings()
         {
             $this->helper->check_ajax($this->type, 'get');
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $string_translation = $trp->get_component('string_translation');
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $string_translation = $lrp->get_component('string_translation');
             $config = $string_translation->get_configuration_options();
             $sanitized_args = $this->helper->get_sanitized_query_args($this->type);
             $dictionary_by_original = array();
@@ -63,7 +63,7 @@ if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
             }
 
             // post status filter
-            if ($sanitized_args['post-status'] != 'trp_any') {
+            if ($sanitized_args['post-status'] != 'lrp_any') {
                 $wp_query_args['post_status'] = (empty($sanitized_args['post-status'])) ? 'publish' : $sanitized_args['post-status'];
             }
 
@@ -95,7 +95,7 @@ if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
                 $translated_posts = $this->slug_query->get_translated_slugs_from_original( $post_slugs );
 
                 // construct dictionary by original
-                $translationsArrays = new TRP_String_Translation_Array( $post_slugs, $translated_posts, 'post' );
+                $translationsArrays = new LRP_String_Translation_Array( $post_slugs, $translated_posts, 'post' );
 
                 $translationsArrays = $translationsArrays->get_formatted_translations_array();
 
@@ -105,7 +105,7 @@ if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
                         $curr_post_name = $post->post_name;
                         $dictionary_original = urldecode( $curr_post_name );
                         if ( empty( $post->ID ) ) {
-                            $dictionary_original .= esc_html__('(inactive)', 'translatepress-multilingual' );
+                            $dictionary_original .= esc_html__('(inactive)', 'linguapress' );
                         }
                         $dictionary = [
                             'original' => $dictionary_original,
@@ -127,7 +127,7 @@ if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
                 }
             }
 
-            echo trp_safe_json_encode(array( //phpcs:ignore
+            echo lrp_safe_json_encode(array( //phpcs:ignore
                 'dictionary' => $dictionary_by_original,
                 'totalItems' => $found_items
             ));
@@ -159,7 +159,7 @@ if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
         private function get_posts( $args ){
             global $wpdb;
 
-            $excluded_post_statuses = apply_filters( 'trp_editor_get_posts_excluded_statuses', [ "'auto-draft'", "'inherit'" ] ); // If "Any status" is selected, exclude these statuses from being shown
+            $excluded_post_statuses = apply_filters( 'lrp_editor_get_posts_excluded_statuses', [ "'auto-draft'", "'inherit'" ] ); // If "Any status" is selected, exclude these statuses from being shown
 
             $slug_translation_table = $this->slug_query->get_translation_table_name();
             $slug_original_table    = $this->slug_query->get_original_table_name();
@@ -303,10 +303,10 @@ if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
         public function delete_strings() {
             $this->helper->check_ajax( $this->type, 'delete' );
             $original_ids  = $this->helper->get_original_ids_from_post_request();
-            $slug_query    = new TRP_Slug_Query();
+            $slug_query    = new LRP_Slug_Query();
             $items_deleted = $slug_query->delete_slugs_with_original_ids( $original_ids );
 
-            echo trp_safe_json_encode( $items_deleted );//phpcs:ignore
+            echo lrp_safe_json_encode( $items_deleted );//phpcs:ignore
             wp_die();
 
         }

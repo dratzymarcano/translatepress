@@ -9,20 +9,20 @@ if ( !defined('ABSPATH' ) )
 <html <?php language_attributes(); ?> class="no-js">
 <head>
     <?php
-    do_action( 'trp_string_translation_editor_head' );
+    do_action( 'lrp_string_translation_editor_head' );
     ?>
-    <title>TranslatePress - <?php esc_html_e('String Translation Editor', 'translatepress-multilingual'); ?> </title>
+    <title>LinguaPress - <?php esc_html_e('String Translation Editor', 'linguapress'); ?> </title>
 </head>
-<body class="trp-editor-body">
+<body class="lrp-editor-body">
 
-    <div id="trp-editor-container">
-        <trp-string-translation
-            ref="trp_string_translation_editor"
+    <div id="lrp-editor-container">
+        <lrp-string-translation
+            ref="lrp_string_translation_editor"
         >
-        </trp-string-translation>
+        </lrp-string-translation>
     </div>
 
-    <?php do_action( 'trp_string_translation_editor_footer' ); ?>
+    <?php do_action( 'lrp_string_translation_editor_footer' ); ?>
 </body>
 </html>
 

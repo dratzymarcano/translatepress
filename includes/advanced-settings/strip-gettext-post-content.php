@@ -3,13 +3,13 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-add_filter( 'trp_register_advanced_settings', 'trp_register_strip_gettext_post_content', 60 );
-function trp_register_strip_gettext_post_content( $settings_array ){
+add_filter( 'lrp_register_advanced_settings', 'lrp_register_strip_gettext_post_content', 60 );
+function lrp_register_strip_gettext_post_content( $settings_array ){
 	$settings_array[] = array(
 		'name'          => 'strip_gettext_post_content',
 		'type'          => 'checkbox',
-		'label'         => esc_html__( 'Filter Gettext wrapping from post content and title', 'translatepress-multilingual' ),
-		'description'   => wp_kses( __( 'Filters gettext wrapping such as #!trpst#trp-gettext from all updated post content and post title. Does not affect previous post content. <br/><strong>Database backup is recommended before switching on.</strong>', 'translatepress-multilingual' ), array( 'br' => array(), 'strong' => array()) ),
+		'label'         => esc_html__( 'Filter Gettext wrapping from post content and title', 'linguapress' ),
+		'description'   => wp_kses( __( 'Filters gettext wrapping such as #!lrpst#lrp-gettext from all updated post content and post title. Does not affect previous post content. <br/><strong>Database backup is recommended before switching on.</strong>', 'linguapress' ), array( 'br' => array(), 'strong' => array()) ),
         'id'            => 'troubleshooting',
         'container'     => 'troubleshooting'
 	);
@@ -21,12 +21,12 @@ function trp_register_strip_gettext_post_content( $settings_array ){
  * They will be regular strings, written in the language they were submitted.
  * Filter called both for wp_insert_post and wp_update_post
  */
-add_filter('wp_insert_post_data', 'trp_filter_trpgettext_from_post_content', 10, 2 );
-function trp_filter_trpgettext_from_post_content($data, $postarr ){
-	$option = get_option( 'trp_advanced_settings', true );
-	if ( isset( $option['strip_gettext_post_content'] ) && $option['strip_gettext_post_content'] === 'yes' && class_exists( 'TRP_Translation_Manager' ) ){
-		$data['post_content'] = TRP_Translation_Manager::strip_gettext_tags($data['post_content']);
-		$data['post_title'] = TRP_Translation_Manager::strip_gettext_tags($data['post_title']);
+add_filter('wp_insert_post_data', 'lrp_filter_lrpgettext_from_post_content', 10, 2 );
+function lrp_filter_lrpgettext_from_post_content($data, $postarr ){
+	$option = get_option( 'lrp_advanced_settings', true );
+	if ( isset( $option['strip_gettext_post_content'] ) && $option['strip_gettext_post_content'] === 'yes' && class_exists( 'LRP_Translation_Manager' ) ){
+		$data['post_content'] = LRP_Translation_Manager::strip_gettext_tags($data['post_content']);
+		$data['post_title'] = LRP_Translation_Manager::strip_gettext_tags($data['post_title']);
 	}
 	return $data;
 }

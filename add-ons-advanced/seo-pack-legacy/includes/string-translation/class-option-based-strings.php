@@ -6,10 +6,10 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 /** Functions useful for cpt slugs and taxonomy slugs */
-class TRP_IN_SP_Option_Based_Strings {
+class LRP_IN_SP_Option_Based_Strings {
 
     public function get_public_slugs( $type, $include_labels = false, $include_items = array(), $only_with_slugs = true ) {
-        $exclude_array = apply_filters( 'trp_exclude_' . $type . '_from_translation', array() );
+        $exclude_array = apply_filters( 'lrp_exclude_' . $type . '_from_translation', array() );
         $slugs         = call_user_func( 'get_' . $type, array(), 'objects' );
         $return        = array();
         foreach ( $slugs as $item ) {
@@ -24,7 +24,7 @@ class TRP_IN_SP_Option_Based_Strings {
                 }
             }
         }
-        return apply_filters( 'trp_to_translate_' . $type . '_slugs_array', $return, $type, $include_labels );
+        return apply_filters( 'lrp_to_translate_' . $type . '_slugs_array', $return, $type, $include_labels );
     }
 
     /**
@@ -32,8 +32,8 @@ class TRP_IN_SP_Option_Based_Strings {
      * @return array
      */
     public function get_woocommerce_actual_slugs(){
-        $woo_product_slugs  = $this->get_public_slugs('post_types', false, apply_filters('trp_get_woocommerce_cpt', array('product')));
-        $woo_tax_slugs      = $this->get_public_slugs('taxonomies', false, apply_filters('trp_get_woocommerce_taxonomies', array('product_cat', 'product_tag')));
+        $woo_product_slugs  = $this->get_public_slugs('post_types', false, apply_filters('lrp_get_woocommerce_cpt', array('product')));
+        $woo_tax_slugs      = $this->get_public_slugs('taxonomies', false, apply_filters('lrp_get_woocommerce_taxonomies', array('product_cat', 'product_tag')));
         $slugs              = array_merge( $woo_product_slugs, $woo_tax_slugs );
         $return             = array();
         foreach ( $slugs as $slug ){
@@ -43,13 +43,13 @@ class TRP_IN_SP_Option_Based_Strings {
     }
 
     public function get_strings_for_option_based_slug( $type, $option_name, $all_slugs ) {
-        $trp                = TRP_Translate_Press::get_trp_instance();
-        $string_translation = $trp->get_component( 'string_translation' );
-        $trp_query          = $trp->get_component( 'query' );
+        $lrp                = LRP_Lingua_Press::get_lrp_instance();
+        $string_translation = $lrp->get_component( 'string_translation' );
+        $lrp_query          = $lrp->get_component( 'query' );
         $config             = $string_translation->get_configuration_options();
-        $trp_settings       = $trp->get_component( 'settings' );
-        $settings           = $trp_settings->get_settings();
-        $helper             = new TRP_String_Translation_Helper();
+        $lrp_settings       = $lrp->get_component( 'settings' );
+        $settings           = $lrp_settings->get_settings();
+        $helper             = new LRP_String_Translation_Helper();
 
         $dictionary_by_original = get_option( $option_name, array() );
         $found_inactive_slug    = false;
@@ -76,7 +76,7 @@ class TRP_IN_SP_Option_Based_Strings {
                         $dictionary_by_original[$key]['translationsArray'][ $language ] = array(
                             'editedTranslation' => '',
                             'translated'        => '',
-                            'status'            => $trp_query->get_constant_not_translated(),
+                            'status'            => $lrp_query->get_constant_not_translated(),
                             'id'                => $dictionary_by_original[$key]['original'],
                         );
                     }
@@ -104,7 +104,7 @@ class TRP_IN_SP_Option_Based_Strings {
                     $translationsArray[ $language ] = array(
                         'editedTranslation' => '',
                         'translated'        => '',
-                        'status'            => $trp_query->get_constant_not_translated(),
+                        'status'            => $lrp_query->get_constant_not_translated(),
                         'id'                => $slug,
                     );
                 }
@@ -164,10 +164,10 @@ class TRP_IN_SP_Option_Based_Strings {
     }
 
     public function save_strings_for_option_based_slug( $type, $option_name, $strings = array() ) {
-        $trp          = TRP_Translate_Press::get_trp_instance();
-        $trp_query    = $trp->get_component( 'query' );
-        $trp_settings = $trp->get_component( 'settings' );
-        $settings     = $trp_settings->get_settings();
+        $lrp          = LRP_Lingua_Press::get_lrp_instance();
+        $lrp_query    = $lrp->get_component( 'query' );
+        $lrp_settings = $lrp->get_component( 'settings' );
+        $settings     = $lrp_settings->get_settings();
 
         //initially made to work through ajax, added an optional parameter that enables the function to be used without
         if( empty( $strings ) )
@@ -227,7 +227,7 @@ class TRP_IN_SP_Option_Based_Strings {
                                     $translationsArray[ $translationLanguage ] = array(
                                         'editedTranslation' => '',
                                         'translated'        => '',
-                                        'status'            => $trp_query->get_constant_not_translated(),
+                                        'status'            => $lrp_query->get_constant_not_translated(),
                                         'id'                => $string['id'],
                                     );
                                 };
@@ -244,12 +244,12 @@ class TRP_IN_SP_Option_Based_Strings {
                 }
             }
         }
-        do_action( 'trp_before_based_slug_save', $option_name, $type, $translations, $all_strings, $original_translations );
+        do_action( 'lrp_before_based_slug_save', $option_name, $type, $translations, $all_strings, $original_translations );
         update_option( $option_name, $translations );
 
         //initially made to work through ajax, added an optional parameter that enables the function to be used without
         if( empty( $strings ) ) {
-            echo trp_safe_json_encode( $update_slugs );//phpcs:ignore
+            echo lrp_safe_json_encode( $update_slugs );//phpcs:ignore
             wp_die();
         }
     }

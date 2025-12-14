@@ -5,8 +5,8 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-if ( !class_exists( 'TRP_String_Translation_API_WooCommerce_Slug' ) ) {
-    class TRP_String_Translation_API_WooCommerce_Slug {
+if ( !class_exists( 'LRP_String_Translation_API_WooCommerce_Slug' ) ) {
+    class LRP_String_Translation_API_WooCommerce_Slug {
         protected $config;
         protected $helper;
         protected $option_based_strings;
@@ -16,9 +16,9 @@ if ( !class_exists( 'TRP_String_Translation_API_WooCommerce_Slug' ) ) {
 
         public function __construct( $settings ) {
             $this->settings       = $settings;
-            $this->helper         = new TRP_String_Translation_Helper();
-            $this->slug_query     = new TRP_Slug_Query();
-            $this->editor_actions = new TRP_IN_SP_Editor_Actions( $this->slug_query, $settings );
+            $this->helper         = new LRP_String_Translation_Helper();
+            $this->slug_query     = new LRP_Slug_Query();
+            $this->editor_actions = new LRP_IN_SP_Editor_Actions( $this->slug_query, $settings );
         }
 
         public function get_strings() {
@@ -37,7 +37,7 @@ if ( !class_exists( 'TRP_String_Translation_API_WooCommerce_Slug' ) ) {
 
             $translated_slugs = $this->slug_query->get_translated_slugs_from_original( array_values( $cpt_slugs_components ) );
 
-            $translationsArray = new TRP_String_Translation_Array( array_values( $cpt_slugs_components ), $translated_slugs, 'post-type-base' );
+            $translationsArray = new LRP_String_Translation_Array( array_values( $cpt_slugs_components ), $translated_slugs, 'post-type-base' );
             $translationsArray = $translationsArray->get_formatted_translations_array();
 
             foreach ( $translationsArray as $key => $array ) {
@@ -52,7 +52,7 @@ if ( !class_exists( 'TRP_String_Translation_API_WooCommerce_Slug' ) ) {
             $woo_tax_slugs[]  = $woocommerce_permalink_options['tag_base'];
             $translated_slugs = $this->slug_query->get_translated_slugs_from_original( $woo_tax_slugs );
 
-            $translationsArray = new TRP_String_Translation_Array( array_values( $woo_tax_slugs ), $translated_slugs, 'taxonomy' );
+            $translationsArray = new LRP_String_Translation_Array( array_values( $woo_tax_slugs ), $translated_slugs, 'taxonomy' );
             $translationsArray = $translationsArray->get_formatted_translations_array();
 
             foreach ( $translationsArray as $key => $array ) {
@@ -68,7 +68,7 @@ if ( !class_exists( 'TRP_String_Translation_API_WooCommerce_Slug' ) ) {
                 'totalItems' => count( $dictionary_by_original )
             );
 
-            echo trp_safe_json_encode( $return );//phpcs:ignore
+            echo lrp_safe_json_encode( $return );//phpcs:ignore
             wp_die();
         }
 

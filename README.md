@@ -1,2 +1,2 @@
-# translatepress
+# linguapress
 Multilanguage translator

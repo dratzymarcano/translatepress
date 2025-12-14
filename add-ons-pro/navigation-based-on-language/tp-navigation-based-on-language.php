@@ -1,6 +1,6 @@
 <?php
 /*
-TranslatePress - Navigation Based on Language Add-on
+LinguaPress - Navigation Based on Language Add-on
 
 License: GPL2
 
@@ -26,12 +26,12 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 
-function trp_in_nbl_run(){
+function lrp_in_nbl_run(){
 
     require_once plugin_dir_path( __FILE__ ) . 'class-navigation-based-on-language.php';
-    if ( class_exists( 'TRP_Translate_Press' ) ) {
-        new TRP_IN_Navigation_Based_on_Language();
+    if ( class_exists( 'LRP_Lingua_Press' ) ) {
+        new LRP_IN_Navigation_Based_on_Language();
     }
 	
 }
-add_action( 'plugins_loaded', 'trp_in_nbl_run', 0 );
+add_action( 'plugins_loaded', 'lrp_in_nbl_run', 0 );

@@ -5,8 +5,8 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-if( !class_exists('TRP_String_Translation_API_Other_Slug') ) {
-    class TRP_String_Translation_API_Other_Slug
+if( !class_exists('LRP_String_Translation_API_Other_Slug') ) {
+    class LRP_String_Translation_API_Other_Slug
     {
         protected $type = 'other-slug';
         protected $config;
@@ -18,16 +18,16 @@ if( !class_exists('TRP_String_Translation_API_Other_Slug') ) {
         public function __construct($settings)
         {
             $this->settings = $settings;
-            $this->helper = new TRP_String_Translation_Helper();
-            $this->slug_query = new TRP_Slug_Query();
-            $this->editor_actions = new TRP_IN_SP_Editor_Actions( $this->slug_query, $settings );
+            $this->helper = new LRP_String_Translation_Helper();
+            $this->slug_query = new LRP_Slug_Query();
+            $this->editor_actions = new LRP_IN_SP_Editor_Actions( $this->slug_query, $settings );
         }
 
         public function get_strings()
         {
             $this->helper->check_ajax($this->type, 'get');
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $string_translation = $trp->get_component('string_translation');
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $string_translation = $lrp->get_component('string_translation');
             $config = $string_translation->get_configuration_options();
             $sanitized_args = $this->helper->get_sanitized_query_args($this->type);
             $dictionary_by_original = [];
@@ -73,7 +73,7 @@ if( !class_exists('TRP_String_Translation_API_Other_Slug') ) {
 
             $query_args = array_merge( $query_args, $pagination_array );
 
-            $query_args = apply_filters('trp_string_translation_query_args_' . $this->type, $query_args, $sanitized_args);
+            $query_args = apply_filters('lrp_string_translation_query_args_' . $this->type, $query_args, $sanitized_args);
 
             // query for needed strings
             $resulted_wp_query = $this->slug_query->get_original_slugs( $query_args );
@@ -91,7 +91,7 @@ if( !class_exists('TRP_String_Translation_API_Other_Slug') ) {
             $translated_slugs = $this->slug_query->get_translated_slugs_from_original( $original_slugs );
 
             // construct dictionary by original
-            $translationsArrays = new TRP_String_Translation_Array( $original_slugs, $translated_slugs, 'other' );
+            $translationsArrays = new LRP_String_Translation_Array( $original_slugs, $translated_slugs, 'other' );
             $formatted_array = $translationsArrays->get_formatted_translations_array();
             $translationsArrays = $formatted_array;
 
@@ -115,7 +115,7 @@ if( !class_exists('TRP_String_Translation_API_Other_Slug') ) {
                 }
             }
 
-            echo trp_safe_json_encode(array( //phpcs:ignore
+            echo lrp_safe_json_encode(array( //phpcs:ignore
                                              'dictionary' => $dictionary_by_original,
                                              'totalItems' => $found_items
             ));
@@ -135,17 +135,17 @@ if( !class_exists('TRP_String_Translation_API_Other_Slug') ) {
                 $update_slugs = $this->editor_actions->save_slugs( $slugs, $this->type );
             }
 
-            echo trp_safe_json_encode( $update_slugs ); //phpcs:ignore
+            echo lrp_safe_json_encode( $update_slugs ); //phpcs:ignore
             wp_die();
         }
 
         public function delete_strings() {
             $this->helper->check_ajax( $this->type, 'delete' );
             $original_ids  = $this->helper->get_original_ids_from_post_request();
-            $slug_query    = new TRP_Slug_Query();
+            $slug_query    = new LRP_Slug_Query();
             $items_deleted = $slug_query->delete_slugs_with_original_ids( $original_ids );
 
-            echo trp_safe_json_encode( $items_deleted );//phpcs:ignore
+            echo lrp_safe_json_encode( $items_deleted );//phpcs:ignore
             wp_die();
 
         }

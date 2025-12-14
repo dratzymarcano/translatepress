@@ -3,15 +3,15 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-class TRP_Background_Translator {
+class LRP_Background_Translator {
 
     protected $settings;
-    protected $trp_languages;
+    protected $lrp_languages;
 
     public function __construct( $settings ) {
         $this->settings = $settings;
-        $trp = TRP_Translate_Press::get_trp_instance();
-        $this->trp_languages = $trp->get_component('languages');
+        $lrp = LRP_Lingua_Press::get_lrp_instance();
+        $this->lrp_languages = $lrp->get_component('languages');
 
         add_action( 'save_post', array( $this, 'trigger_background_translation' ), 10, 3 );
     }
@@ -43,7 +43,7 @@ class TRP_Background_Translator {
         }
 
         // Get all active languages
-        $published_languages = $this->trp_languages->get_languages( 'publish' );
+        $published_languages = $this->lrp_languages->get_languages( 'publish' );
         $default_language = $this->settings['default-language'];
 
         // Get the permalink
@@ -70,8 +70,8 @@ class TRP_Background_Translator {
      * Get translated URL for a specific language
      */
     protected function get_translated_url( $url, $language_code ) {
-        $trp = TRP_Translate_Press::get_trp_instance();
-        $url_converter = $trp->get_component( 'url_converter' );
+        $lrp = LRP_Lingua_Press::get_lrp_instance();
+        $url_converter = $lrp->get_component( 'url_converter' );
         return $url_converter->get_url_for_language( $language_code, $url, '' );
     }
 

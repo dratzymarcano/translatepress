@@ -5,12 +5,12 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-class TRP_IN_SP_Slug_Manager {
+class LRP_IN_SP_Slug_Manager {
 
     protected $settings;
     protected $human_translated_slug_meta;
     protected $automatic_translated_slug_meta;
-    /** @var TRP_Url_Converter */
+    /** @var LRP_Url_Converter */
     protected $url_converter;
     protected $translation_manager;
     protected $option_based_strings;
@@ -24,23 +24,23 @@ class TRP_IN_SP_Slug_Manager {
     public function __construct( $settings ){
         $this->settings = $settings;
 
-        $trp = TRP_Translate_Press::get_trp_instance();
-        $this->url_converter = $trp->get_component( 'url_converter' );
-        $this->translation_manager = $trp->get_component( 'translation_manager' );
+        $lrp = LRP_Lingua_Press::get_lrp_instance();
+        $this->url_converter = $lrp->get_component( 'url_converter' );
+        $this->translation_manager = $lrp->get_component( 'translation_manager' );
 
-        $meta_based_strings   = new TRP_IN_SP_Meta_Based_Strings();
+        $meta_based_strings   = new LRP_IN_SP_Meta_Based_Strings();
         $this->human_translated_slug_meta     = $meta_based_strings->get_human_translated_slug_meta();
         $this->automatic_translated_slug_meta = $meta_based_strings->get_automatic_translated_slug_meta();
 
-        $this->option_based_strings = new TRP_IN_SP_Option_Based_Strings();
+        $this->option_based_strings = new LRP_IN_SP_Option_Based_Strings();
 
-        $this->string_translation_api_tax_slug = new TRP_String_Translation_API_Taxonomy_Slug( $settings );
-        $this->string_translation_api_post_type_slug = new TRP_String_Translation_API_Post_Type_Base_Slug( $settings );
-        $this->string_translation_api_term_slug = new TRP_String_Translation_API_Term_Slug( $settings );
-        $this->slug_query = new TRP_Slug_Query();
+        $this->string_translation_api_tax_slug = new LRP_String_Translation_API_Taxonomy_Slug( $settings );
+        $this->string_translation_api_post_type_slug = new LRP_String_Translation_API_Post_Type_Base_Slug( $settings );
+        $this->string_translation_api_term_slug = new LRP_String_Translation_API_Term_Slug( $settings );
+        $this->slug_query = new LRP_Slug_Query();
 
-        add_filter( 'trp_is_admin_link_for_request_uri', array( $this, 'verify_if_is_admin_link_for_slug_translation' ), 10, 2);
-        add_filter( 'trp_is_rest_api', array( $this, 'verify_if_is_rest_api_slug_translation' ));
+        add_filter( 'lrp_is_admin_link_for_request_uri', array( $this, 'verify_if_is_admin_link_for_slug_translation' ), 10, 2);
+        add_filter( 'lrp_is_rest_api', array( $this, 'verify_if_is_rest_api_slug_translation' ));
     }
 
     /**
@@ -49,16 +49,16 @@ class TRP_IN_SP_Slug_Manager {
      * Hooked to wp_head
      */
     public function add_slug_as_meta_tag() {
-        if ( isset( $_REQUEST['trp-edit-translation'] ) && ( $_REQUEST['trp-edit-translation'] === 'preview' ) ) {
+        if ( isset( $_REQUEST['lrp-edit-translation'] ) && ( $_REQUEST['lrp-edit-translation'] === 'preview' ) ) {
             global $post;
-            $trp = TRP_Translate_Press::get_trp_instance();
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
             if ( ! $this->translation_manager ) {
-                $this->translation_manager = $trp->get_component( 'translation_manager' );
+                $this->translation_manager = $lrp->get_component( 'translation_manager' );
             }
             if ( method_exists ( $this->translation_manager, 'string_groups' ) ) {
                 $string_groups = $this->translation_manager->string_groups();
                 if ( isset( $post->ID ) && ! empty( $post->ID ) && isset( $post->post_name ) && ! empty( $post->post_name ) && ! is_home() && ! is_front_page() && ! is_archive() && ! is_search() ) {
-                    echo '<meta data-trp-post-slug=' . (int) $post->ID . ' data-trp-node-type="' . esc_attr( $string_groups['slugs'] ) . '" data-trp-node-description="' . esc_attr__( 'Post Slug', 'translatepress-multilingual' ) . '"/>' . "\n";
+                    echo '<meta data-lrp-post-slug=' . (int) $post->ID . ' data-lrp-node-type="' . esc_attr( $string_groups['slugs'] ) . '" data-lrp-node-description="' . esc_attr__( 'Post Slug', 'linguapress' ) . '"/>' . "\n";
                 }
             }
         }
@@ -78,19 +78,19 @@ class TRP_IN_SP_Slug_Manager {
      *
      */
     public function is_redirect_needed( $current_url_with_domain ){
-        global $TRP_LANGUAGE;
+        global $LRP_LANGUAGE;
 
         $is_form_request = isset( $_SERVER['REQUEST_METHOD'] ) && $_SERVER['REQUEST_METHOD'] === 'POST';
 
-        if ( apply_filters( 'trp_is_rest_api', false, $current_url_with_domain ) )
+        if ( apply_filters( 'lrp_is_rest_api', false, $current_url_with_domain ) )
             return false;
 
-        if ( apply_filters( 'trp_is_form_for_request_uri', $is_form_request, $current_url_with_domain ) )
+        if ( apply_filters( 'lrp_is_form_for_request_uri', $is_form_request, $current_url_with_domain ) )
             return false;
 
-        if( $TRP_LANGUAGE != $this->settings['default-language'] ) {
+        if( $LRP_LANGUAGE != $this->settings['default-language'] ) {
 
-            if ( !apply_filters( 'trp_allow_redirect_to_translated_url', true, $current_url_with_domain ) ) {
+            if ( !apply_filters( 'lrp_allow_redirect_to_translated_url', true, $current_url_with_domain ) ) {
                 return false;
             }
 
@@ -106,7 +106,7 @@ class TRP_IN_SP_Slug_Manager {
                 return false;
             }
 
-            $slug_pairs = $this->get_slugs_pairs_based_on_language( $possible_missed_slugs_from_the_current_url, $this->settings['default-language'], $TRP_LANGUAGE );
+            $slug_pairs = $this->get_slugs_pairs_based_on_language( $possible_missed_slugs_from_the_current_url, $this->settings['default-language'], $LRP_LANGUAGE );
             if ( empty ( $slug_pairs ) ){
                 return false;
             }
@@ -136,8 +136,8 @@ class TRP_IN_SP_Slug_Manager {
      * @return void
      */
     public function redirect_to_translated_slug(){
-        $status = apply_filters( 'trp_redirect_status', 301, 'redirect_to_translated_slug' );
-        $this->redirect_to_url = apply_filters( 'trp_redirect_to_translated_slug_url', $this->redirect_to_url );
+        $status = apply_filters( 'lrp_redirect_status', 301, 'redirect_to_translated_slug' );
+        $this->redirect_to_url = apply_filters( 'lrp_redirect_to_translated_slug_url', $this->redirect_to_url );
 
         wp_safe_redirect( $this->redirect_to_url, $status );
         exit();
@@ -145,14 +145,14 @@ class TRP_IN_SP_Slug_Manager {
 
     /**
      * @param $post the post object or post id
-     * @param string $language optional parameter for language. if it's not present it will grab it from the $TRP_LANGUAGE global
+     * @param string $language optional parameter for language. if it's not present it will grab it from the $LRP_LANGUAGE global
      * @return mixed|string an empty string or the translated slug
      */
     public function get_translated_slug( $post, $language = null ){
         if( $language == null ){
-            global $TRP_LANGUAGE;
-            if( !empty( $TRP_LANGUAGE ) )
-                $language = $TRP_LANGUAGE;
+            global $LRP_LANGUAGE;
+            if( !empty( $LRP_LANGUAGE ) )
+                $language = $LRP_LANGUAGE;
         }
 
         if( is_object( $post ) )
@@ -175,12 +175,12 @@ class TRP_IN_SP_Slug_Manager {
      * @return string the original slug if we can find it
      */
     protected function get_original_slug( $slug, $post_type = '' ){
-        global $TRP_LANGUAGE, $wpdb;
+        global $LRP_LANGUAGE, $wpdb;
 
         $slug_decoded = urldecode($slug);
         $slug_encoded = urlencode($slug_decoded);
 
-        if( !empty( $TRP_LANGUAGE ) ){
+        if( !empty( $LRP_LANGUAGE ) ){
 
             $translated_slug = $wpdb->get_results($wpdb->prepare(
                 "
@@ -188,7 +188,7 @@ class TRP_IN_SP_Slug_Manager {
                 FROM $wpdb->postmeta
                 WHERE ( meta_key = '%s' OR meta_key = '%s' )
                     AND (meta_value = '%s' OR meta_value = '%s')
-                ", $this->human_translated_slug_meta.$TRP_LANGUAGE, $this->automatic_translated_slug_meta.$TRP_LANGUAGE, $slug_decoded, $slug_encoded
+                ", $this->human_translated_slug_meta.$LRP_LANGUAGE, $this->automatic_translated_slug_meta.$LRP_LANGUAGE, $slug_decoded, $slug_encoded
             ) );
 
             if( !empty( $translated_slug ) ){
@@ -235,7 +235,7 @@ class TRP_IN_SP_Slug_Manager {
      * @param $language_code
      * @return bool
      *
-     * Verifies if the slug has a translation in the trp_slug_translation language for the current language
+     * Verifies if the slug has a translation in the lrp_slug_translation language for the current language
      */
     public function verify_if_the_slug_translation_already_exists_for_machine_translation( $slug, $language_code ){
 
@@ -276,18 +276,18 @@ class TRP_IN_SP_Slug_Manager {
      *
      * It is later retrieved for saving in db in function save_machine_translated_slug
      *
-     * Hooked to trp_translateable_strings
+     * Hooked to lrp_translateable_strings
      *
      * @param $translateable_information
      * @param $html
      * @param $no_translate_attribute
-     * @param $TRP_LANGUAGE
+     * @param $LRP_LANGUAGE
      * @param $language_code
      * @param $translation_render
      *
      * @return array
      */
-    public function include_slug_for_machine_translation( $translateable_information = array(), $html = false, $no_translate_attribute = '', $TRP_LANGUAGE = null, $language_code = '', $translation_render = false ) {
+    public function include_slug_for_machine_translation( $translateable_information = array(), $html = false, $no_translate_attribute = '', $LRP_LANGUAGE = null, $language_code = '', $translation_render = false ) {
         if ( !is_array($translateable_information) ) {
             $translateable_information = [
                 'translateable_strings' => [],
@@ -299,7 +299,7 @@ class TRP_IN_SP_Slug_Manager {
         //we add this parameter in $translatable_information['nodes'] to add them to an array that will not be sent in the request for automatic translation
         $skip_automatic_translation_for_slugs = false;
         $woo_english_slugs                    = array( 'product-category', 'product-tag', 'product' );
-        if ( !apply_filters( 'trp_machine_translate_slug', false ) ) {
+        if ( !apply_filters( 'lrp_machine_translate_slug', false ) ) {
             $skip_automatic_translation_for_slugs                  = true;
             $translateable_information_to_return_if_slug_at_is_off = $translateable_information;
         }
@@ -307,7 +307,7 @@ class TRP_IN_SP_Slug_Manager {
         global $post;
         global $wp_query;
 
-        global $TRP_LANGUAGE;
+        global $LRP_LANGUAGE;
         // we need to check if the current url exists or it will have a 404 response
         // this is necessary because we are looking for slugs not only identifiable by wp functions but also slugs that are found in the URL for other slugs
         // and this will lead to automatically translating slugs that do not exist
@@ -344,8 +344,8 @@ class TRP_IN_SP_Slug_Manager {
 
                     if ( $is_public && $is_it_a_standard_post ) {
                         // added new argument ro not send to AT strings formed of only numbers ( ex: '88888', '44-54 )
-                        // trp full trim eliminates white spaces
-                        $post_trimmed = trp_full_trim($post->post_name, array('numerals' => 'no'));
+                        // lrp full trim eliminates white spaces
+                        $post_trimmed = lrp_full_trim($post->post_name, array('numerals' => 'no'));
                         if ( !empty( $post_trimmed ) ) {
                             $post_without_hyphens = str_replace('-', ' ', $post_trimmed);
                             $translateable_information['translateable_strings'][] = urldecode($post_without_hyphens);
@@ -358,16 +358,16 @@ class TRP_IN_SP_Slug_Manager {
             // archives
             if ( is_archive() ) {
                 if ( !isset( $wp_query->query['post_type'] ) ) {
-                    global $trp_all_taxonomies;
-                    if ( !isset( $trp_all_taxonomies ) )
-                        $trp_all_taxonomies = get_taxonomies();
+                    global $lrp_all_taxonomies;
+                    if ( !isset( $lrp_all_taxonomies ) )
+                        $lrp_all_taxonomies = get_taxonomies();
 
                     foreach ( $wp_query->query as $taxonomy => $term_slug ) {
                         //normalize built in category and tag taxonomies which have special query vars
-                        $actual_taxonomy = $this->trp_normalize_taxonomy_names( $taxonomy );
+                        $actual_taxonomy = $this->lrp_normalize_taxonomy_names( $taxonomy );
 
                         //check if it is actually a taxonomy we have
-                        if ( in_array( $actual_taxonomy, $trp_all_taxonomies ) ) {
+                        if ( in_array( $actual_taxonomy, $lrp_all_taxonomies ) ) {
 
                             $term_object = get_term_by( 'slug', $term_slug, $actual_taxonomy );
 
@@ -378,7 +378,7 @@ class TRP_IN_SP_Slug_Manager {
                                     ( !$skip_automatic_translation_for_slugs && !$this->verify_if_the_slug_translation_already_exists_for_machine_translation( $term_slug, $language_code ) &&
                                         !in_array( $term_slug, $woo_english_slugs ) ) ) {
 
-                                    $term_slug_trimmed                                    = trp_full_trim( $term_slug, array('numerals' => 'no') );
+                                    $term_slug_trimmed                                    = lrp_full_trim( $term_slug, array('numerals' => 'no') );
                                     if ( !empty( $term_slug_trimmed ) ) {
                                         $term_slug_without_hyphens = str_replace('-', ' ', $term_slug_trimmed);
                                         $translateable_information['translateable_strings'][] = urldecode($term_slug_without_hyphens);
@@ -396,7 +396,7 @@ class TRP_IN_SP_Slug_Manager {
                                         !$this->verify_if_slug_original_exists_already_for_when_slug_machine_translation_is_off( $original_base_slug ) ) ||
                                     ( !$skip_automatic_translation_for_slugs && !$this->verify_if_the_slug_translation_already_exists_for_machine_translation( $original_base_slug, $language_code ) && !in_array( $original_base_slug, $woo_english_slugs ) ) ) {
 
-                                    $original_base_slug_trimmed                           = trp_full_trim( $original_base_slug, array('numerals' => 'no') );
+                                    $original_base_slug_trimmed                           = lrp_full_trim( $original_base_slug, array('numerals' => 'no') );
                                     if ( !empty( $original_base_slug_trimmed ) ) {
                                         $original_base_slug_without_hyphens = str_replace('-', ' ', $original_base_slug_trimmed);
                                         $translateable_information['translateable_strings'][] = urldecode($original_base_slug_without_hyphens);
@@ -425,7 +425,7 @@ class TRP_IN_SP_Slug_Manager {
                                 continue;
                             }
 
-                            if ( apply_filters( 'trp_filter_post_type_base_slugs_from_automatic_translation', true, $post_type_string ) ) {
+                            if ( apply_filters( 'lrp_filter_post_type_base_slugs_from_automatic_translation', true, $post_type_string ) ) {
                                 $post_type_object = get_post_type_object( $post_type_string );
 
                                 if ( $post_type_object && isset( $post_type_object->publicly_queryable ) && $post_type_object->publicly_queryable ) {
@@ -435,7 +435,7 @@ class TRP_IN_SP_Slug_Manager {
                                             !$this->verify_if_slug_original_exists_already_for_when_slug_machine_translation_is_off( $original_base_slug ) ) ||
                                         ( !$skip_automatic_translation_for_slugs && !$this->verify_if_the_slug_translation_already_exists_for_machine_translation( $original_base_slug, $language_code ) && !in_array( $original_base_slug, $woo_english_slugs ) ) ) {
 
-                                        $original_base_slug_trimmed                           = trp_full_trim( $original_base_slug, array('numerals' => 'no') );
+                                        $original_base_slug_trimmed                           = lrp_full_trim( $original_base_slug, array('numerals' => 'no') );
 
                                         if ( !empty( $original_base_slug_trimmed ) ) {
                                             $original_base_slug_without_hyphens = str_replace('-', ' ', $original_base_slug_trimmed);
@@ -452,7 +452,7 @@ class TRP_IN_SP_Slug_Manager {
 
             $current_url = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_url( $_SERVER['REQUEST_URI'] ) : ''; //phpcs:ignore
 
-            if ( !apply_filters( 'trp_is_admin_link_for_request_uri', false, $current_url ) && !apply_filters( 'trp_is_rest_api', false, $current_url ) ) {
+            if ( !apply_filters( 'lrp_is_admin_link_for_request_uri', false, $current_url ) && !apply_filters( 'lrp_is_rest_api', false, $current_url ) ) {
 
                 $possible_missed_slugs_from_the_current_url = $this->get_translatable_slugs_from_url( $current_url );
 
@@ -462,7 +462,7 @@ class TRP_IN_SP_Slug_Manager {
                         $the_slug_is_not_saved_in_original_or_it_does_not_have_a_translation = false;
 
                         // the slugs containing multiple words, have the hyphens replaced with spaces
-                        $slug_name_trimmed = trp_full_trim($slug_name, array('numerals' => 'no'));
+                        $slug_name_trimmed = lrp_full_trim($slug_name, array('numerals' => 'no'));
                         if (!empty($slug_name_trimmed)) {
                             $slug_without_hyphens = str_replace('-', ' ', $slug_name_trimmed);
 
@@ -491,7 +491,7 @@ class TRP_IN_SP_Slug_Manager {
 
                                 if ($is_other_type_slug_found) {
 
-                                    $do_not_translate_these_slugs_of_type_other_with_at = apply_filters('trp_do_not_translate_these_slugs_of_type_other_with_at', array(
+                                    $do_not_translate_these_slugs_of_type_other_with_at = apply_filters('lrp_do_not_translate_these_slugs_of_type_other_with_at', array(
                                         'feed'
                                     ));
 
@@ -514,7 +514,7 @@ class TRP_IN_SP_Slug_Manager {
                 $this->save_original_slugs_in_db_when_at_is_off( $translateable_information );
                 return $translateable_information_to_return_if_slug_at_is_off;
             }
-        } elseif ( $TRP_LANGUAGE == $this->settings['default-language'] && !$skip_automatic_translation_for_slugs ) {
+        } elseif ( $LRP_LANGUAGE == $this->settings['default-language'] && !$skip_automatic_translation_for_slugs ) {
             if ( isset( $translateable_information) && isset( $translateable_information[ 'nodes' ] ) ) {
                 $this->save_machine_translated_slug( $translateable_information );
                 return $translateable_information;
@@ -525,11 +525,11 @@ class TRP_IN_SP_Slug_Manager {
     }
 
     /**
-     * Function hooked on trp_translateable_information to save the slug translation.
+     * Function hooked on lrp_translateable_information to save the slug translation.
      *
      * When Slug Automatic Translation if off do not do anything
      * Runs on every translated page
-     * It's used to save the page slug from automatic translation into the proper structure for trp_slug_original and trp_slug_translation
+     * It's used to save the page slug from automatic translation into the proper structure for lrp_slug_original and lrp_slug_translation
      *
      * Works together with function include_slug_for_machine_translation
      *
@@ -543,12 +543,12 @@ class TRP_IN_SP_Slug_Manager {
      */
     public function save_machine_translated_slug($translateable_information = array(), $translated_strings = array(), $language_code = '') {
 
-        if ( !apply_filters( 'trp_machine_translate_slug', false ) ) {
+        if ( !apply_filters( 'lrp_machine_translate_slug', false ) ) {
             return;
         }
 
-        $trp       = TRP_Translate_Press::get_trp_instance();
-        $trp_query = $trp->get_component( 'query' );
+        $lrp       = LRP_Lingua_Press::get_lrp_instance();
+        $lrp_query = $lrp->get_component( 'query' );
 
         $array_of_machine_translated_slugs_for_insertion = array();
 
@@ -571,7 +571,7 @@ class TRP_IN_SP_Slug_Manager {
                 $array_of_machine_translated_slugs_for_insertion[ $value['original_slug_name'] ]['translated'] = $sanitized_slug;
             }
 
-            $array_of_machine_translated_slugs_for_insertion[ $value['original_slug_name'] ]['status'] = isset( $translated_strings[ $key ] ) ? $trp_query->get_constant_machine_translated() : 0;
+            $array_of_machine_translated_slugs_for_insertion[ $value['original_slug_name'] ]['status'] = isset( $translated_strings[ $key ] ) ? $lrp_query->get_constant_machine_translated() : 0;
 
         }
 
@@ -658,21 +658,21 @@ class TRP_IN_SP_Slug_Manager {
             //for woocommerce we have a special case, we need the original hardcoded slug and not the one passed through the translation functions (_x)
             if (class_exists('WooCommerce')) {
 
-                if (!class_exists('TRP_Translation_Manager'))
-                    require_once TRP_PLUGIN_DIR . 'includes/class-translation-manager.php';
+                if (!class_exists('LRP_Translation_Manager'))
+                    require_once LRP_PLUGIN_DIR . 'includes/class-translation-manager.php';
 
-                if (class_exists('TRP_Translation_Manager')) {
+                if (class_exists('LRP_Translation_Manager')) {
                     if ($name === 'product' || $name === 'product_cat' || $name === 'product_tag') {
-                        if ($name === 'product' && trim($args['rewrite']['slug'], '\\/') === TRP_Translation_Manager::strip_gettext_tags(_x('product', 'slug', 'woocommerce'))) //phpcs:ignore
+                        if ($name === 'product' && trim($args['rewrite']['slug'], '\\/') === LRP_Translation_Manager::strip_gettext_tags(_x('product', 'slug', 'woocommerce'))) //phpcs:ignore
                             $name = trim($name, '/\\');
-                        elseif ($name === 'product_cat' && trim($args['rewrite']['slug'], '\\/') === TRP_Translation_Manager::strip_gettext_tags(_x('product-category', 'slug', 'woocommerce'))) //phpcs:ignore
+                        elseif ($name === 'product_cat' && trim($args['rewrite']['slug'], '\\/') === LRP_Translation_Manager::strip_gettext_tags(_x('product-category', 'slug', 'woocommerce'))) //phpcs:ignore
                             $name = 'product-category';
-                        elseif ($name === 'product_tag' && trim($args['rewrite']['slug'], '\\/') === TRP_Translation_Manager::strip_gettext_tags(_x('product-tag', 'slug', 'woocommerce'))) //phpcs:ignore
+                        elseif ($name === 'product_tag' && trim($args['rewrite']['slug'], '\\/') === LRP_Translation_Manager::strip_gettext_tags(_x('product-tag', 'slug', 'woocommerce'))) //phpcs:ignore
                             $name = 'product-tag';
 
                         if ($name === 'product' || $name === 'product-category' || $name === 'product-tag') {
-                            global $trp_wc_permalinks;//this should be defined in woocommerce_filter_permalink_option() function
-                            if (isset($trp_wc_permalinks)) {
+                            global $lrp_wc_permalinks;//this should be defined in woocommerce_filter_permalink_option() function
+                            if (isset($lrp_wc_permalinks)) {
                                 if ($name == 'product-category') {
                                     $option_index = 'category_base';
                                 } elseif ($name == 'product-tag') {
@@ -681,8 +681,8 @@ class TRP_IN_SP_Slug_Manager {
                                     $option_index = 'product_base';
                                 }
 
-                                if (!empty($trp_wc_permalinks) && !empty($option_index) && isset($trp_wc_permalinks[$option_index]) && $name != $trp_wc_permalinks[$option_index]) {
-                                    $name = trim($trp_wc_permalinks[$option_index], '\\/');
+                                if (!empty($lrp_wc_permalinks) && !empty($option_index) && isset($lrp_wc_permalinks[$option_index]) && $name != $lrp_wc_permalinks[$option_index]) {
+                                    $name = trim($lrp_wc_permalinks[$option_index], '\\/');
                                 }
                             }
 
@@ -715,11 +715,11 @@ class TRP_IN_SP_Slug_Manager {
      * @return bool
      */
     public function get_translated_rewrite_base_slug( $name, $langauge, $is_tax ){
-        global  $trp_taxonomy_slug_translation;
+        global  $lrp_taxonomy_slug_translation;
 
         //rebase $name for woocommerce. ex: default site language de_de then default slug for product cpt will be 'produkt' and that is how we save in the db. But in de_at (austrian) as there is no translation in the woocommerce mo $name will come as 'product' and we won't find the translation in the db
-        global $trp_wc_permalinks;//this should be defined in woocommerce_filter_permalink_option() function
-        if( isset($trp_wc_permalinks) ){
+        global $lrp_wc_permalinks;//this should be defined in woocommerce_filter_permalink_option() function
+        if( isset($lrp_wc_permalinks) ){
             if ($name == 'product-category') {
                 $option_index = 'category_base';
             } elseif ($name == 'product-tag') {
@@ -728,26 +728,26 @@ class TRP_IN_SP_Slug_Manager {
                 $option_index = 'product_base';
             }
 
-            if( !empty( $trp_wc_permalinks ) && !empty( $option_index ) && isset( $trp_wc_permalinks[$option_index] ) && $name != $trp_wc_permalinks[$option_index] ){
-                $name = trim( $trp_wc_permalinks[ $option_index ], '\\/' );
+            if( !empty( $lrp_wc_permalinks ) && !empty( $option_index ) && isset( $lrp_wc_permalinks[$option_index] ) && $name != $lrp_wc_permalinks[$option_index] ){
+                $name = trim( $lrp_wc_permalinks[ $option_index ], '\\/' );
             }
         }
 
         /* get the options from the database and store them in a global so we don't query the db on every call */
         if( $is_tax ){
-            if( !isset($trp_taxonomy_slug_translation) )
-                $trp_taxonomy_slug_translation = get_option( $this->string_translation_api_tax_slug->get_option_name(), '' );
+            if( !isset($lrp_taxonomy_slug_translation) )
+                $lrp_taxonomy_slug_translation = get_option( $this->string_translation_api_tax_slug->get_option_name(), '' );
         }
         else{
-            $trp_cpt_slug_translation = get_option( $this->string_translation_api_post_type_slug->get_option_name(), '' );
+            $lrp_cpt_slug_translation = get_option( $this->string_translation_api_post_type_slug->get_option_name(), '' );
         }
 
 
         if( $is_tax ){
-            $slug_translations = $trp_taxonomy_slug_translation;
+            $slug_translations = $lrp_taxonomy_slug_translation;
         }
         else {
-            $slug_translations = $trp_cpt_slug_translation;
+            $slug_translations = $lrp_cpt_slug_translation;
         }
 
         if (!empty($slug_translations)) {
@@ -776,13 +776,13 @@ class TRP_IN_SP_Slug_Manager {
      * @return array $from_slug will be the key and $to_slug the value
      */
     public function get_taxonomy_translated_slugs_pairs_for_languages( $from_language, $to_langauge ){
-        global $trp_taxonomy_slug_translation;
+        global $lrp_taxonomy_slug_translation;
 
         /* get the options from the database and store them in a global so we don't query the db on every call */
-        if (!isset($trp_taxonomy_slug_translation))
-            $trp_taxonomy_slug_translation = get_option( $this->string_translation_api_tax_slug->get_option_name(), '');
+        if (!isset($lrp_taxonomy_slug_translation))
+            $lrp_taxonomy_slug_translation = get_option( $this->string_translation_api_tax_slug->get_option_name(), '');
 
-        $translation_pairs = $this->get_object_translated_slugs_pairs_for_languages( $trp_taxonomy_slug_translation, $from_language, $to_langauge );
+        $translation_pairs = $this->get_object_translated_slugs_pairs_for_languages( $lrp_taxonomy_slug_translation, $from_language, $to_langauge );
 
         return $translation_pairs;
     }
@@ -794,9 +794,9 @@ class TRP_IN_SP_Slug_Manager {
      * @return array $from_slug will be the key and $to_slug the value
      */
     public function get_cpt_translated_slugs_pairs_for_languages( $from_language, $to_langauge )    {
-        $trp_cpt_slug_translation = get_option( $this->string_translation_api_post_type_slug->get_option_name(), '');
+        $lrp_cpt_slug_translation = get_option( $this->string_translation_api_post_type_slug->get_option_name(), '');
 
-        $translation_pairs = $this->get_object_translated_slugs_pairs_for_languages( $trp_cpt_slug_translation, $from_language, $to_langauge );
+        $translation_pairs = $this->get_object_translated_slugs_pairs_for_languages( $lrp_cpt_slug_translation, $from_language, $to_langauge );
 
         return $translation_pairs;
 
@@ -804,15 +804,15 @@ class TRP_IN_SP_Slug_Manager {
 
     /**
      * Function to parse an array of either taxonomy or cpt slug translations and return pairs of slug translations
-     * @param $trp_object_slug_translations
+     * @param $lrp_object_slug_translations
      * @param $from_language
      * @param $to_langauge
      * @return array
      */
-    public function get_object_translated_slugs_pairs_for_languages( $trp_object_slug_translations, $from_language, $to_langauge ){
+    public function get_object_translated_slugs_pairs_for_languages( $lrp_object_slug_translations, $from_language, $to_langauge ){
         $translation_pairs = array();
-        if( !empty($trp_object_slug_translations) ){
-            foreach( $trp_object_slug_translations as $original_slug => $transaltions ){
+        if( !empty($lrp_object_slug_translations) ){
+            foreach( $lrp_object_slug_translations as $original_slug => $transaltions ){
                 $from_slug = $this->get_slug_from_translation_array($transaltions, $original_slug, $from_language);
                 $to_slug =  $this->get_slug_from_translation_array($transaltions, $original_slug, $to_langauge);
 
@@ -849,18 +849,18 @@ class TRP_IN_SP_Slug_Manager {
      * @return string|string[]
      */
     function filter_language_switcher_link( $new_url, $url, $language ){
-        global $TRP_LANGUAGE;
+        global $LRP_LANGUAGE;
 
         $new_url = urldecode($new_url);
 
-        $tax_translated_slug_pairs = $this->get_taxonomy_translated_slugs_pairs_for_languages( $TRP_LANGUAGE, $language );
-        $cpt_translated_slug_pairs = $this->get_cpt_translated_slugs_pairs_for_languages( $TRP_LANGUAGE, $language );
+        $tax_translated_slug_pairs = $this->get_taxonomy_translated_slugs_pairs_for_languages( $LRP_LANGUAGE, $language );
+        $cpt_translated_slug_pairs = $this->get_cpt_translated_slugs_pairs_for_languages( $LRP_LANGUAGE, $language );
         $object_translated_slug_pairs = $tax_translated_slug_pairs + $cpt_translated_slug_pairs;
 
         //add compatibility with the product post type archive which takes the slug from the page that is set up as a Shop page in woocommerce settings
         if( class_exists( 'WooCommerce' ) ){
 
-            $shop_page_from_slug = $this->get_woocommerce_shop_slug_in_language( $TRP_LANGUAGE );
+            $shop_page_from_slug = $this->get_woocommerce_shop_slug_in_language( $LRP_LANGUAGE );
             $shop_page_to_slug = $this->get_woocommerce_shop_slug_in_language( $language);
 
             if ( !is_null($shop_page_from_slug) && !is_null($shop_page_to_slug) && $shop_page_from_slug != $shop_page_to_slug ) {//we actually have a translation
@@ -933,7 +933,7 @@ class TRP_IN_SP_Slug_Manager {
 
         $all_possible_terms_ids = array();
 
-        $term_args = apply_filters( 'trp_get_term_args', array(
+        $term_args = apply_filters( 'lrp_get_term_args', array(
             'taxonomy' => $taxonomy,
             'hide_empty' => false
         ), $slug, $taxonomy, $language );
@@ -999,7 +999,7 @@ class TRP_IN_SP_Slug_Manager {
      * @param $taxonomy
      * @return string
      */
-    public function trp_normalize_taxonomy_names( $taxonomy ){
+    public function lrp_normalize_taxonomy_names( $taxonomy ){
         if( $taxonomy === 'category_name' )
             $actual_taxonomy = 'category';
         else if( $taxonomy === 'tag' )
@@ -1015,12 +1015,12 @@ class TRP_IN_SP_Slug_Manager {
      * filter the wpbdp_category option that is used by the plugin directly to create links
      **/
     public function business_directory_plugin_compatibility( $value ){
-        global $TRP_LANGUAGE;
+        global $LRP_LANGUAGE;
 
-        if( is_admin() || $TRP_LANGUAGE === $this->settings['default-language'] )
+        if( is_admin() || $LRP_LANGUAGE === $this->settings['default-language'] )
             return $value;
 
-        $translated = $this->get_translated_rewrite_base_slug( $value, $TRP_LANGUAGE, true );
+        $translated = $this->get_translated_rewrite_base_slug( $value, $LRP_LANGUAGE, true );
         if($translated)
             return $translated;
 
@@ -1058,7 +1058,7 @@ class TRP_IN_SP_Slug_Manager {
 
         $final_url = str_replace( $path_no_lang_slug, $translated_path, $target_url );
 
-        wp_cache_set( $cache_key . $cached_url['hash'], $final_url, 'trp' );
+        wp_cache_set( $cache_key . $cached_url['hash'], $final_url, 'lrp' );
 
         return $final_url;
     }
@@ -1074,21 +1074,21 @@ class TRP_IN_SP_Slug_Manager {
     public function get_path_no_lang_slug_from_url( $url ) {
         $language      = $this->url_converter->get_lang_from_url_string( $url );
         $url_lang_slug = $this->url_converter->get_url_slug( $language );
-        $url_object    = trp_cache_get( 'url_obj_' . hash( 'md4', $url ), 'trp' );
+        $url_object    = lrp_cache_get( 'url_obj_' . hash( 'md4', $url ), 'lrp' );
 
         if ( $url_object === false ) {
-            $url_object = new \TranslatePress\Uri( $url );
-            wp_cache_set( 'url_obj_' . hash( 'md4', $url ), $url_object, 'trp' );
+            $url_object = new \LinguaPress\Uri( $url );
+            wp_cache_set( 'url_obj_' . hash( 'md4', $url ), $url_object, 'lrp' );
         }
 
         // $path_no_lang_slug and $translated_path don't exist in $target_url with WordPress installed in sub folder.
         // Find the subfolder from abs_home (if it exists), strip it from both vars and then do the str replace.
         if ( $this->abs_home_path === null ) {
             $abs_home            = $this->url_converter->get_abs_home();
-            $abs_home_object     = new \TranslatePress\Uri( $abs_home );
+            $abs_home_object     = new \LinguaPress\Uri( $abs_home );
             $this->abs_home_path = untrailingslashit( strval( $abs_home_object->getPath() ) );
         }
-        $url_path = trp_remove_prefix( $this->abs_home_path, strval( $url_object->getPath() ) );
+        $url_path = lrp_remove_prefix( $this->abs_home_path, strval( $url_object->getPath() ) );
 
         // null or empty string
         if ( empty( $url_lang_slug ) ) {
@@ -1152,7 +1152,7 @@ class TRP_IN_SP_Slug_Manager {
         if ( empty( $translatable_slugs ) ) return false;
 
         $default_language = $this->settings['default-language'];
-        $was_data_migration_completed = get_option( 'trp_migrate_old_slug_to_new_parent_and_translate_slug_table_term_meta_284', 'not_set' );
+        $was_data_migration_completed = get_option( 'lrp_migrate_old_slug_to_new_parent_and_translate_slug_table_term_meta_284', 'not_set' );
 
         $slug_pairs = [];
         if ( $target_language === $default_language ) {
@@ -1339,9 +1339,9 @@ class TRP_IN_SP_Slug_Manager {
         if( isset( $_REQUEST['doing_wp_cron'] ) )
             return;
 
-        global $TRP_LANGUAGE;
+        global $LRP_LANGUAGE;
 
-        if ( $TRP_LANGUAGE === $this->settings['default-language'] )
+        if ( $LRP_LANGUAGE === $this->settings['default-language'] )
             return;
 
         if ( empty( $_SERVER['REQUEST_URI'] ) )
@@ -1351,7 +1351,7 @@ class TRP_IN_SP_Slug_Manager {
         $current_url_with_domain     = $this->url_converter->cur_page_url();
         $sanitized_request_uri = sanitize_url( $_SERVER['REQUEST_URI'] );/* phpcs:ignore */ /* sanitized with sanitize_url() */
 
-        if ( apply_filters( 'trp_is_admin_link_for_request_uri', false, $current_url_with_domain ) )
+        if ( apply_filters( 'lrp_is_admin_link_for_request_uri', false, $current_url_with_domain ) )
             return;
 
         if ( $this->is_redirect_needed( $current_url_with_domain ) )
@@ -1365,7 +1365,7 @@ class TRP_IN_SP_Slug_Manager {
             )
         );
 
-        do_action('trp_translated_request_uri', $new_request_uri, $sanitized_request_uri );
+        do_action('lrp_translated_request_uri', $new_request_uri, $sanitized_request_uri );
 
         $_SERVER['REQUEST_URI'] = $new_request_uri;
 
@@ -1373,7 +1373,7 @@ class TRP_IN_SP_Slug_Manager {
          * and set the cache incorrectly. This ensures that from this point on, it actually returns the
          * untranslated version of the current url
          */
-        wp_cache_delete( 'cur_page_url_untranslated_slugs', 'trp' );
+        wp_cache_delete( 'cur_page_url_untranslated_slugs', 'lrp' );
 
 
         // It's also very important to call cur_page_url here because it sets the cache for cur_page_url_untranslated_slugs
@@ -1383,11 +1383,11 @@ class TRP_IN_SP_Slug_Manager {
     /**
      * Used for internal links, generated using WP functions
      *
-     * @param $url string Expected to already have the language slug appended to it using trp_home_url hook
+     * @param $url string Expected to already have the language slug appended to it using lrp_home_url hook
      * @return string
      */
     public function translate_slugs_on_internal_links( $url ) {
-        global $TRP_LANGUAGE;
+        global $LRP_LANGUAGE;
 
         $abs_home          = $this->url_converter->get_abs_home();
         $path_no_lang_slug = $this->get_path_no_lang_slug_from_url( $url );
@@ -1396,7 +1396,7 @@ class TRP_IN_SP_Slug_Manager {
 
         if ( $url === $url_no_lang_slug ) return $url;
 
-        return $this->get_slug_translated_url_for_language( $url, $url_no_lang_slug, $TRP_LANGUAGE );
+        return $this->get_slug_translated_url_for_language( $url, $url_no_lang_slug, $LRP_LANGUAGE );
     }
 
     /*
@@ -1414,12 +1414,12 @@ class TRP_IN_SP_Slug_Manager {
             $is_admin_link = true;
         }
 
-        return apply_filters('trp_is_admin_link', $is_admin_link, $url, $admin_url, $wp_login_url);
+        return apply_filters('lrp_is_admin_link', $is_admin_link, $url, $admin_url, $wp_login_url);
     }
 
     public function verify_if_is_rest_api_slug_translation( $is_rest_api_request ){
-        $trp = TRP_Translate_Press::get_trp_instance();
-        $this->translation_manager = $trp->get_component('translation_manager');
+        $lrp = LRP_Lingua_Press::get_lrp_instance();
+        $this->translation_manager = $lrp->get_component('translation_manager');
 
         $is_rest_api_request = $this->translation_manager::is_rest_api_request();
         $is_custom_api_request = isset( $_SERVER['HTTP_X_REQUESTED_WITH'] ) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
@@ -1486,8 +1486,8 @@ class TRP_IN_SP_Slug_Manager {
 
         global $wpdb;
 
-        $table_name_translations = $wpdb->prefix . 'trp_slug_translations';
-        $table_name_original = $wpdb->prefix . 'trp_slug_originals';
+        $table_name_translations = $wpdb->prefix . 'lrp_slug_translations';
+        $table_name_original = $wpdb->prefix . 'lrp_slug_originals';
 
         // Determine if it's a term or a post based on what data is provided
         $is_term = isset( $data['post_name'] );

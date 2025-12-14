@@ -5,8 +5,8 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
-    class TRP_String_Translation_API_Term_Slug
+if( !class_exists('LRP_String_Translation_API_Term_Slug') ) {
+    class LRP_String_Translation_API_Term_Slug
     {
         protected $type = 'term-slug';
         protected $id_column_name = 'term_id';
@@ -19,17 +19,17 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
         public function __construct($settings)
         {
             $this->settings = $settings;
-            $this->helper = new TRP_String_Translation_Helper();
-            $this->meta_based_strings = new TRP_IN_SP_Meta_Based_Strings();
-            $this->option_based_strings = new TRP_IN_SP_Option_Based_Strings();
+            $this->helper = new LRP_String_Translation_Helper();
+            $this->meta_based_strings = new LRP_IN_SP_Meta_Based_Strings();
+            $this->option_based_strings = new LRP_IN_SP_Option_Based_Strings();
         }
 
         public function get_strings()
         {
             $this->helper->check_ajax($this->type, 'get');
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $trp_query = $trp->get_component('query');
-            $string_translation = $trp->get_component('string_translation');
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $lrp_query = $lrp->get_component('query');
+            $string_translation = $lrp->get_component('string_translation');
             $config = $string_translation->get_configuration_options();
             $sanitized_args = $this->helper->get_sanitized_query_args($this->type);
             $dictionary_by_original = array();
@@ -40,7 +40,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
             // translation status filter
             if (!empty($sanitized_args['status'])) {
                 add_filter('terms_clauses', array($this, 'replace_meta_key_compare_wildcard'), 10, 3);
-                $wp_query_args = $this->meta_based_strings->get_translation_status_wp_query_args($wp_query_args, $sanitized_args, $trp_query);
+                $wp_query_args = $this->meta_based_strings->get_translation_status_wp_query_args($wp_query_args, $sanitized_args, $lrp_query);
             }
 
             // order and orderby
@@ -54,7 +54,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
             // search filter
             if (!empty($sanitized_args['s'])) {
                 add_filter('terms_clauses', array($this, 'add_query_on_slug_name'), 20, 3);
-                $wp_query_args['trp_slug_name_like'] = $sanitized_args['s'];
+                $wp_query_args['lrp_slug_name_like'] = $sanitized_args['s'];
             }
 
             // taxonomy filter
@@ -66,7 +66,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
 
             // counting the matched terms
             $wp_query_args['fields'] = 'ids';
-            $wp_query_args = apply_filters('trp_string_translation_query_args_count_' . $this->type, $wp_query_args, $sanitized_args);
+            $wp_query_args = apply_filters('lrp_string_translation_query_args_count_' . $this->type, $wp_query_args, $sanitized_args);
             $resulted_wp_query = new WP_Term_Query($wp_query_args);
             if ($resulted_wp_query && isset($resulted_wp_query->terms)) {
                 $found_items = count($resulted_wp_query->terms);
@@ -78,7 +78,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
             $wp_query_args['number'] = $config['items_per_page'];
             $wp_query_args['offset'] = ($sanitized_args['page'] - 1) * $config['items_per_page'];
 
-            $wp_query_args = apply_filters('trp_string_translation_query_args_' . $this->type, $wp_query_args, $sanitized_args);
+            $wp_query_args = apply_filters('lrp_string_translation_query_args_' . $this->type, $wp_query_args, $sanitized_args);
 
             // query for needed strings
             $resulted_wp_query = new WP_Term_Query($wp_query_args);
@@ -92,7 +92,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
                 $sql_results = $this->meta_based_strings->get_translations_from_meta_table($term_ids, 'termmeta', $this->id_column_name);
 
                 // construct dictionary by original
-                $translationsArrays = $this->meta_based_strings->get_translations_array_from_sql_results($term_ids, $sql_results, $trp_query, $this->id_column_name);
+                $translationsArrays = $this->meta_based_strings->get_translations_array_from_sql_results($term_ids, $sql_results, $lrp_query, $this->id_column_name);
                 foreach ($resulted_wp_query->terms as $term) {
                     // it's possible that draft posts don't have slug yet so check if post_name is empty
                     if (!empty($term->slug)) {
@@ -106,7 +106,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
                 }
             }
 
-            echo trp_safe_json_encode(array( //phpcs:ignore
+            echo lrp_safe_json_encode(array( //phpcs:ignore
                 'dictionary' => $dictionary_by_original,
                 'totalItems' => $found_items
             ));
@@ -124,7 +124,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
          */
         public function replace_meta_key_compare_wildcard($clauses, $taxonomies, $args)
         {
-            $meta_based_strings = new TRP_IN_SP_Meta_Based_Strings();
+            $meta_based_strings = new LRP_IN_SP_Meta_Based_Strings();
 
             $clauses['where'] = str_replace("meta_key='" . $meta_based_strings->get_human_translated_slug_meta() . "$", "meta_key LIKE '" . $meta_based_strings->get_human_translated_slug_meta() . "%", $clauses['where']);
             $clauses['where'] = str_replace("meta_key = '" . $meta_based_strings->get_human_translated_slug_meta() . "$", "meta_key LIKE '" . $meta_based_strings->get_human_translated_slug_meta() . "%", $clauses['where']);
@@ -136,8 +136,8 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
         public function add_query_on_slug_name($clauses, $taxonomies, $args)
         {
             global $wpdb;
-            if ($trp_slug_name_like = $args['trp_slug_name_like']) {
-                $clauses['where'] .= ' AND t.slug LIKE \'%' . esc_sql($wpdb->esc_like(sanitize_title($trp_slug_name_like))) . '%\'';
+            if ($lrp_slug_name_like = $args['lrp_slug_name_like']) {
+                $clauses['where'] .= ' AND t.slug LIKE \'%' . esc_sql($wpdb->esc_like(sanitize_title($lrp_slug_name_like))) . '%\'';
             }
             return $clauses;
         }
@@ -146,7 +146,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
         /**
          * Save translations of term slugs
          *
-         * Hooked to wp_ajax_trp_save_translations_term-slug
+         * Hooked to wp_ajax_lrp_save_translations_term-slug
          */
         public function save_strings()
         {
@@ -170,7 +170,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
                     }
                 }
 
-                $meta_based_strings = new TRP_IN_SP_Meta_Based_Strings();
+                $meta_based_strings = new LRP_IN_SP_Meta_Based_Strings();
                 $translated_slug_meta = array(
                     1 => $meta_based_strings->get_automatic_translated_slug_meta(),
                     2 => $meta_based_strings->get_human_translated_slug_meta()
@@ -196,7 +196,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
                     }
                 }
             }
-            echo trp_safe_json_encode( $update_slugs ); //phpcs:ignore
+            echo lrp_safe_json_encode( $update_slugs ); //phpcs:ignore
             wp_die();
         }
 
@@ -205,7 +205,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
             if (!in_array($language, $this->settings['translation-languages'])) {
                 return;
             }
-            $meta_based_strings = new TRP_IN_SP_Meta_Based_Strings();
+            $meta_based_strings = new LRP_IN_SP_Meta_Based_Strings();
             global $wpdb;
 
             // get term taxonomy

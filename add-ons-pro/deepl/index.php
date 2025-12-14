@@ -1,6 +1,6 @@
 <?php
 /*
-TranslatePress - DeepL Automatic Translation Add-on
+LinguaPress - DeepL Automatic Translation Add-on
 License: GPL2
 
 == Copyright ==
@@ -25,16 +25,16 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 
-function trp_in_dl_run(){
+function lrp_in_dl_run(){
 
-	define( 'TRP_IN_DL_PLUGIN_VERSION', '1.0.5' );
-	define( 'TRP_IN_DL_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-	define( 'TRP_IN_DL_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+	define( 'LRP_IN_DL_PLUGIN_VERSION', '1.0.5' );
+	define( 'LRP_IN_DL_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+	define( 'LRP_IN_DL_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
     require_once plugin_dir_path( __FILE__ ) . '/includes/class-deepl.php';
-    if ( class_exists( 'TRP_Translate_Press' ) ) {
-        new TRP_IN_DeepL();
+    if ( class_exists( 'LRP_Lingua_Press' ) ) {
+        new LRP_IN_DeepL();
     }
 
 }
-add_action( 'plugins_loaded', 'trp_in_dl_run', 0 );
+add_action( 'plugins_loaded', 'lrp_in_dl_run', 0 );

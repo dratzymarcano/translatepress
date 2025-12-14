@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * A thin client to make requests to MT API using WP HTTP API.
  */
-class TRP_MTAPI_Customer {
+class LRP_MTAPI_Customer {
 
 
 	private $url;

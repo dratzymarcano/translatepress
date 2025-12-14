@@ -1,12 +1,12 @@
 <?php
 
-class TRP_IN_IP_Language {
+class LRP_IN_IP_Language {
 
     /**
      * Return the language code that matches best with IP detected language.
      * Returns null if no matches are found.
      *
-     * @param $published_languages array       TranslatePress settings['publish-languages']
+     * @param $published_languages array       LinguaPress settings['publish-languages']
      * @param $iso_codes array                 Iso codes of the published languages
      * @return string | null
      */

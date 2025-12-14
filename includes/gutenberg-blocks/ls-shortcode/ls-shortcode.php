@@ -10,8 +10,8 @@ add_action(
     'init',
     function () {
         wp_register_script(
-            'trp-block-ls-shortcode',
-            add_query_arg( [ 'action' => 'trp-block-ls-shortcode.js', ], admin_url( 'admin-ajax.php' ) ),
+            'lrp-block-ls-shortcode',
+            add_query_arg( [ 'action' => 'lrp-block-ls-shortcode.js', ], admin_url( 'admin-ajax.php' ) ),
             [ 'wp-blocks', 'wp-element', 'wp-editor' ],
             microtime(),
             true
@@ -21,7 +21,7 @@ add_action(
             [
                 'render_callback' => function ( $attributes, $content ) {
                     ob_start();
-                    do_action( 'trp/language-switcher/render_callback', $attributes, $content );
+                    do_action( 'lrp/language-switcher/render_callback', $attributes, $content );
                     return ob_get_clean();
                 },
             ]
@@ -36,11 +36,11 @@ add_action(
  * @param string $content Optional. Block content. Default empty string.
  */
 add_action(
-    'trp/language-switcher/render_callback',
+    'lrp/language-switcher/render_callback',
     function ( $attributes, $content ) {
         if ( $attributes['is_preview'] ) {
             echo '<style>
-            .trp-language-switcher{
+            .lrp-language-switcher{
                 position: relative;
                 display: inline-block;
                 padding: 0;
@@ -50,7 +50,7 @@ add_action(
             }
             
             
-            .trp-language-switcher > div {
+            .lrp-language-switcher > div {
                 box-sizing: border-box;
             
                 padding:3px 20px 3px 5px;
@@ -74,24 +74,24 @@ add_action(
                 background-color: #fff;
             }
             
-            .trp-language-switcher > div > a {
+            .lrp-language-switcher > div > a {
                 display: block;
                 padding: 2px;
                 border-radius: 3px;
                 color: rgb(7, 105, 173);
             }
             
-            .trp-language-switcher > div > a:hover {
+            .lrp-language-switcher > div > a:hover {
                 background: #f1f1f1;
             }
-            .trp-language-switcher > div > a.trp-ls-shortcode-disabled-language {
+            .lrp-language-switcher > div > a.lrp-ls-shortcode-disabled-language {
                 cursor: default;
             }
-            .trp-language-switcher > div > a.trp-ls-shortcode-disabled-language:hover {
+            .lrp-language-switcher > div > a.lrp-ls-shortcode-disabled-language:hover {
                 background: none;
             }
             
-            .trp-language-switcher > div > a > img{
+            .lrp-language-switcher > div > a > img{
                 display: inline;
                 margin: 0 3px;
                 width: 18px;
@@ -99,15 +99,15 @@ add_action(
                 border-radius: 0;
             }
             
-            .trp-language-switcher .trp-ls-shortcode-current-language{
+            .lrp-language-switcher .lrp-ls-shortcode-current-language{
                 display: inline-block;
             }
-            .trp-language-switcher:focus .trp-ls-shortcode-current-language,
-            .trp-language-switcher:hover .trp-ls-shortcode-current-language{
+            .lrp-language-switcher:focus .lrp-ls-shortcode-current-language,
+            .lrp-language-switcher:hover .lrp-ls-shortcode-current-language{
                 visibility: hidden;
             }
             
-            .trp-language-switcher .trp-ls-shortcode-language{
+            .lrp-language-switcher .lrp-ls-shortcode-language{
                 display: inline-block;
                 height: 1px;
                 overflow: hidden;
@@ -121,8 +121,8 @@ add_action(
                 min-height: auto;
             }
             
-            .trp-language-switcher:focus .trp-ls-shortcode-language,
-            .trp-language-switcher:hover .trp-ls-shortcode-language{
+            .lrp-language-switcher:focus .lrp-ls-shortcode-language,
+            .lrp-language-switcher:hover .lrp-ls-shortcode-language{
                 visibility: visible;
                 max-height: 250px;
                 height: auto;
@@ -139,7 +139,7 @@ add_action(
             'display_setting' => ($attributes['display_setting'] !== '') ? ' display="' . esc_html( $attributes['display_setting'] ) . '"' : '',
             'is_editor' => ($attributes['is_editor']) ? ' is_editor="true"' : '',
         ];
-        echo '<div class="trp-block-container">' . do_shortcode( '[language-switcher ' . $atts['display_setting'] . $atts['is_editor'] . ']' ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo '<div class="lrp-block-container">' . do_shortcode( '[language-switcher ' . $atts['display_setting'] . $atts['is_editor'] . ']' ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     },
     10,
     2
@@ -149,14 +149,14 @@ add_action(
  * Register: JavaScript.
  */
 add_action(
-    'wp_ajax_trp-block-ls-shortcode.js',
+    'wp_ajax_lrp-block-ls-shortcode.js',
     function () {
         header( 'Content-Type: text/javascript' );
 
-        $trp                 = TRP_Translate_Press::get_trp_instance();
-        $trp_settings_object = $trp->get_component( 'settings' );
+        $lrp                 = LRP_Lingua_Press::get_lrp_instance();
+        $lrp_settings_object = $lrp->get_component( 'settings' );
 
-        $ls_options = $trp_settings_object->get_language_switcher_options();
+        $ls_options = $lrp_settings_object->get_language_switcher_options();
         unset( $ls_options['full-names-no-html'] ); //only menu ls has this option
         ?>
         ( function ( blocks, i18n, element, serverSideRender, blockEditor, components ) {
@@ -168,7 +168,7 @@ add_action(
             var TextControl = components.TextControl;
             var InspectorControls = wp.editor.InspectorControls;
 
-            blocks.registerBlockType( 'trp/language-switcher', {
+            blocks.registerBlockType( 'lrp/language-switcher', {
                 icon:
                     el('svg', { width: 24, height: 24, viewBox: '0 0 500 500' },
                         el( 'path',
@@ -219,31 +219,31 @@ add_action(
                     return [
                         el(
                             'div',
-                            Object.assign( blockEditor.useBlockProps(), { key: 'trp/language-switcher/render' } ),
+                            Object.assign( blockEditor.useBlockProps(), { key: 'lrp/language-switcher/render' } ),
                             el( serverSideRender,
                                 {
-                                    block: 'trp/language-switcher',
+                                    block: 'lrp/language-switcher',
                                     attributes: props.attributes,
                                 }
                             )
                         ),
-                        el( InspectorControls, { key: 'trp/language-switcher/inspector' },
+                        el( InspectorControls, { key: 'lrp/language-switcher/inspector' },
                             [
                                 el( PanelBody,
                                     {
-                                        title: __( 'Language Switcher Settings' , 'translatepress-multilingual' ),
-                                        key: 'trp/language-switcher/inspector/ls-settings'
+                                        title: __( 'Language Switcher Settings' , 'linguapress' ),
+                                        key: 'lrp/language-switcher/inspector/ls-settings'
                                     },
                                     [
                                         el( SelectControl,
                                             {
-                                                label: __( 'Display' , 'translatepress-multilingual' ),
-                                                key: 'trp/language_switcher/inspector/ls_settings/display_setting',
-                                                help: __( 'Choose how to display the language names and whether to add flags.' , 'translatepress-multilingual' ),
+                                                label: __( 'Display' , 'linguapress' ),
+                                                key: 'lrp/language_switcher/inspector/ls_settings/display_setting',
+                                                help: __( 'Choose how to display the language names and whether to add flags.' , 'linguapress' ),
                                                 value: props.attributes.display_setting,
                                                 options: [
                                                     {
-                                                        label: __( 'Default setting' , 'translatepress-multilingual' ),
+                                                        label: __( 'Default setting' , 'linguapress' ),
                                                         value: ''
                                                     },
                                                 <?php

@@ -9,12 +9,12 @@ if ( !defined('ABSPATH' ) )
  * This class defines all code necessary to run during the plugin's activation.
  *
  * @since      1.0.0
- * @package    TranslatePress - Translator Accounts Add-on
- * @subpackage TranslatePress - Translator Accounts Add-on/includes
+ * @package    LinguaPress - Translator Accounts Add-on
+ * @subpackage LinguaPress - Translator Accounts Add-on/includes
  * @author     Cristian Antohe
  */
-if( !class_exists('TRP_IN_Translator_Accounts_Activator') ) {
-    class TRP_IN_Translator_Accounts_Activator {
+if( !class_exists('LRP_IN_Translator_Accounts_Activator') ) {
+    class LRP_IN_Translator_Accounts_Activator {
         /**
          * Create the translator user role.
          *
@@ -31,7 +31,7 @@ if( !class_exists('TRP_IN_Translator_Accounts_Activator') ) {
             } else {
                 add_role(
                     'translator',
-                    __( 'Translator', 'translatepress-multilingual' ),
+                    __( 'Translator', 'linguapress' ),
                     array(
                         'read'              => true,
                         'translate_strings' => true,
@@ -48,12 +48,12 @@ if( !class_exists('TRP_IN_Translator_Accounts_Activator') ) {
  * The code that runs during plugin activation.
  * This action is documented in includes/class-plugin-name-activator.php
  */
-if ( !function_exists('trp_in_activate_translator_accounts') ) {
-    function trp_in_activate_translator_accounts($addon) {
+if ( !function_exists('lrp_in_activate_translator_accounts') ) {
+    function lrp_in_activate_translator_accounts($addon) {
         if ( $addon === 'tp-add-on-translator-accounts/index.php' ) {
-            TRP_IN_Translator_Accounts_Activator::activate();
+            LRP_IN_Translator_Accounts_Activator::activate();
         }
     }
 
-    add_action( 'trp_add_ons_activate', 'trp_in_activate_translator_accounts', 10, 1 );
+    add_action( 'lrp_add_ons_activate', 'lrp_in_activate_translator_accounts', 10, 1 );
 }

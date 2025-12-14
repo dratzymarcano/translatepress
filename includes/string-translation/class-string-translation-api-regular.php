@@ -4,29 +4,29 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-class TRP_String_Translation_API_Regular {
+class LRP_String_Translation_API_Regular {
     protected $type = 'regular';
     protected $helper;
     protected $translation_render;
 
-    /* @var TRP_Query */
+    /* @var LRP_Query */
 
     public function __construct( $settings ) {
-        $this->helper = new TRP_String_Translation_Helper();
-        $this->translation_render = new TRP_Translation_Render( $settings );
+        $this->helper = new LRP_String_Translation_Helper();
+        $this->translation_render = new LRP_Translation_Render( $settings );
     }
 
 	public function get_strings(){
 
-		$trp                = TRP_Translate_Press::get_trp_instance();
-		$trp_query          = $trp->get_component( 'query' );
-		$trp_settings       = $trp->get_component( 'settings' );
-		$settings           = $trp_settings->get_settings();
+		$lrp                = LRP_Lingua_Press::get_lrp_instance();
+		$lrp_query          = $lrp->get_component( 'query' );
+		$lrp_settings       = $lrp->get_component( 'settings' );
+		$settings           = $lrp_settings->get_settings();
 
 		$originals_results = $this->helper->get_originals_results(
 			$this->type,
-			$trp_query->get_table_name_for_original_strings(),
-			$trp_query->get_table_name_for_original_meta(),
+			$lrp_query->get_table_name_for_original_strings(),
+			$lrp_query->get_table_name_for_original_meta(),
 			'get_table_name',
 			array( 'status' => 'status', 'block_type' => 'translation-block-type' )
 		);
@@ -39,7 +39,7 @@ class TRP_String_Translation_API_Regular {
 					continue;
 				}
 
-				$dictionaries[ $language ] = $trp_query->get_string_rows( $originals_results['original_ids'], array(), $language, 'OBJECT_K', true );
+				$dictionaries[ $language ] = $lrp_query->get_string_rows( $originals_results['original_ids'], array(), $language, 'OBJECT_K', true );
 
                 $missing_strings = array_diff_key( $originals_results['originals'], $dictionaries[ $language ] );
 
@@ -55,10 +55,10 @@ class TRP_String_Translation_API_Regular {
 
                 $this->translation_render->process_strings( $full_dictionary_array, $language );
 
-                $dictionaries[ $language ] = $trp_query->get_string_rows( array(), $full_dictionary_array, $language );
+                $dictionaries[ $language ] = $lrp_query->get_string_rows( array(), $full_dictionary_array, $language );
 			}
 
-			$dictionary_by_original = trp_sort_dictionary_by_original( $dictionaries, $this->type, null, null );
+			$dictionary_by_original = lrp_sort_dictionary_by_original( $dictionaries, $this->type, null, null );
 
             $query_args = $this->helper->get_sanitized_query_args( $this->type );
 
@@ -76,7 +76,7 @@ class TRP_String_Translation_API_Regular {
 			$dictionary_by_original = array();
 		}
 
-		echo trp_safe_json_encode( array( // phpcs:ignore
+		echo lrp_safe_json_encode( array( // phpcs:ignore
 			'dictionary' => $dictionary_by_original,
 			'totalItems' => $originals_results['total_item_count']
 		) );
@@ -96,10 +96,10 @@ class TRP_String_Translation_API_Regular {
     public function delete_strings() {
         $this->helper->check_ajax( 'regular', 'delete' );
         $original_ids   = $this->helper->get_original_ids_from_post_request();
-        $regular_delete = new TRP_Regular_Delete();
+        $regular_delete = new LRP_Regular_Delete();
         $items_deleted  = $regular_delete->delete_strings( $original_ids );
 
-        echo trp_safe_json_encode( $items_deleted );//phpcs:ignore
+        echo lrp_safe_json_encode( $items_deleted );//phpcs:ignore
         wp_die();
 
     }

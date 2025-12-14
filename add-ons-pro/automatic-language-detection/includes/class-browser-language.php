@@ -1,12 +1,12 @@
 <?php
 
-class TRP_IN_Browser_Language {
+class LRP_IN_Browser_Language {
 
 	/**
 	 * Return language code preferred by browser from the TP published languages
 	 * Return null if none matches.
 	 *
-	 * @param $published_languages array       TranslatePress settings['publish-languages']
+	 * @param $published_languages array       LinguaPress settings['publish-languages']
 	 * @param $iso_codes array                 Iso codes of the published languages
 	 *
 	 * @return string|null
@@ -16,7 +16,7 @@ class TRP_IN_Browser_Language {
 			return null;
 		}
 
-		/** @var TRP_Languages $trp_languages */
+		/** @var LRP_Languages $lrp_languages */
 		$iso_codes_array = array( 'no_matches' => null ) + $iso_codes;
 
 		// First select from browser languages, the preferred language among all the iso codes of the settings available languages.

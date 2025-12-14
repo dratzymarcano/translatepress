@@ -10,28 +10,28 @@ import ControlsCommon from './components/ControlsCommon'
 /**
  * Add the language restriction inspector controls in the editor
  */
-function TrpBlockContentRestrictionControls(props) {
+function LrpBlockContentRestrictionControls(props) {
     const { attributes, setAttributes } = props;
-    const { TrpContentRestriction } = attributes;
+    const { LrpContentRestriction } = attributes;
 
-    // Abort if the block type does not have the TrpContentRestriction attribute registered
-    if ( !has(attributes, "TrpContentRestriction") )
+    // Abort if the block type does not have the LrpContentRestriction attribute registered
+    if ( !has(attributes, "LrpContentRestriction") )
         return null;
 
     return (
         <InspectorControls>
             <PanelBody
                 title={__(
-                    "TranslatePress Language Restriction",
-                    "translatepress-multilingual",
+                    "LinguaPress Language Restriction",
+                    "linguapress",
                 )}
-                className="translatepress-content-restriction-settings"
-                initialOpen={TrpContentRestriction.panel_open}
+                className="linguapress-content-restriction-settings"
+                initialOpen={LrpContentRestriction.panel_open}
                 onToggle={(value) =>
                     setAttributes({
-                        TrpContentRestriction: assign(
-                            { ...TrpContentRestriction },
-                            { panel_open: !TrpContentRestriction.panel_open },
+                        LrpContentRestriction: assign(
+                            { ...LrpContentRestriction },
+                            { panel_open: !LrpContentRestriction.panel_open },
                         ),
                     })
                 }
@@ -45,9 +45,9 @@ function TrpBlockContentRestrictionControls(props) {
 /**
  * Add the content restriction settings attribute
  */
-function TrpContentRestrictionAttributes( settings ) {
+function LrpContentRestrictionAttributes( settings ) {
     let contentRestrictionAttributes = {
-        TrpContentRestriction: {
+        LrpContentRestriction: {
             type: "object",
             properties: {
                 restriction_type: {
@@ -77,29 +77,29 @@ function TrpContentRestrictionAttributes( settings ) {
 }
 addFilter(
     "blocks.registerBlockType",
-    "translatepress/attributes",
-    TrpContentRestrictionAttributes,
+    "linguapress/attributes",
+    LrpContentRestrictionAttributes,
 );
 
 /**
  * Filter the block edit object and add content restriction controls
  */
-const blockTrpContentRestrictionControls = createHigherOrderComponent(
+const blockLrpContentRestrictionControls = createHigherOrderComponent(
     (BlockEdit) => {
         return (props) => {
             return (
                 <>
                     <BlockEdit {...props} />
-                    <TrpBlockContentRestrictionControls {...props} />
+                    <LrpBlockContentRestrictionControls {...props} />
                 </>
             );
         };
     },
-    "blockTrpContentRestrictionControls",
+    "blockLrpContentRestrictionControls",
 );
 addFilter(
     "editor.BlockEdit",
-    "translatepress/inspector-controls",
-    blockTrpContentRestrictionControls,
+    "linguapress/inspector-controls",
+    blockLrpContentRestrictionControls,
     100, // above Advanced controls
 );

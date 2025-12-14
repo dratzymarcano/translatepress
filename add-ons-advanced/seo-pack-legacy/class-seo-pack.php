@@ -5,16 +5,16 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-class TRP_IN_Seo_Pack {
+class LRP_IN_Seo_Pack {
 
     protected $loader;
     protected $slug_manager;
     protected $settings;
     protected $url_converter;
     protected $render;
-    /* @var TRP_Editor_Api_Slugs */
+    /* @var LRP_Editor_Api_Slugs */
     protected $editor_api_post_slug;
-    /* @var TRP_IN_SP_String_Translation_SEO */
+    /* @var LRP_IN_SP_String_Translation_SEO */
     protected $string_translation;
 
     /**
@@ -27,45 +27,45 @@ class TRP_IN_Seo_Pack {
     public function __construct() {
 
         // This is needed in the TP core version to show message if Seo Pack needs update
-        define( 'TRP_IN_SP_PLUGIN_VERSION', '1.4.0' );
+        define( 'LRP_IN_SP_PLUGIN_VERSION', '1.4.0' );
 
-        define( 'TRP_IN_SP_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-        define( 'TRP_IN_SP_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+        define( 'LRP_IN_SP_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+        define( 'LRP_IN_SP_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
-        require_once TRP_IN_SP_PLUGIN_DIR . 'includes/class-slug-manager.php';
-        require_once TRP_IN_SP_PLUGIN_DIR . 'includes/class-editor-api-post-slug.php';
-        require_once TRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-string-translation-seo.php';
-        require_once TRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-meta-based-strings.php';
-        require_once TRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-option-based-strings.php';
-        require_once TRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-string-translation-api-taxonomy-slug.php';
-        require_once TRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-string-translation-api-post-type-base-slug.php';
-        require_once TRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-string-translation-api-term-slug.php';
-        require_once TRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-string-translation-api-postslug.php';
-        require_once TRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-string-translation-api-woocommerce-slug.php';
-        require_once TRP_IN_SP_PLUGIN_DIR . 'tp-seo-pack-activator.php';
+        require_once LRP_IN_SP_PLUGIN_DIR . 'includes/class-slug-manager.php';
+        require_once LRP_IN_SP_PLUGIN_DIR . 'includes/class-editor-api-post-slug.php';
+        require_once LRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-string-translation-seo.php';
+        require_once LRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-meta-based-strings.php';
+        require_once LRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-option-based-strings.php';
+        require_once LRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-string-translation-api-taxonomy-slug.php';
+        require_once LRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-string-translation-api-post-type-base-slug.php';
+        require_once LRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-string-translation-api-term-slug.php';
+        require_once LRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-string-translation-api-postslug.php';
+        require_once LRP_IN_SP_PLUGIN_DIR . 'includes/string-translation/class-string-translation-api-woocommerce-slug.php';
+        require_once LRP_IN_SP_PLUGIN_DIR . 'tp-seo-pack-activator.php';
 
-        $trp                 = TRP_Translate_Press::get_trp_instance();
-        $this->loader        = $trp->get_component( 'loader' );
-        $this->url_converter = $trp->get_component( 'url_converter' );
-        $trp_settings        = $trp->get_component( 'settings' );
-        $this->settings      = $trp_settings->get_settings();
-        $this->render        = $trp->get_component( 'translation_render' );;
+        $lrp                 = LRP_Lingua_Press::get_lrp_instance();
+        $this->loader        = $lrp->get_component( 'loader' );
+        $this->url_converter = $lrp->get_component( 'url_converter' );
+        $lrp_settings        = $lrp->get_component( 'settings' );
+        $this->settings      = $lrp_settings->get_settings();
+        $this->render        = $lrp->get_component( 'translation_render' );;
 
         include_once('includes/class-timezone.php');
-        $this->timezone = new TranslatePress\IN_Seo\Timezone;
+        $this->timezone = new LinguaPress\IN_Seo\Timezone;
 
 
-        $this->slug_manager         = new TRP_IN_SP_Slug_Manager( $this->settings );
-        $this->editor_api_post_slug = new TRP_IN_Editor_Api_Post_Slug( $this->settings, $this->slug_manager );
-        $this->string_translation   = new TRP_IN_SP_String_Translation_SEO();
+        $this->slug_manager         = new LRP_IN_SP_Slug_Manager( $this->settings );
+        $this->editor_api_post_slug = new LRP_IN_Editor_Api_Post_Slug( $this->settings, $this->slug_manager );
+        $this->string_translation   = new LRP_IN_SP_String_Translation_SEO();
 
-        $this->loader->add_filter( 'trp_node_accessors', $this, 'add_seo_node_accessor_details', 10, 1 );
+        $this->loader->add_filter( 'lrp_node_accessors', $this, 'add_seo_node_accessor_details', 10, 1 );
 
-	    $this->loader->add_filter( 'trp_st_string_types_config', $this->string_translation, 'add_string_translation_types', 10, 2 );
-	    $this->loader->add_filter( 'trp_editors_navigation', $this->string_translation, 'enable_editors_navigation', 10, 1 );
+	    $this->loader->add_filter( 'lrp_st_string_types_config', $this->string_translation, 'add_string_translation_types', 10, 2 );
+	    $this->loader->add_filter( 'lrp_editors_navigation', $this->string_translation, 'enable_editors_navigation', 10, 1 );
 
         // not used in TP
-        $this->loader->add_filter( 'trp_translate_slug', $this->slug_manager, 'get_translated_slug_filter', 10, 3 );
+        $this->loader->add_filter( 'lrp_translate_slug', $this->slug_manager, 'get_translated_slug_filter', 10, 3 );
 
         $this->loader->add_action( 'wp_head', $this->slug_manager, 'add_slug_as_meta_tag', 1 );
         $this->loader->add_filter( 'request', $this->slug_manager, 'change_slug_var_in_request' );
@@ -75,37 +75,37 @@ class TRP_IN_Seo_Pack {
         $this->loader->add_filter( 'post_link', $this->slug_manager, 'translate_slug_for_posts', 99, 3 );
         $this->loader->add_filter( 'post_type_link', $this->slug_manager, 'translate_slug_for_posts', 99, 3 );
         $this->loader->add_filter( 'get_page_uri', $this->slug_manager, 'translate_slugs_for_pages', 10, 2 );
-        $this->loader->add_filter( 'trp_translateable_strings', $this->slug_manager, 'include_slug_for_machine_translation', 10, 6 );
-        $this->loader->add_action( 'trp_translateable_information', $this->slug_manager, 'save_machine_translated_slug', 10, 3 );
+        $this->loader->add_filter( 'lrp_translateable_strings', $this->slug_manager, 'include_slug_for_machine_translation', 10, 6 );
+        $this->loader->add_action( 'lrp_translateable_information', $this->slug_manager, 'save_machine_translated_slug', 10, 3 );
 
-        $this->loader->add_action( 'wp_ajax_trp_get_translations_postslug', $this->editor_api_post_slug, 'postslug_get_translations' );
-        $this->loader->add_action( 'wp_ajax_trp_save_translations_postslug', $this->editor_api_post_slug, 'postslug_save_translations' );
+        $this->loader->add_action( 'wp_ajax_lrp_get_translations_postslug', $this->editor_api_post_slug, 'postslug_get_translations' );
+        $this->loader->add_action( 'wp_ajax_lrp_save_translations_postslug', $this->editor_api_post_slug, 'postslug_save_translations' );
 
         $this->loader->add_filter( 'template_redirect', $this->slug_manager, 'redirect_to_translated_slug', 100, 2 );
 
 
         // Yoast SEO Sitemap Support
-        if ( !apply_filters('trp_disable_languages_sitemap', false)){
+        if ( !apply_filters('lrp_disable_languages_sitemap', false)){
             $this->loader->add_action( 'pre_get_posts', $this, 'wpseo_init_sitemap', 1 );
             $this->loader->add_action( 'wpseo_sitemap_url', $this, 'sitemap_add_language_urls', 10, 2 );
             // clear sitemap when saving TP settings.
-            $this->loader->add_filter( 'trp_extra_sanitize_settings', $this, 'wpseo_clear_sitemap', 10 );
+            $this->loader->add_filter( 'lrp_extra_sanitize_settings', $this, 'wpseo_clear_sitemap', 10 );
         }
 
         // RankMath Sitemap Support
-        if ( !apply_filters('trp_disable_languages_sitemap', false)){
+        if ( !apply_filters('lrp_disable_languages_sitemap', false)){
             $this->loader->add_action( 'parse_query', $this, 'rankmath_init_sitemap', 0 );
             $this->loader->add_action( 'rank_math/sitemap/url', $this, 'sitemap_add_language_urls', 10, 2 );
         }
 
         //SeoPress Sitemap Support
-        if ( !apply_filters('trp_disable_languages_sitemap', false)){
+        if ( !apply_filters('lrp_disable_languages_sitemap', false)){
             $this->loader->add_action( 'seopress_sitemaps_url', $this, 'sitemap_add_language_urls', 10, 2 );
             $this->loader->add_action( 'seopress_sitemaps_urlset', $this, 'sitemap_add_xhtml_to_urlset', 10, 1 );
         }
 
         // All In One SEO Support
-        if ( !apply_filters('trp_disable_languages_sitemap', false)){
+        if ( !apply_filters('lrp_disable_languages_sitemap', false)){
             $this->loader->add_action( 'aiosp_sitemap_data', $this, 'aiosp_sitemap_data', 1, 4 );
 
             $this->loader->add_action( 'aioseo_sitemap_posts', $this, 'aiosp_sitemap_add_language_urls', 1, 1 );
@@ -126,7 +126,7 @@ class TRP_IN_Seo_Pack {
         // Filter saved permalinks from db so we don't get 404 on translated slugs. This is for tax and cpt base slugs
         $this->loader->add_filter( "option_rewrite_rules", $this->slug_manager, 'filter_permalinks_on_other_languages', 10 );
         //Filter our on language switcher links, hopefully that's all it does :)
-        $this->loader->add_filter( 'trp_get_url_for_language', $this->slug_manager, 'filter_language_switcher_link', 10, 3 );
+        $this->loader->add_filter( 'lrp_get_url_for_language', $this->slug_manager, 'filter_language_switcher_link', 10, 3 );
 
         //filter slug translations for taxonomies and cpts so only the current active ones remain
         $this->loader->add_filter( 'option_'.$this->slug_manager->string_translation_api_tax_slug->get_option_name(), $this->slug_manager, 'filter_taxonomy_translation_slugs_option', 10 );
@@ -145,15 +145,15 @@ class TRP_IN_Seo_Pack {
 
         //WooCommerce translation
         if( class_exists( 'WooCommerce' ) ) {
-            $this->loader->add_filter('trp_x', $this->slug_manager, 'translate_woocommerce_main_slugs', 10, 5);//filters product, product-category and product-tag
-            $this->loader->add_filter('trp_before_based_slug_save', $this->slug_manager, 'reset_woocommerce_transients', 10, 5);//filters product, product-category and product-tag
+            $this->loader->add_filter('lrp_x', $this->slug_manager, 'translate_woocommerce_main_slugs', 10, 5);//filters product, product-category and product-tag
+            $this->loader->add_filter('lrp_before_based_slug_save', $this->slug_manager, 'reset_woocommerce_transients', 10, 5);//filters product, product-category and product-tag
 
             $this->loader->add_filter('wc_product_post_type_link_product_cat', $this->slug_manager, 'woocommerce_product_cat_in_permalinks', 10, 3);//filters %product_cat% in custom product permalinks
         }
 
         //schema.org support
-        $this->loader->add_filter( 'trp_before_translate_content', $this, 'append_schema_data', 10 );//append in translation editor the nodes we want to translate to the html so we have access in the String Dropdown
-        $this->loader->add_filter( 'trp_process_other_text_nodes', $this, 'translate_schema_data', 10 );//translate the nodes inside the schema json
+        $this->loader->add_filter( 'lrp_before_translate_content', $this, 'append_schema_data', 10 );//append in translation editor the nodes we want to translate to the html so we have access in the String Dropdown
+        $this->loader->add_filter( 'lrp_process_other_text_nodes', $this, 'translate_schema_data', 10 );//translate the nodes inside the schema json
 
         //add compatibility with the Buisness Directory Plugin
         $this->loader->add_filter('wpbdp_get_option_permalinks-category-slug', $this->slug_manager, 'business_directory_plugin_compatibility', 10 );//filter the wpbdp_category option that is used by the plugin directly to create links
@@ -190,14 +190,14 @@ class TRP_IN_Seo_Pack {
 
         $date = null;
 
-        $url = apply_filters( 'trp_filter_url_sitemap_before_output', $url );
+        $url = apply_filters( 'lrp_filter_url_sitemap_before_output', $url );
 
         if ( ! empty( $url['mod'] ) ) {
             $date = $this->timezone->format_date( $url['mod'] );
         }
 
-        $trp           = TRP_Translate_Press::get_trp_instance();
-        $url_converter = $trp->get_component( 'url_converter' );
+        $lrp           = LRP_Lingua_Press::get_lrp_instance();
+        $url_converter = $lrp->get_component( 'url_converter' );
         $settings      = $this->settings;
         $languages     = $settings['publish-languages'];
 
@@ -216,25 +216,25 @@ class TRP_IN_Seo_Pack {
         $hreflang_duplicates_region_independent = array();
 
         foreach ( $languages as $language ) {
-            $add_language = apply_filters( 'trp_add_language_url_to_sitemap', true, $language, $url, $output );
+            $add_language = apply_filters( 'lrp_add_language_url_to_sitemap', true, $language, $url, $output );
 
             if ( ! $add_language ){
                 continue;
             }
             // hreflang should have - instead of _ . For example: en-EN, not en_EN like the locale
 
-            if ( apply_filters( 'trp_add_country_hreflang_tags', true ) ) {
+            if ( apply_filters( 'lrp_add_country_hreflang_tags', true ) ) {
                 $hreflang              = $url_converter->strip_formality_from_language_code( $language ); // returns the language without formality
                 // hreflang should have - instead of _ . For example: en-EN, not en_EN like the locale
                 $hreflang              = str_replace( '_', '-', $hreflang );
-                $hreflang              = apply_filters( 'trp_hreflang', $hreflang, $language );
+                $hreflang              = apply_filters( 'lrp_hreflang', $hreflang, $language );
                 $hreflang_duplicates[] = $hreflang;
                 $alternate .= '<xhtml:link rel="alternate" hreflang="' . esc_attr( $hreflang ) . '" href="' . esc_url( $url_converter->get_url_for_language( $language, $url["loc"] ) ) . '"/>' . "\n";
             }
 
-            if ( apply_filters( 'trp_add_region_independent_hreflang_tags', true ) ) {
+            if ( apply_filters( 'lrp_add_region_independent_hreflang_tags', true ) ) {
                 $language_independent_hreflang = strtok( $language, '_' );
-                $language_independent_hreflang = apply_filters( 'trp_hreflang', $language_independent_hreflang, $language );
+                $language_independent_hreflang = apply_filters( 'lrp_hreflang', $language_independent_hreflang, $language );
                 if ( !empty( $language_independent_hreflang ) && !in_array( $language_independent_hreflang, $region_independent_languages ) ) {
                     $region_independent_languages[]                      = $language_independent_hreflang;
                     $hreflang_duplicates_region_independent[ $language ] = '<xhtml:link rel="alternate" hreflang="' . esc_attr( $language_independent_hreflang ) . '" href="' . esc_url( $url_converter->get_url_for_language( $language, $url["loc"] ) ) . '"/>' . "\n";
@@ -287,7 +287,7 @@ class TRP_IN_Seo_Pack {
 
         foreach ( $languages as $language ) {
             $language_hreflang = strtok( $language, '_' );
-            $language_hreflang = apply_filters( 'trp_hreflang', $language_hreflang, $language );
+            $language_hreflang = apply_filters( 'lrp_hreflang', $language_hreflang, $language );
             if ( !in_array( $language_hreflang, $hreflang_duplicates ) ) {
                 if ( isset( $hreflang_duplicates_region_independent[ $language ] ) ) {
                     $alternate .= $hreflang_duplicates_region_independent[ $language ]; /* phpcs:ignore */ /* escaped inside the array */
@@ -296,8 +296,8 @@ class TRP_IN_Seo_Pack {
         }
 
         // add support for x-default hreflang.
-        if ( !empty( $this->settings['trp_advanced_settings']['enable_hreflang_xdefault'] ) && $this->settings['trp_advanced_settings']['enable_hreflang_xdefault'] != 'disabled' && in_array( $this->settings['trp_advanced_settings']['enable_hreflang_xdefault'], $this->settings['translation-languages'] ) ) {
-            $default_lang = $this->settings['trp_advanced_settings']['enable_hreflang_xdefault'];
+        if ( !empty( $this->settings['lrp_advanced_settings']['enable_hreflang_xdefault'] ) && $this->settings['lrp_advanced_settings']['enable_hreflang_xdefault'] != 'disabled' && in_array( $this->settings['lrp_advanced_settings']['enable_hreflang_xdefault'], $this->settings['translation-languages'] ) ) {
+            $default_lang = $this->settings['lrp_advanced_settings']['enable_hreflang_xdefault'];
             $alternate .= "<xhtml:link rel='alternate' hreflang='x-default' href='" . esc_url( $url_converter->get_url_for_language( $default_lang, $url["loc"] ) ) . "' />\n";
         }
 
@@ -315,15 +315,15 @@ class TRP_IN_Seo_Pack {
 		    $new_output = str_replace( '<loc>' . $url['loc'] . '</loc>', '<loc>' . $url['loc'] .$url_converter->get_url_slug($original_language, false)."/"."</loc>", $new_output );
 	    }
 
-	    /* Clean the final output for any leftover #TRPLINKPROCESSED strings as they are not needed after
+	    /* Clean the final output for any leftover #LRPLINKPROCESSED strings as they are not needed after
          * An alternative to doing that here would be in the class-url-converter inside get_url_for_language function
         */
-	    $new_output = str_replace("#TRPLINKPROCESSED", '', $new_output);
-        return apply_filters( 'trp_xml_sitemap_output_for_url', $new_output, $output, $settings, $alternate, $all_lang_urls, $url );
+	    $new_output = str_replace("#LRPLINKPROCESSED", '', $new_output);
+        return apply_filters( 'lrp_xml_sitemap_output_for_url', $new_output, $output, $settings, $alternate, $all_lang_urls, $url );
     }
 
     static function wpseo_clear_sitemap($settings){
-        trp_in_sp_wpseo_clear_sitemap();
+        lrp_in_sp_wpseo_clear_sitemap();
         return $settings;
     }
 
@@ -346,22 +346,22 @@ class TRP_IN_Seo_Pack {
         if( empty( $entries ) )
             return $entries;
 
-        $trp_sitemap_data = [];
+        $lrp_sitemap_data = [];
 
         foreach( $entries as $url ){
-            $trp                = TRP_Translate_Press::get_trp_instance();
-            $url_converter      = $trp->get_component( 'url_converter' );
+            $lrp                = LRP_Lingua_Press::get_lrp_instance();
+            $url_converter      = $lrp->get_component( 'url_converter' );
             $settings           = $this->settings;
             $languages          = $settings['publish-languages'];
-            $trp_render         = $trp->get_component('translation_render');
+            $lrp_render         = $lrp->get_component('translation_render');
 
-            if ( $trp_render->is_first_language_not_default_language() ) {
+            if ( $lrp_render->is_first_language_not_default_language() ) {
                 $url['loc'] = $url_converter->get_url_for_language( $settings['default-language'], $url["loc"], null );
             }
 
-            $trp_sitemap_data[] = $url;
+            $lrp_sitemap_data[] = $url;
             foreach( $languages as $language ){
-                $add_language = apply_filters( 'trp_add_language_url_to_sitemap', true, $language, $url, '' );
+                $add_language = apply_filters( 'lrp_add_language_url_to_sitemap', true, $language, $url, '' );
 
                 if ( ! $add_language )
                     continue;
@@ -370,13 +370,13 @@ class TRP_IN_Seo_Pack {
                 if( $language != $settings['default-language'] ){
                     $url['loc'] = $url_converter->get_url_for_language($language, $url["loc"], null) ;
 
-                    $trp_sitemap_data[] = $url;
+                    $lrp_sitemap_data[] = $url;
                     $url['loc'] = $url_backup['loc'];
                 }
             }
         }
 
-        return $trp_sitemap_data;
+        return $lrp_sitemap_data;
 
     }
 
@@ -416,14 +416,14 @@ class TRP_IN_Seo_Pack {
      */
     public function append_schema_data( $output ){
         //check to see if we are in the editor
-        $preview_mode = isset($_REQUEST['trp-edit-translation']) && $_REQUEST['trp-edit-translation'] == 'preview';
+        $preview_mode = isset($_REQUEST['lrp-edit-translation']) && $_REQUEST['lrp-edit-translation'] == 'preview';
         if ($preview_mode) {//only do this in the editor
 
             $json_array = json_decode($output);
             if (!$json_array) {
 
                 //try to create html object with the dom parser
-                $html = TranslatePress\str_get_html( $output, true, true, TRP_DEFAULT_TARGET_CHARSET, false, TRP_DEFAULT_BR_TEXT, TRP_DEFAULT_SPAN_TEXT );
+                $html = LinguaPress\str_get_html( $output, true, true, LRP_DEFAULT_TARGET_CHARSET, false, LRP_DEFAULT_BR_TEXT, LRP_DEFAULT_SPAN_TEXT );
                 if ( $html ) {
 
                     foreach ( $html->find( 'script[type="application/ld+json"]' ) as $schema ) {//get all the schema
@@ -465,12 +465,12 @@ class TRP_IN_Seo_Pack {
 
         $outertext = $row->outertext;
         $parent = $row->parent();
-        $trimmed_string = trp_full_trim( $outertext );
+        $trimmed_string = lrp_full_trim( $outertext );
 
         if( $parent->tag === "script" && isset( $parent->attr['type'] ) && $parent->attr['type'] === "application/ld+json"){//this is the type of the script that contains the json
             $json_schema_array = $this->process_schema_json($trimmed_string, 'translate_schema'); //translate here
             if ($json_schema_array !== false) {
-                $row->outertext = trp_safe_json_encode( $json_schema_array ); //reencode the JSON
+                $row->outertext = lrp_safe_json_encode( $json_schema_array ); //reencode the JSON
             }
         }
 
@@ -501,7 +501,7 @@ class TRP_IN_Seo_Pack {
      * @return mixed|void
      */
     function get_schema_node_keys(){
-        return apply_filters('trp_schema_node_keys', array( 'name', 'description', 'text' ) );
+        return apply_filters('lrp_schema_node_keys', array( 'name', 'description', 'text' ) );
     }
 
     /**
@@ -536,7 +536,7 @@ class TRP_IN_Seo_Pack {
      */
     public function check_for_necessary_updates(){
         // Updates that can be done right way. They should take very little time.
-        $stored_database_version = get_option('trp_seopack_version');
+        $stored_database_version = get_option('lrp_seopack_version');
 
         if( empty($stored_database_version) ){
             // if empty, it's either a fresh install, or it had version 1.3.9 or lower prior to updating
@@ -553,14 +553,14 @@ class TRP_IN_Seo_Pack {
         }
 
         // don't update the db version unless they are different. Otherwise the query is run on every page load.
-        if( version_compare( TRP_IN_SP_PLUGIN_VERSION, $stored_database_version, '!=' ) ){
-            update_option( 'trp_seopack_version', TRP_IN_SP_PLUGIN_VERSION );
+        if( version_compare( LRP_IN_SP_PLUGIN_VERSION, $stored_database_version, '!=' ) ){
+            update_option( 'lrp_seopack_version', LRP_IN_SP_PLUGIN_VERSION );
         }
     }
 
 
     public function remove_incorrectly_translated_post_based_slugs_exterior_slashes_from_slugs_in_db(){
-        $data = get_option( 'trp_post_type_base_slug_translation', array() );
+        $data = get_option( 'lrp_post_type_base_slug_translation', array() );
 
         foreach ($data as $key => $values_array) {
             $key_holder = $key;
@@ -591,14 +591,14 @@ class TRP_IN_Seo_Pack {
                 }
             }
         }
-        update_option('trp_post_type_base_slug_translation', $data);
+        update_option('lrp_post_type_base_slug_translation', $data);
     }
 
     public function remove_incorrectly_translated_taxonomy_slugs_from_db(){
-        $trp = TRP_Translate_Press::get_trp_instance();
-        $trp_delete_woocommerce_transients = $trp->get_component( 'url_converter' );
+        $lrp = LRP_Lingua_Press::get_lrp_instance();
+        $lrp_delete_woocommerce_transients = $lrp->get_component( 'url_converter' );
 
-        $data = get_option('trp_taxonomy_slug_translation', array());
+        $data = get_option('lrp_taxonomy_slug_translation', array());
 
         foreach ($data as $key => $values_array) {
             foreach ( $values_array as $item => $value_array ) {
@@ -619,8 +619,8 @@ class TRP_IN_Seo_Pack {
 
         }
 
-        update_option('trp_taxonomy_slug_translation', $data);
-        $trp_delete_woocommerce_transients->delete_woocommerce_transient_permalink(false);
+        update_option('lrp_taxonomy_slug_translation', $data);
+        $lrp_delete_woocommerce_transients->delete_woocommerce_transient_permalink(false);
     }
 
 }

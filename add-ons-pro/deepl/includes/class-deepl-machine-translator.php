@@ -3,7 +3,7 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-class TRP_IN_Deepl_Machine_Translator extends TRP_Machine_Translator {
+class LRP_IN_Deepl_Machine_Translator extends LRP_Machine_Translator {
     /**
      * Send request to Google Translation API
      *
@@ -21,7 +21,7 @@ class TRP_IN_Deepl_Machine_Translator extends TRP_Machine_Translator {
          */
 
         // array input from users
-        $glossary_language_pairs_user_input = apply_filters( 'trp_add_deepl_glossaries_ids', array() );
+        $glossary_language_pairs_user_input = apply_filters( 'lrp_add_deepl_glossaries_ids', array() );
 
         if ( ! empty( $glossary_language_pairs_user_input ) ) {
 
@@ -86,7 +86,7 @@ class TRP_IN_Deepl_Machine_Translator extends TRP_Machine_Translator {
         );
 
         if ( isset( $glossary_id ) ) {
-            do_action( 'trp_is_deepl_glossary_id_valid', $response );
+            do_action( 'lrp_is_deepl_glossary_id_valid', $response );
         }
 
         return $response;
@@ -110,8 +110,8 @@ class TRP_IN_Deepl_Machine_Translator extends TRP_Machine_Translator {
 
         $translated_strings = [];
 
-        $source_language = apply_filters( 'trp_deepl_source_language', $this->machine_translation_codes[$source_language_code], $source_language_code, $target_language_code );
-        $target_language = apply_filters( 'trp_deepl_target_language', $this->machine_translation_codes[$target_language_code], $source_language_code, $target_language_code );
+        $source_language = apply_filters( 'lrp_deepl_source_language', $this->machine_translation_codes[$source_language_code], $source_language_code, $target_language_code );
+        $target_language = apply_filters( 'lrp_deepl_target_language', $this->machine_translation_codes[$target_language_code], $source_language_code, $target_language_code );
 
         $formality = $this->get_request_formality_for_language($target_language_code);
 
@@ -121,7 +121,7 @@ class TRP_IN_Deepl_Machine_Translator extends TRP_Machine_Translator {
         foreach( $new_strings_chunks as $new_strings_chunk ){
 
             // Skip request if rate limited recently
-            if ( get_transient( 'trp_deepl_translation_throttle' ) ) {
+            if ( get_transient( 'lrp_deepl_translation_throttle' ) ) {
                 continue;
             }
 
@@ -169,8 +169,8 @@ class TRP_IN_Deepl_Machine_Translator extends TRP_Machine_Translator {
             if ( is_array( $response ) && ! is_wp_error( $response ) && isset( $response['response'] ) &&
                 isset( $response['response']['code']) && $response['response']['code'] == 429 ) {
                 // Rate limit hit: prevent further calls for 10 seconds
-                $throttle_duration = apply_filters( 'trp_deepl_throttle_duration', 10 );
-                set_transient( 'trp_deepl_translation_throttle', true, $throttle_duration );
+                $throttle_duration = apply_filters( 'lrp_deepl_throttle_duration', 10 );
+                set_transient( 'lrp_deepl_translation_throttle', true, $throttle_duration );
                 break;
             }
 
@@ -200,16 +200,16 @@ class TRP_IN_Deepl_Machine_Translator extends TRP_Machine_Translator {
 
         $formality_supported_languages = array();
 
-        $data = get_option('trp_db_stored_data', array() );
+        $data = get_option('lrp_db_stored_data', array() );
 
-        if (isset($data['trp_mt_supported_languages'][$this->settings['trp_machine_translation_settings']['translation-engine']]['formality-supported-languages'])){
+        if (isset($data['lrp_mt_supported_languages'][$this->settings['lrp_machine_translation_settings']['translation-engine']]['formality-supported-languages'])){
             foreach ($this->settings['translation-languages'] as $language){
-                if(array_key_exists($language, $data['trp_mt_supported_languages'][$this->settings['trp_machine_translation_settings']['translation-engine']]['formality-supported-languages'])){
-                    $formality_supported_languages[$language] = $data['trp_mt_supported_languages'][$this->settings['trp_machine_translation_settings']['translation-engine']]['formality-supported-languages'][$language];
+                if(array_key_exists($language, $data['lrp_mt_supported_languages'][$this->settings['lrp_machine_translation_settings']['translation-engine']]['formality-supported-languages'])){
+                    $formality_supported_languages[$language] = $data['lrp_mt_supported_languages'][$this->settings['lrp_machine_translation_settings']['translation-engine']]['formality-supported-languages'][$language];
                 }else{
                     $this->check_languages_availability($this->settings['translation-languages'], true);
-                    $data = get_option('trp_db_stored_data', array());
-                    $formality_supported_languages = $data['trp_mt_supported_languages'][$this->settings['trp_machine_translation_settings']['translation-engine']]['formality-supported-languages'];
+                    $data = get_option('lrp_db_stored_data', array());
+                    $formality_supported_languages = $data['lrp_mt_supported_languages'][$this->settings['lrp_machine_translation_settings']['translation-engine']]['formality-supported-languages'];
                     break;
                 }
             }
@@ -269,7 +269,7 @@ class TRP_IN_Deepl_Machine_Translator extends TRP_Machine_Translator {
             return;
         }
 
-        $all_languages         = $this->trp_languages->get_wp_languages();
+        $all_languages         = $this->lrp_languages->get_wp_languages();
         $supported_languages   = json_decode( wp_remote_retrieve_body( $deepl_response ) );
         $portuguese_variations = [
             (object) [
@@ -305,7 +305,7 @@ class TRP_IN_Deepl_Machine_Translator extends TRP_Machine_Translator {
             }
         }
 
-        return apply_filters( 'trp_deepl_formality_languages', $formality_supported_languages );
+        return apply_filters( 'lrp_deepl_formality_languages', $formality_supported_languages );
     }
 
     /**
@@ -319,7 +319,7 @@ class TRP_IN_Deepl_Machine_Translator extends TRP_Machine_Translator {
 
     public function get_api_key(){
 
-        return isset( $this->settings['trp_machine_translation_settings'], $this->settings['trp_machine_translation_settings']['deepl-api-key'] ) ? $this->settings['trp_machine_translation_settings']['deepl-api-key'] : false;
+        return isset( $this->settings['lrp_machine_translation_settings'], $this->settings['lrp_machine_translation_settings']['deepl-api-key'] ) ? $this->settings['lrp_machine_translation_settings']['deepl-api-key'] : false;
 
     }
 
@@ -346,7 +346,7 @@ class TRP_IN_Deepl_Machine_Translator extends TRP_Machine_Translator {
                 foreach ( $data as $data_entry ) {
                     $supported_languages[] = strtolower( $data_entry->language );
                 }
-                return apply_filters( 'trp_deepl_supported_languages', $supported_languages );
+                return apply_filters( 'lrp_deepl_supported_languages', $supported_languages );
             }
         }
 
@@ -355,19 +355,19 @@ class TRP_IN_Deepl_Machine_Translator extends TRP_Machine_Translator {
 
     public function get_engine_specific_language_codes($languages){
 
-        $iso_translation_codes = $this->trp_languages->get_iso_codes($languages);
+        $iso_translation_codes = $this->lrp_languages->get_iso_codes($languages);
         $engine_specific_languages = array();
         foreach( $languages as $language ) {
             /* All combinations of source and target languages are supported.
             Target language code can be country specific. Source language code is not. So the source language code is used here.
             */
-            $engine_specific_languages[] = apply_filters( 'trp_deepl_source_language', $iso_translation_codes[ $language ], $language, null );
+            $engine_specific_languages[] = apply_filters( 'lrp_deepl_source_language', $iso_translation_codes[ $language ], $language, null );
         }
         return $engine_specific_languages;
     }
 
     public function get_api_url(){
-       if( isset( $this->settings['trp_machine_translation_settings']['deepl-api-type'] ) && $this->settings['trp_machine_translation_settings']['deepl-api-type'] == 'free' )
+       if( isset( $this->settings['lrp_machine_translation_settings']['deepl-api-type'] ) && $this->settings['lrp_machine_translation_settings']['deepl-api-type'] == 'free' )
            return 'https://api-free.deepl.com/v2';
 
        return 'https://api.deepl.com/v2';
@@ -376,13 +376,13 @@ class TRP_IN_Deepl_Machine_Translator extends TRP_Machine_Translator {
     public function check_api_key_validity() {
 
         $machine_translator = $this;
-        $translation_engine = $this->settings['trp_machine_translation_settings']['translation-engine'];
+        $translation_engine = $this->settings['lrp_machine_translation_settings']['translation-engine'];
         $api_key            = $machine_translator->get_api_key();
 
         $is_error       = false;
         $return_message = '';
 
-        if ( 'deepl' === $translation_engine && $this->settings['trp_machine_translation_settings']['machine-translation'] === 'yes') {
+        if ( 'deepl' === $translation_engine && $this->settings['lrp_machine_translation_settings']['machine-translation'] === 'yes') {
 
             if ( isset( $this->correct_api_key ) && $this->correct_api_key != null ) {
                 return $this->correct_api_key;
@@ -390,7 +390,7 @@ class TRP_IN_Deepl_Machine_Translator extends TRP_Machine_Translator {
 
             if ( empty( $api_key ) ) {
                 $is_error       = true;
-                $return_message = __( 'Please enter your DeepL API key.', 'translatepress-multilingual' );
+                $return_message = __( 'Please enter your DeepL API key.', 'linguapress' );
             } else {
                 // Perform test.
                 $is_error = false;
@@ -398,7 +398,7 @@ class TRP_IN_Deepl_Machine_Translator extends TRP_Machine_Translator {
                 $code     = wp_remote_retrieve_response_code( $response );
                 if ( 200 !== $code ) {
 
-                    $translate_response = TRP_IN_DeepL::deepl_response_codes( $code );
+                    $translate_response = LRP_IN_DeepL::deepl_response_codes( $code );
 
                     $is_error       = true;
                     $return_message = $translate_response['message'];

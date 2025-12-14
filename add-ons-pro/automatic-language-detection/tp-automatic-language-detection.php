@@ -1,6 +1,6 @@
 <?php
 /*
-TranslatePress - Automatic User Language Detection Add-on
+LinguaPress - Automatic User Language Detection Add-on
 License: GPL2
 
 == Copyright ==
@@ -19,12 +19,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-function trp_in_ald_run(){
-	define( 'TRP_IN_ALD_PLUGIN_VERSION', '1.1.1' );
+function lrp_in_ald_run(){
+	define( 'LRP_IN_ALD_PLUGIN_VERSION', '1.1.1' );
 	
     require_once plugin_dir_path( __FILE__ ) . 'class-automatic-language-detection.php';
-    if ( class_exists( 'TRP_Translate_Press' ) && !isset( $_GET['trp-edit-translation'] ) ) {
-	    new TRP_IN_Automatic_Language_Detection();
+    if ( class_exists( 'LRP_Lingua_Press' ) && !isset( $_GET['lrp-edit-translation'] ) ) {
+	    new LRP_IN_Automatic_Language_Detection();
     }
 }
-add_action( 'plugins_loaded', 'trp_in_ald_run', 0 );
+add_action( 'plugins_loaded', 'lrp_in_ald_run', 0 );

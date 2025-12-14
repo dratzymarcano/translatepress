@@ -4,17 +4,17 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-add_filter( 'trp_machine_translation_engines', 'trp_gt_add_engine', 10 );
-function trp_gt_add_engine( $engines ){
-    $engines[] = array( 'value' => 'google_translate_v2', 'label' => __( 'Google Translate v2', 'translatepress-multilingual' ) );
+add_filter( 'lrp_machine_translation_engines', 'lrp_gt_add_engine', 10 );
+function lrp_gt_add_engine( $engines ){
+    $engines[] = array( 'value' => 'google_translate_v2', 'label' => __( 'Google Translate v2', 'linguapress' ) );
 
     return $engines;
 }
-add_action( 'trp_machine_translation_extra_settings_middle', 'trp_gt_add_settings' );
+add_action( 'lrp_machine_translation_extra_settings_middle', 'lrp_gt_add_settings' );
 
-function trp_gt_add_settings( $mt_settings ){
-    $trp                = TRP_Translate_Press::get_trp_instance();
-    $machine_translator = $trp->get_component( 'machine_translator' );
+function lrp_gt_add_settings( $mt_settings ){
+    $lrp                = LRP_Lingua_Press::get_lrp_instance();
+    $machine_translator = $lrp->get_component( 'machine_translator' );
 
     $translation_engine = isset( $mt_settings['translation-engine'] ) ? $mt_settings['translation-engine'] : '';
     $api_key = isset( $mt_settings['google-translate-key'] ) ? $mt_settings['google-translate-key'] : '';
@@ -34,21 +34,21 @@ function trp_gt_add_settings( $mt_settings ){
     }
 
     $text_input_classes = array(
-        'trp-text-input',
+        'lrp-text-input',
     );
     if ( $show_errors && 'google_translate_v2' === $translation_engine ) {
-        $text_input_classes[] = 'trp-text-input-error';
+        $text_input_classes[] = 'lrp-text-input-error';
     }
     ?>
 
-    <div class="trp-engine trp-automatic-translation-engine__container" id="google_translate_v2">
-        <span class="trp-primary-text-bold"><?php esc_html_e( 'Google Translate API Key', 'translatepress-multilingual' ); ?> </span>
+    <div class="lrp-engine lrp-automatic-translation-engine__container" id="google_translate_v2">
+        <span class="lrp-primary-text-bold"><?php esc_html_e( 'Google Translate API Key', 'linguapress' ); ?> </span>
 
-        <div class="trp-automatic-translation-api-key-container">
-            <input type="text" id="trp-g-translate-key" placeholder="<?php esc_html_e( 'Add your API Key here...', 'translatepress-multilingual' ); ?>" class="<?php echo esc_html( implode( ' ', $text_input_classes ) ); ?>" name="trp_machine_translation_settings[google-translate-key]" value="<?php if( !empty( $mt_settings['google-translate-key'] ) ) echo esc_attr( $mt_settings['google-translate-key']);?>"/>
+        <div class="lrp-automatic-translation-api-key-container">
+            <input type="text" id="lrp-g-translate-key" placeholder="<?php esc_html_e( 'Add your API Key here...', 'linguapress' ); ?>" class="<?php echo esc_html( implode( ' ', $text_input_classes ) ); ?>" name="lrp_machine_translation_settings[google-translate-key]" value="<?php if( !empty( $mt_settings['google-translate-key'] ) ) echo esc_attr( $mt_settings['google-translate-key']);?>"/>
             <?php
             // Only show errors if Google Translate is active.
-            if ( 'google_translate_v2' === $translation_engine && function_exists( 'trp_output_svg' ) ) {
+            if ( 'google_translate_v2' === $translation_engine && function_exists( 'lrp_output_svg' ) ) {
                 $machine_translator->automatic_translation_svg_output( $show_errors );
             }
             ?>
@@ -57,24 +57,24 @@ function trp_gt_add_settings( $mt_settings ){
         <?php
         if ( $show_errors && 'google_translate_v2' === $translation_engine ) {
             ?>
-            <span class="trp-error-inline trp-settings-error-text">
+            <span class="lrp-error-inline lrp-settings-error-text">
                 <?php echo wp_kses_post( $error_message ); ?>
             </span>
             <?php
         }
         ?>
 
-        <span class="trp-description-text">
-            <?php echo wp_kses( __( 'Visit <a href="https://cloud.google.com/docs/authentication/api-keys" target="_blank">this link</a> to see how you can set up an API key, <strong>control API costs</strong> and set HTTP referrer restrictions.', 'translatepress-multilingual' ), [ 'a' => [ 'href' => [], 'title' => [], 'target' => [] ], 'strong' => [] ] ); ?>
-            <br><?php echo esc_html( sprintf( __( 'Your HTTP referrer is: %s', 'translatepress-multilingual' ), $machine_translator->get_referer() ) ); ?>
+        <span class="lrp-description-text">
+            <?php echo wp_kses( __( 'Visit <a href="https://cloud.google.com/docs/authentication/api-keys" target="_blank">this link</a> to see how you can set up an API key, <strong>control API costs</strong> and set HTTP referrer restrictions.', 'linguapress' ), [ 'a' => [ 'href' => [], 'title' => [], 'target' => [] ], 'strong' => [] ] ); ?>
+            <br><?php echo esc_html( sprintf( __( 'Your HTTP referrer is: %s', 'linguapress' ), $machine_translator->get_referer() ) ); ?>
         </span>
     </div>
 
     <?php
 }
 
-add_filter( 'trp_machine_translation_sanitize_settings', 'trp_gt_sanitize_settings' );
-function trp_gt_sanitize_settings( $mt_settings ){
+add_filter( 'lrp_machine_translation_sanitize_settings', 'lrp_gt_sanitize_settings' );
+function lrp_gt_sanitize_settings( $mt_settings ){
     if( !empty( $mt_settings['google-translate-key'] ) )
         $mt_settings['google-translate-key'] = sanitize_text_field( $mt_settings['google-translate-key']  );
 
@@ -88,7 +88,7 @@ function trp_gt_sanitize_settings( $mt_settings ){
  *
  * @return array [ (string) $message, (bool) $error ].
  */
-function trp_gt_response_codes( $code ) {
+function lrp_gt_response_codes( $code ) {
     $is_error       = false;
     $code           = intval( $code );
     $return_message = '';
@@ -100,10 +100,10 @@ function trp_gt_response_codes( $code ) {
      */
     if ( preg_match( '/4\d\d/', $code ) ) {
         $is_error = true;
-        $return_message = esc_html__( 'There was an error with your Google Translate key.', 'translatepress-multilingual' );
+        $return_message = esc_html__( 'There was an error with your Google Translate key.', 'linguapress' );
     } elseif ( preg_match( '/5\d\d/', $code ) ) {
         $is_error = true;
-        $return_message = esc_html__( 'There was an error on the server processing your Google Translate key.', 'translatepress-multilingual' );
+        $return_message = esc_html__( 'There was an error on the server processing your Google Translate key.', 'linguapress' );
     }
     
     return array(

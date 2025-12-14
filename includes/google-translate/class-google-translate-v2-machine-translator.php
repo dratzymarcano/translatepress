@@ -3,7 +3,7 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-class TRP_Google_Translate_V2_Machine_Translator extends TRP_Machine_Translator {
+class LRP_Google_Translate_V2_Machine_Translator extends LRP_Machine_Translator {
     /**
      * Send request to Google Translation API
      *
@@ -119,7 +119,7 @@ class TRP_Google_Translate_V2_Machine_Translator extends TRP_Machine_Translator 
 
     public function get_api_key(){
         
-        return isset( $this->settings['trp_machine_translation_settings'], $this->settings['trp_machine_translation_settings']['google-translate-key'] ) ? $this->settings['trp_machine_translation_settings']['google-translate-key'] : false;
+        return isset( $this->settings['lrp_machine_translation_settings'], $this->settings['lrp_machine_translation_settings']['google-translate-key'] ) ? $this->settings['lrp_machine_translation_settings']['google-translate-key'] : false;
 
     }
 
@@ -144,7 +144,7 @@ class TRP_Google_Translate_V2_Machine_Translator extends TRP_Machine_Translator 
                 foreach ( $data->data->languages as $language ) {
                     $supported_languages[] = $language->language;
                 }
-                return apply_filters( 'trp_add_google_v2_supported_languages_to_the_array', $supported_languages );
+                return apply_filters( 'lrp_add_google_v2_supported_languages_to_the_array', $supported_languages );
             }
         }
         return array();
@@ -158,7 +158,7 @@ class TRP_Google_Translate_V2_Machine_Translator extends TRP_Machine_Translator 
 
 
     public function get_engine_specific_language_codes($languages){
-        return $this->trp_languages->get_iso_codes($languages);
+        return $this->lrp_languages->get_iso_codes($languages);
     }
 
     /*
@@ -173,13 +173,13 @@ class TRP_Google_Translate_V2_Machine_Translator extends TRP_Machine_Translator 
 
     public function check_api_key_validity() {
         $machine_translator = $this;
-        $translation_engine = $this->settings['trp_machine_translation_settings']['translation-engine'];
+        $translation_engine = $this->settings['lrp_machine_translation_settings']['translation-engine'];
         $api_key            = $machine_translator->get_api_key();
 
         $is_error       = false;
         $return_message = '';
 
-        if ( 'google_translate_v2' === $translation_engine && $this->settings['trp_machine_translation_settings']['machine-translation'] === 'yes') {
+        if ( 'google_translate_v2' === $translation_engine && $this->settings['lrp_machine_translation_settings']['machine-translation'] === 'yes') {
 
             if ( isset( $this->correct_api_key ) && $this->correct_api_key != null ) {
                 return $this->correct_api_key;
@@ -187,14 +187,14 @@ class TRP_Google_Translate_V2_Machine_Translator extends TRP_Machine_Translator 
 
             if ( empty( $api_key ) ) {
                 $is_error       = true;
-                $return_message = __( 'Please enter your Google Translate key.', 'translatepress-multilingual' );
+                $return_message = __( 'Please enter your Google Translate key.', 'linguapress' );
             } else {
                 // Perform test.
                 $response = $machine_translator->test_request();
                 $code     = wp_remote_retrieve_response_code( $response );
                 if ( 200 !== $code ) {
                     $is_error           = true;
-                    $translate_response = trp_gt_response_codes( $code );
+                    $translate_response = lrp_gt_response_codes( $code );
                     $return_message     = $translate_response['message'];
                 }
             }

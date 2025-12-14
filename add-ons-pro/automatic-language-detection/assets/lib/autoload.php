@@ -14,7 +14,7 @@
  *
  * @return void
  */
-function trp_mmdb_autoload($class)
+function lrp_mmdb_autoload($class)
 {
     /*
     * A project-specific mapping between the namespaces and where
@@ -41,4 +41,4 @@ function trp_mmdb_autoload($class)
     }
 }
 
-spl_autoload_register('trp_mmdb_autoload');
+spl_autoload_register('lrp_mmdb_autoload');

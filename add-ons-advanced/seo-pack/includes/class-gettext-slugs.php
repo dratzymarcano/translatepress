@@ -9,7 +9,7 @@ if ( !defined('ABSPATH' ) )
 /**
  * Translate WooCommerce Slugs. Can be extended for other similarly defined gettext slugs
  */
-class TRP_IN_SP_Gettext_Slugs {
+class LRP_IN_SP_Gettext_Slugs {
 
     protected $loader;
     protected $slug_query;
@@ -20,10 +20,10 @@ class TRP_IN_SP_Gettext_Slugs {
 
     public function __construct( $settings, $slug_manager ) {
         $this->settings   = $settings;
-        $this->slug_query = new TRP_Slug_Query();
+        $this->slug_query = new LRP_Slug_Query();
         $this->slug_manager = $slug_manager;
 
-        $was_data_migration_completed = get_option( 'trp_migrate_old_slug_to_new_parent_and_translate_slug_table_term_meta_284', 'not_set' );
+        $was_data_migration_completed = get_option( 'lrp_migrate_old_slug_to_new_parent_and_translate_slug_table_term_meta_284', 'not_set' );
         $this->migration_completed = ( $was_data_migration_completed == 'not_set' || $was_data_migration_completed == 'yes' );
     }
 
@@ -42,14 +42,14 @@ class TRP_IN_SP_Gettext_Slugs {
                     'slugs'   => array( 'product-category', 'product-tag', 'product' )
                 );
             }
-            $this->gettext_slugs = apply_filters( 'trp_seo_pack_pre_get_gettext_slugs', $this->gettext_slugs );
+            $this->gettext_slugs = apply_filters( 'lrp_seo_pack_pre_get_gettext_slugs', $this->gettext_slugs );
 
 
             foreach ( $this->gettext_slugs as $slugs_domain => $slugs_details ) {
                 $default_language_slugs = array();
                 foreach ( $slugs_details['slugs'] as $slug ) {
-                    $trp_x                           = trp_x( $slug, $slugs_details['context'], $slugs_domain, $this->settings['default-language'] );
-                    $default_language_slugs[ $slug ] = ( $trp_x ) ? $trp_x : $slug;
+                    $lrp_x                           = lrp_x( $slug, $slugs_details['context'], $slugs_domain, $this->settings['default-language'] );
+                    $default_language_slugs[ $slug ] = ( $lrp_x ) ? $lrp_x : $slug;
                 }
                 foreach ( $this->settings['translation-languages'] as $language ) {
                     if ( $language == $this->settings['default-language'] ) {
@@ -62,7 +62,7 @@ class TRP_IN_SP_Gettext_Slugs {
                 }
             }
 
-            $this->gettext_slugs = apply_filters( 'trp_seo_pack_post_get_gettext_slugs', $this->gettext_slugs );
+            $this->gettext_slugs = apply_filters( 'lrp_seo_pack_post_get_gettext_slugs', $this->gettext_slugs );
         }
         return $this->gettext_slugs;
     }
@@ -71,7 +71,7 @@ class TRP_IN_SP_Gettext_Slugs {
      * Force slugs in default language regardless of current language.
      *
      * If new po/mo translations are detected for strings that don't already have a translation,
-     * add a flag in trp_in_sp_add_gettext_slugs option so that the translations will
+     * add a flag in lrp_in_sp_add_gettext_slugs option so that the translations will
      * be added in a different hook. New translations are saved in the array but only used for setting flag.
      *
      * @param $translation
@@ -81,17 +81,17 @@ class TRP_IN_SP_Gettext_Slugs {
      * @return mixed
      */
     public function keep_default_slugs( $translation, $text, $context, $domain ) {
-        global $TRP_LANGUAGE;
-        if ( $TRP_LANGUAGE !== $this->settings['default-language'] ) {
+        global $LRP_LANGUAGE;
+        if ( $LRP_LANGUAGE !== $this->settings['default-language'] ) {
             $slugs = $this->get_gettext_slugs();
             foreach ( $slugs as $slugs_domain => $slugs_details ) {
                 if ( $context === $slugs_details['context'] && $domain === $slugs_domain && in_array( $text, $slugs_details['slugs'] ) ) {
-                    if ( $this->migration_completed && empty( $slugs_details['translations'][ $TRP_LANGUAGE ][ $slugs_details['default-language-slugs'][ $text ] ] ) && $translation != $text ) {
+                    if ( $this->migration_completed && empty( $slugs_details['translations'][ $LRP_LANGUAGE ][ $slugs_details['default-language-slugs'][ $text ] ] ) && $translation != $text ) {
 
-                        $this->gettext_slugs[ $domain ]['translations'][ $TRP_LANGUAGE ][ $slugs_details['default-language-slugs'][ $text ] ] = $translation;
-                        $add_gettext_slugs = get_option( 'trp_in_sp_add_gettext_slugs', 'not_set' );
+                        $this->gettext_slugs[ $domain ]['translations'][ $LRP_LANGUAGE ][ $slugs_details['default-language-slugs'][ $text ] ] = $translation;
+                        $add_gettext_slugs = get_option( 'lrp_in_sp_add_gettext_slugs', 'not_set' );
                         if ( $add_gettext_slugs !== 'todo' ) {
-                            update_option( 'trp_in_sp_add_gettext_slugs', 'todo' );
+                            update_option( 'lrp_in_sp_add_gettext_slugs', 'todo' );
                         }
                     }
                     return $slugs_details['default-language-slugs'][ $text ];
@@ -113,10 +113,10 @@ class TRP_IN_SP_Gettext_Slugs {
      * @return void
      */
     public function add_slug_translation_in_db() {
-        $add_gettext_slugs = get_option( 'trp_in_sp_add_gettext_slugs', 'not_set' );
+        $add_gettext_slugs = get_option( 'lrp_in_sp_add_gettext_slugs', 'not_set' );
 
         if ( $add_gettext_slugs == 'todo' && $this->migration_completed ) {
-            update_option( 'trp_in_sp_add_gettext_slugs', 'done' );
+            update_option( 'lrp_in_sp_add_gettext_slugs', 'done' );
             $gettext_slugs = $this->get_gettext_slugs( true );
 
             foreach ( $gettext_slugs as $slugs_domain => $slugs_details ) {
@@ -137,11 +137,11 @@ class TRP_IN_SP_Gettext_Slugs {
 
                         // Search for translation in language files. If not found, search for translation in gettext
                         // tables where automatic/manual translation will be stored
-                        $item['translated'] = trp_x( $slug, $slugs_details['context'], $slugs_domain, $language );
+                        $item['translated'] = lrp_x( $slug, $slugs_details['context'], $slugs_domain, $language );
                         if ( empty( $item['translated'] ) || $item['translated'] === $slug ) {
-                            $trp                 = TRP_Translate_Press::get_trp_instance();
-                            $trp_query           = $trp->get_component( 'query' );
-                            $translated_gettexts = $trp_query->get_gettext_string_rows_by_original( array( $slug ), $language );
+                            $lrp                 = LRP_Lingua_Press::get_lrp_instance();
+                            $lrp_query           = $lrp->get_component( 'query' );
+                            $translated_gettexts = $lrp_query->get_gettext_string_rows_by_original( array( $slug ), $language );
                             if ( !empty( $translated_gettexts) ) {
                                 foreach($translated_gettexts as $gettext) {
                                     if ( $gettext['original'] === $slug &&
@@ -168,7 +168,7 @@ class TRP_IN_SP_Gettext_Slugs {
                                 $item['type'] = 'post-type-base';
                             }
                         }
-                        $item['type']   = apply_filters( 'trp_seo_pack_set_type_slug_for_gettext_slug', $item['type'], $slugs_domain, $slug, $slugs_details );
+                        $item['type']   = apply_filters( 'lrp_seo_pack_set_type_slug_for_gettext_slug', $item['type'], $slugs_domain, $slug, $slugs_details );
                         $insert_slugs[] = $item;
                     }
 

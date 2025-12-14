@@ -5,16 +5,16 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 /**
- * Class TRP_Translation_Manager
+ * Class LRP_Translation_Manager
  *
  * Handles Front-end Translation Editor, including Ajax requests.
  */
-class TRP_Translation_Manager {
+class LRP_Translation_Manager {
     protected $settings;
     protected $url_converter;
 
     /**
-     * TRP_Translation_Manager constructor.
+     * LRP_Translation_Manager constructor.
      *
      * @param array $settings Settings option.
      */
@@ -25,22 +25,22 @@ class TRP_Translation_Manager {
     /**
      * Function that determines if an ajax request came from the frontend
      *
-     * Moved to TRP_Gettext_Manager. Keeping it in case there is third pary code that uses this
+     * Moved to LRP_Gettext_Manager. Keeping it in case there is third pary code that uses this
      * @return bool
      */
     static function is_ajax_on_frontend() {
-        return TRP_Gettext_Manager::is_ajax_on_frontend();
+        return LRP_Gettext_Manager::is_ajax_on_frontend();
     }
 
     /**
      * function that strips the gettext tags from a string
      *
-     * Moved to TRP_Gettext_Manager. Keeping it in case third party uses it.
+     * Moved to LRP_Gettext_Manager. Keeping it in case third party uses it.
      * @param $string
      * @return mixed
      */
     static function strip_gettext_tags( $string ) {
-        return TRP_Gettext_Manager::strip_gettext_tags($string);
+        return LRP_Gettext_Manager::strip_gettext_tags($string);
     }
 
     /**
@@ -50,10 +50,10 @@ class TRP_Translation_Manager {
      * @return bool                 Whether current page is part of the Translation Editor.
      */
     protected function conditions_met( $mode = 'true' ) {
-        if ( isset( $_REQUEST['trp-edit-translation'] ) && sanitize_text_field( $_REQUEST['trp-edit-translation'] ) == $mode ) {
-            if ( current_user_can( apply_filters( 'trp_translating_capability', 'manage_options' ) ) && !is_admin() ) {
+        if ( isset( $_REQUEST['lrp-edit-translation'] ) && sanitize_text_field( $_REQUEST['lrp-edit-translation'] ) == $mode ) {
+            if ( current_user_can( apply_filters( 'lrp_translating_capability', 'manage_options' ) ) && !is_admin() ) {
                 return true;
-            } elseif ( sanitize_text_field( $_REQUEST['trp-edit-translation'] ) == "preview" ) {
+            } elseif ( sanitize_text_field( $_REQUEST['lrp-edit-translation'] ) == "preview" ) {
                 return true;
             } else {
                 wp_die(
@@ -79,7 +79,7 @@ class TRP_Translation_Manager {
             return $page_template;
         }
 
-        return TRP_PLUGIN_DIR . 'partials/translation-manager.php';
+        return LRP_PLUGIN_DIR . 'partials/translation-manager.php';
     }
 
     public function get_merge_rules() {
@@ -87,131 +87,131 @@ class TRP_Translation_Manager {
 
         $merge_rules = array(
             'top_parents'           => array( 'p', 'div', 'li', 'ol', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'body', 'footer', 'article', 'main', 'iframe', 'section', 'figure', 'figcaption', 'blockquote', 'cite', 'tr', 'td', 'th', 'table', 'tbody', 'thead', 'tfoot', 'form', 'label' ),
-            'self_object_type'      => array( 'translate-press' ),
-            'incompatible_siblings' => array( '[data-trpgettextoriginal]', '[data-trp-node-group="' . $localized_text['dynamicstrings'] . '"]' )
+            'self_object_type'      => array( 'lingua-press' ),
+            'incompatible_siblings' => array( '[data-lrpgettextoriginal]', '[data-lrp-node-group="' . $localized_text['dynamicstrings'] . '"]' )
         );
 
-        return apply_filters( 'trp_merge_rules', $merge_rules );
+        return apply_filters( 'lrp_merge_rules', $merge_rules );
     }
 
     public function localized_text() {
-        $update_seo_add_on = ( class_exists( 'TRP_Seo_Pack' ) && !defined( 'TRP_SP_PLUGIN_VERSION' ) );
+        $update_seo_add_on = ( class_exists( 'LRP_Seo_Pack' ) && !defined( 'LRP_SP_PLUGIN_VERSION' ) );
 
         return $this->string_groups() + array(
                 // attribute names
-                'src'         => esc_html__( 'Source', 'translatepress-multilingual' ),
-                'srcset'      => esc_html__( 'Srcset', 'translatepress-multilingual' ),
-                'alt'         => esc_html__( 'Alt attribute', 'translatepress-multilingual' ),
-                'title'       => esc_html__( 'Title attribute', 'translatepress-multilingual' ),
-                'href'        => esc_html__( 'Anchor link', 'translatepress-multilingual' ),
-                'placeholder' => esc_html__( 'Placeholder attribute', 'translatepress-multilingual' ),
-                'submit'      => esc_html__( 'Submit attribute', 'translatepress-multilingual' ),
-                'text'        => esc_html__( 'Text', 'translatepress-multilingual' ),
-                'poster'      => esc_html__( 'Video Poster', 'translatepress-multilingual' ),
+                'src'         => esc_html__( 'Source', 'linguapress' ),
+                'srcset'      => esc_html__( 'Srcset', 'linguapress' ),
+                'alt'         => esc_html__( 'Alt attribute', 'linguapress' ),
+                'title'       => esc_html__( 'Title attribute', 'linguapress' ),
+                'href'        => esc_html__( 'Anchor link', 'linguapress' ),
+                'placeholder' => esc_html__( 'Placeholder attribute', 'linguapress' ),
+                'submit'      => esc_html__( 'Submit attribute', 'linguapress' ),
+                'text'        => esc_html__( 'Text', 'linguapress' ),
+                'poster'      => esc_html__( 'Video Poster', 'linguapress' ),
 
                 // plural form name variants
-                'plural_form_text'           => esc_html__( 'plural form', 'translatepress-multilingual' ),
-                'plural_form_one'            => esc_html__( 'one', 'translatepress-multilingual' ),
-                'plural_form_few'            => esc_html__( 'few', 'translatepress-multilingual' ),
-                'plural_form_many'           => esc_html__( 'many', 'translatepress-multilingual' ),
-                'plural_form_other'          => esc_html__( 'other', 'translatepress-multilingual' ),
+                'plural_form_text'           => esc_html__( 'plural form', 'linguapress' ),
+                'plural_form_one'            => esc_html__( 'one', 'linguapress' ),
+                'plural_form_few'            => esc_html__( 'few', 'linguapress' ),
+                'plural_form_many'           => esc_html__( 'many', 'linguapress' ),
+                'plural_form_other'          => esc_html__( 'other', 'linguapress' ),
 
-                'saved'                                      => esc_html__( 'Saved', 'translatepress-multilingual' ),
-                'save_translation'                           => esc_html__( 'Save', 'translatepress-multilingual' ),
-                'saving_translation'                         => esc_html__( 'Saving translation...', 'translatepress-multilingual' ),
-                'unsaved_changes'                            => esc_html__( 'You have unsaved changes!', 'translatepress-multilingual' ),
-                'discard'                                    => esc_html__( 'Discard changes', 'translatepress-multilingual' ),
-                'discard_all'                                => esc_html__( 'Discard All', 'translatepress-multilingual' ),
-                'strings_loading'                            => esc_attr__( 'Loading Strings...', 'translatepress-multilingual' ),
-                'select_string'                              => esc_attr__( 'Select string to translate...', 'translatepress-multilingual' ),
-                'close'                                      => esc_attr__( 'Close Editor', 'translatepress-multilingual' ),
-                'from'                                       => esc_html__( 'From', 'translatepress-multilingual' ),
-                'to'                                         => esc_html__( 'To', 'translatepress-multilingual' ),
-                'add_media'                                  => esc_html__( 'Add Media', 'translatepress-multilingual' ),
-                'other_lang'                                 => esc_html__( 'Other languages', 'translatepress-multilingual' ),
-                'context'                                    => esc_html__( 'Context', 'translatepress-multilingual' ),
-                'view_as'                                    => esc_html__( 'View Website As', 'translatepress-multilingual' ),
-                'view_as_pro'                                => esc_html__( 'Available in our Pro Versions', 'translatepress-multilingual' ),
+                'saved'                                      => esc_html__( 'Saved', 'linguapress' ),
+                'save_translation'                           => esc_html__( 'Save', 'linguapress' ),
+                'saving_translation'                         => esc_html__( 'Saving translation...', 'linguapress' ),
+                'unsaved_changes'                            => esc_html__( 'You have unsaved changes!', 'linguapress' ),
+                'discard'                                    => esc_html__( 'Discard changes', 'linguapress' ),
+                'discard_all'                                => esc_html__( 'Discard All', 'linguapress' ),
+                'strings_loading'                            => esc_attr__( 'Loading Strings...', 'linguapress' ),
+                'select_string'                              => esc_attr__( 'Select string to translate...', 'linguapress' ),
+                'close'                                      => esc_attr__( 'Close Editor', 'linguapress' ),
+                'from'                                       => esc_html__( 'From', 'linguapress' ),
+                'to'                                         => esc_html__( 'To', 'linguapress' ),
+                'add_media'                                  => esc_html__( 'Add Media', 'linguapress' ),
+                'other_lang'                                 => esc_html__( 'Other languages', 'linguapress' ),
+                'context'                                    => esc_html__( 'Context', 'linguapress' ),
+                'view_as'                                    => esc_html__( 'View Website As', 'linguapress' ),
+                'view_as_pro'                                => esc_html__( 'Available in our Pro Versions', 'linguapress' ),
 
                 //wp media upload
-                'select_or_upload'                           => esc_html__( 'Select or Upload Media', 'translatepress-multilingual' ),
-                'use_this_media'                             => esc_html__( 'Use this media', 'translatepress-multilingual' ),
+                'select_or_upload'                           => esc_html__( 'Select or Upload Media', 'linguapress' ),
+                'use_this_media'                             => esc_html__( 'Use this media', 'linguapress' ),
 
                 // title attributes
-                'edit'                                       => esc_attr__( 'Translate', 'translatepress-multilingual' ),
-                'merge'                                      => esc_attr__( 'Translate entire block element', 'translatepress-multilingual' ),
-                'split'                                      => esc_attr__( 'Split block to translate strings individually', 'translatepress-multilingual' ),
-                'save_title_attr'                            => esc_attr__( 'Save changes to translation. Shortcut: CTRL(⌘) + S', 'translatepress-multilingual' ),
-                'next_title_attr'                            => esc_attr__( 'Navigate to next string in dropdown list. Shortcut: CTRL(⌘) + ALT + Right Arrow', 'translatepress-multilingual' ),
-                'previous_title_attr'                        => esc_attr__( 'Navigate to previous string in dropdown list. Shortcut: CTRL(⌘) + ALT + Left Arrow', 'translatepress-multilingual' ),
-                'discard_all_title_attr'                     => esc_attr__( 'Discard all changes. Shortcut: CTRL(⌘) + ALT + Z', 'translatepress-multilingual' ),
-                'discard_individual_changes_title_attribute' => esc_attr__( 'Discard changes to this text box. To discard changes to all text boxes use shortcut: CTRL(⌘) + ALT + Z', 'translatepress-multilingual' ),
-                'dismiss_tooltip_title_attribute'            => esc_attr__( 'Dismiss tooltip', 'translatepress-multilingual' ),
-                'quick_intro_title_attribute'                => esc_attr__( 'Quick Intro', 'translatepress-multilingual' ),
+                'edit'                                       => esc_attr__( 'Translate', 'linguapress' ),
+                'merge'                                      => esc_attr__( 'Translate entire block element', 'linguapress' ),
+                'split'                                      => esc_attr__( 'Split block to translate strings individually', 'linguapress' ),
+                'save_title_attr'                            => esc_attr__( 'Save changes to translation. Shortcut: CTRL(⌘) + S', 'linguapress' ),
+                'next_title_attr'                            => esc_attr__( 'Navigate to next string in dropdown list. Shortcut: CTRL(⌘) + ALT + Right Arrow', 'linguapress' ),
+                'previous_title_attr'                        => esc_attr__( 'Navigate to previous string in dropdown list. Shortcut: CTRL(⌘) + ALT + Left Arrow', 'linguapress' ),
+                'discard_all_title_attr'                     => esc_attr__( 'Discard all changes. Shortcut: CTRL(⌘) + ALT + Z', 'linguapress' ),
+                'discard_individual_changes_title_attribute' => esc_attr__( 'Discard changes to this text box. To discard changes to all text boxes use shortcut: CTRL(⌘) + ALT + Z', 'linguapress' ),
+                'dismiss_tooltip_title_attribute'            => esc_attr__( 'Dismiss tooltip', 'linguapress' ),
+                'quick_intro_title_attribute'                => esc_attr__( 'Quick Intro', 'linguapress' ),
 
-                'split_confirmation'         => esc_js( __( 'Are you sure you want to split this phrase into smaller parts?', 'translatepress-multilingual' ) ),
-                'translation_not_loaded_yet' => wp_kses( __( 'This string is not ready for translation yet. <br>Try again in a moment...', 'translatepress-multilingual' ), array( 'br' => array() ) ),
+                'split_confirmation'         => esc_js( __( 'Are you sure you want to split this phrase into smaller parts?', 'linguapress' ) ),
+                'translation_not_loaded_yet' => wp_kses( __( 'This string is not ready for translation yet. <br>Try again in a moment...', 'linguapress' ), array( 'br' => array() ) ),
 
-                'bor_update_notice'                 => esc_js( __( 'For this option to work, please update the Browse as other role add-on to the latest version.', 'translatepress-multilingual' ) ),
-                'seo_update_notice'                 => ( $update_seo_add_on ) ? esc_js( __( 'To translate slugs, please update the SEO Pack add-on to the latest version.', 'translatepress-multilingual' ) ) : 'seo_pack_update_not_needed',
+                'bor_update_notice'                 => esc_js( __( 'For this option to work, please update the Browse as other role add-on to the latest version.', 'linguapress' ) ),
+                'seo_update_notice'                 => ( $update_seo_add_on ) ? esc_js( __( 'To translate slugs, please update the SEO Pack add-on to the latest version.', 'linguapress' ) ) : 'seo_pack_update_not_needed',
 
                 //Notice when the user has not defined a secondary language
-                'extra_lang_row1'                   => wp_kses( sprintf( __( 'You can add a new language from <a href="%s">Settings->TranslatePress</a>', 'translatepress-multilingual' ), esc_url( admin_url( 'options-general.php?page=translate-press' ) ) ), array( 'a' => [ 'href' => [] ] ) ),
-                'extra_lang_row2'                   => wp_kses( __( 'However, you can still use TranslatePress to <strong style="background: #f5fb9d;">modify gettext strings</strong> available in your page.', 'translatepress-multilingual' ), array( 'strong' => [ 'style' => [] ] ) ),
-                'extra_lang_row3'                   => esc_html__( 'Strings that are user-created cannot be modified, only those from themes and plugins.', 'translatepress-multilingual' ),
+                'extra_lang_row1'                   => wp_kses( sprintf( __( 'You can add a new language from <a href="%s">Settings->LinguaPress</a>', 'linguapress' ), esc_url( admin_url( 'options-general.php?page=lingua-press' ) ) ), array( 'a' => [ 'href' => [] ] ) ),
+                'extra_lang_row2'                   => wp_kses( __( 'However, you can still use LinguaPress to <strong style="background: #f5fb9d;">modify gettext strings</strong> available in your page.', 'linguapress' ), array( 'strong' => [ 'style' => [] ] ) ),
+                'extra_lang_row3'                   => esc_html__( 'Strings that are user-created cannot be modified, only those from themes and plugins.', 'linguapress' ),
                 //Pro version upselling
-                'extra_upsell_title'                => esc_html__( 'Extra Translation Features', 'translatepress-multilingual' ),
-                'extra_upsell_row1'                 => esc_html__( 'Support for 130+ Extra Languages', 'translatepress-multilingual' ),
-                'extra_upsell_row2'                 => esc_html__( 'Access to TranslatePress AI', 'translatepress-multilingual' ),
-                'extra_upsell_row3'                 => esc_html__( 'Translate SEO Title, Description, Slug', 'translatepress-multilingual' ),
-                'extra_upsell_row4'                 => esc_html__( 'Publish only when translation is complete', 'translatepress-multilingual' ),
-                'extra_upsell_row5'                 => esc_html__( 'Translate by Browsing as User Role', 'translatepress-multilingual' ),
-                'extra_upsell_row6'                 => esc_html__( 'Different Menu Items for each Language', 'translatepress-multilingual' ),
-                'extra_upsell_row7'                 => esc_html__( 'Automatic User Language Detection', 'translatepress-multilingual' ),
-                'extra_upsell_button'               => wp_kses( sprintf( '<a class="button-primary" target="_blank" href="%s">%s</a>', esc_url( trp_add_affiliate_id_to_link( 'https://translatepress.com/pricing/?utm_source=wpbackend&utm_medium=clientsite&utm_content=tpeditor&utm_campaign=tpfree' ) ), __( 'Upgrade to PRO', 'translatepress-multilingual' ) ), array( 'a' => [ 'class' => [], 'target' => [], 'href' => [] ] ) ),
+                'extra_upsell_title'                => esc_html__( 'Extra Translation Features', 'linguapress' ),
+                'extra_upsell_row1'                 => esc_html__( 'Support for 130+ Extra Languages', 'linguapress' ),
+                'extra_upsell_row2'                 => esc_html__( 'Access to LinguaPress AI', 'linguapress' ),
+                'extra_upsell_row3'                 => esc_html__( 'Translate SEO Title, Description, Slug', 'linguapress' ),
+                'extra_upsell_row4'                 => esc_html__( 'Publish only when translation is complete', 'linguapress' ),
+                'extra_upsell_row5'                 => esc_html__( 'Translate by Browsing as User Role', 'linguapress' ),
+                'extra_upsell_row6'                 => esc_html__( 'Different Menu Items for each Language', 'linguapress' ),
+                'extra_upsell_row7'                 => esc_html__( 'Automatic User Language Detection', 'linguapress' ),
+                'extra_upsell_button'               => wp_kses( sprintf( '<a class="button-primary" target="_blank" href="%s">%s</a>', esc_url( lrp_add_affiliate_id_to_link( 'https://linguapress.com/pricing/?utm_source=wpbackend&utm_medium=clientsite&utm_content=tpeditor&utm_campaign=tpfree' ) ), __( 'Upgrade to PRO', 'linguapress' ) ), array( 'a' => [ 'class' => [], 'target' => [], 'href' => [] ] ) ),
                 // Black Friday
-                'extra_upsell_bf_row1'              => esc_html__( 'Upgrade to PRO with our biggest discount of the year!', 'translatepress-multilingual' ),
-                'extra_upsell_bf_row2'              => esc_html__( 'This Black Friday, get access to these features and more at a fraction of the costs:', 'translatepress-multilingual' ),
-                'extra_upsell_bf_button'            => wp_kses( sprintf( '<a class="button-primary" target="_blank" href="%s">%s</a>', esc_url( trp_add_affiliate_id_to_link( 'https://translatepress.com/black-friday/?utm_source=tpeditor&utm_medium=clientsite&utm_campaign=BF-2024' ) ), __( 'Upgrade to PRO', 'translatepress-multilingual' ) ), array( 'a' => [ 'class' => [], 'target' => [], 'href' => [] ] ) ),
+                'extra_upsell_bf_row1'              => esc_html__( 'Upgrade to PRO with our biggest discount of the year!', 'linguapress' ),
+                'extra_upsell_bf_row2'              => esc_html__( 'This Black Friday, get access to these features and more at a fraction of the costs:', 'linguapress' ),
+                'extra_upsell_bf_button'            => wp_kses( sprintf( '<a class="button-primary" target="_blank" href="%s">%s</a>', esc_url( lrp_add_affiliate_id_to_link( 'https://linguapress.com/black-friday/?utm_source=tpeditor&utm_medium=clientsite&utm_campaign=BF-2024' ) ), __( 'Upgrade to PRO', 'linguapress' ) ), array( 'a' => [ 'class' => [], 'target' => [], 'href' => [] ] ) ),
                 // Translation Memory
-                'translation_memory_no_suggestions' => esc_html__( 'No available suggestions', 'translatepress-multilingual' ),
-                'translation_memory_suggestions'    => esc_html__( 'Suggestions from translation memory', 'translatepress-multilingual' ),
-                'translation_memory_click_to_copy'  => esc_html__( 'Click to Copy', 'translatepress-multilingual' ),
+                'translation_memory_no_suggestions' => esc_html__( 'No available suggestions', 'linguapress' ),
+                'translation_memory_suggestions'    => esc_html__( 'Suggestions from translation memory', 'linguapress' ),
+                'translation_memory_click_to_copy'  => esc_html__( 'Click to Copy', 'linguapress' ),
                 //human or machine translation tooltips
-                'human_translation'                 => esc_html__('Human Translation', 'translatepress-multilingual'),
-                'machine_translation'               => esc_html__('Machine Translation', 'translatepress-multilingual'),
+                'human_translation'                 => esc_html__('Human Translation', 'linguapress'),
+                'machine_translation'               => esc_html__('Machine Translation', 'linguapress'),
                 'percentage_bar'                    => array(
-                    'tooltip_text_default' => esc_html__( 'Text on this page is %s% translated into all languages.', 'translatepress-multilingual'),
-                    'tooltip_text_general' => esc_html__( '%1$s% of text on this page is translated into %2$s.', 'translatepress-multilingual'),
-                    'minibar_text'         => esc_html__('This page is %1$s% translated into %2$s.', 'translatepress-multilingual')
+                    'tooltip_text_default' => esc_html__( 'Text on this page is %s% translated into all languages.', 'linguapress'),
+                    'tooltip_text_general' => esc_html__( '%1$s% of text on this page is translated into %2$s.', 'linguapress'),
+                    'minibar_text'         => esc_html__('This page is %1$s% translated into %2$s.', 'linguapress')
                 ),
-                'multiple_types_alert'              => esc_html__( "The slug that you are trying to edit is present in other slug types:%s%.\nEditing it will replace each occurrence, regardless of the current type.", 'translatepress-multilingual')
+                'multiple_types_alert'              => esc_html__( "The slug that you are trying to edit is present in other slug types:%s%.\nEditing it will replace each occurrence, regardless of the current type.", 'linguapress')
             );
     }
 
     public function get_help_panel_content() {
-        $edit_icon = '<svg class="trp-edit-icon-inline" xmlns="http://www.w3.org/2000/svg" visibility="hidden" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M20.1 5.1L16.9 2 6.2 12.7l-1.3 4.4 4.5-1.3L20.1 5.1zM4 20.8h8v-1.5H4v1.5z"></path></svg>';
-        return apply_filters( 'trp_help_panel_content', array(
+        $edit_icon = '<svg class="lrp-edit-icon-inline" xmlns="http://www.w3.org/2000/svg" visibility="hidden" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M20.1 5.1L16.9 2 6.2 12.7l-1.3 4.4 4.5-1.3L20.1 5.1zM4 20.8h8v-1.5H4v1.5z"></path></svg>';
+        return apply_filters( 'lrp_help_panel_content', array(
             array(
-                'title'   => esc_html__( 'Quick Intro', 'translatepress-multilingual' ),
-                'content' => wp_kses(sprintf( __( 'Hover any text on the page, click %s,<br> then modify the translation in the sidebar.', 'translatepress-multilingual' ), $edit_icon),
+                'title'   => esc_html__( 'Quick Intro', 'linguapress' ),
+                'content' => wp_kses(sprintf( __( 'Hover any text on the page, click %s,<br> then modify the translation in the sidebar.', 'linguapress' ), $edit_icon),
                     array( 'svg' => array( 'class' => array(),'xmlns' => array(),'visibility'=>array(), 'viewbox' => array(), 'aria-hidden' => array(), 'focusable' => array() ), 'path' => array('d'=>array() ), "br" => array() ) ),
-                'event'   => 'trp_hover_text_help_panel'
+                'event'   => 'lrp_hover_text_help_panel'
             ),
             array(
-                'title'   => esc_html__( 'Quick Intro', 'translatepress-multilingual' ),
-                'content' => wp_kses( __( 'Don\'t forget to Save Translation. Use keyboard shortcut CTRL(⌘) + S', 'translatepress-multilingual' ), array() ),
-                'event'   => 'trp_save_translation_help_panel'
+                'title'   => esc_html__( 'Quick Intro', 'linguapress' ),
+                'content' => wp_kses( __( 'Don\'t forget to Save Translation. Use keyboard shortcut CTRL(⌘) + S', 'linguapress' ), array() ),
+                'event'   => 'lrp_save_translation_help_panel'
             ),
             array(
-                'title'   => esc_html__( 'Quick Intro', 'translatepress-multilingual' ),
-                'content' => wp_kses( __( 'Switch language to see the translation changes directly on the page.', 'translatepress-multilingual' ), array() ),
-                'event'   => 'trp_switch_language_help_panel'
+                'title'   => esc_html__( 'Quick Intro', 'linguapress' ),
+                'content' => wp_kses( __( 'Switch language to see the translation changes directly on the page.', 'linguapress' ), array() ),
+                'event'   => 'lrp_switch_language_help_panel'
             ),
             array(
-                'title'   => esc_html__( 'Quick Intro', 'translatepress-multilingual' ),
-                'content' => wp_kses( __( 'Search for any text in this page in the dropdown.', 'translatepress-multilingual' ), array() ),
-                'event'   => 'trp_search_string_help_panel'
+                'title'   => esc_html__( 'Quick Intro', 'linguapress' ),
+                'content' => wp_kses( __( 'Search for any text in this page in the dropdown.', 'linguapress' ), array() ),
+                'event'   => 'lrp_search_string_help_panel'
             )
         ) );
     }
@@ -220,35 +220,35 @@ class TRP_Translation_Manager {
         $license_notice_content = false; // false will hide the license notice panel
 
         // paid version plugin (business/developer/personal) is active
-        $free_version = !class_exists( 'TRP_Handle_Included_Addons' );
+        $free_version = !class_exists( 'LRP_Handle_Included_Addons' );
 
         if ( !$free_version ){
-            $license_status = trp_get_license_status();
+            $license_status = lrp_get_license_status();
             if ( $license_status != 'valid' && $license_status != 'free-version' ) {
-                $translatepress_product = ( defined( 'TRANSLATE_PRESS' ) ) ? TRANSLATE_PRESS : "TranslatePress";
+                $linguapress_product = ( defined( 'TRANSLATE_PRESS' ) ) ? TRANSLATE_PRESS : "LinguaPress";
                 switch ( $license_status ) {
                     case 'expired':
                         {
-                            $status_text  = wp_kses( sprintf( __( 'Your %s license has <span class="trp-license-status-emphasized">expired</span>.', 'translatepress-multilingual' ), '<strong>' . $translatepress_product . '</strong>' ), array( 'strong' => array(),'span' => array( 'class' => array() ) ) );
+                            $status_text  = wp_kses( sprintf( __( 'Your %s license has <span class="lrp-license-status-emphasized">expired</span>.', 'linguapress' ), '<strong>' . $linguapress_product . '</strong>' ), array( 'strong' => array(),'span' => array( 'class' => array() ) ) );
 
-                            if( trp_bf_show_promotion() ){
-                                $instructions = esc_html__( '<strong>This Black Friday, renew your license at a special price</strong> to continue receiving access to product downloads, automatic updates, and support.', 'translatepress-multilingual' );
-                                $button       = esc_html__( 'Get Deal', 'translatepress-multilingual' );
-                                $link         = 'https://translatepress.com/account/?utm_source=tpeditor&utm_medium=clientsite&utm_campaign=BF-2024';
+                            if( lrp_bf_show_promotion() ){
+                                $instructions = esc_html__( '<strong>This Black Friday, renew your license at a special price</strong> to continue receiving access to product downloads, automatic updates, and support.', 'linguapress' );
+                                $button       = esc_html__( 'Get Deal', 'linguapress' );
+                                $link         = 'https://linguapress.com/account/?utm_source=tpeditor&utm_medium=clientsite&utm_campaign=BF-2024';
                             } else {
-                                $instructions = esc_html__( 'Please renew your license to continue receiving access to product downloads, automatic updates and support.', 'translatepress-multilingual' );
-                                $button       = esc_html__( 'Renew Now', 'translatepress-multilingual' );
-                                $link         = 'https://translatepress.com/account/?utm_source=wpbackend&utm_medium=clientsite&utm_content=tpeditor&utm_campaign=TP-Renewal';
+                                $instructions = esc_html__( 'Please renew your license to continue receiving access to product downloads, automatic updates and support.', 'linguapress' );
+                                $button       = esc_html__( 'Renew Now', 'linguapress' );
+                                $link         = 'https://linguapress.com/account/?utm_source=wpbackend&utm_medium=clientsite&utm_content=tpeditor&utm_campaign=TP-Renewal';
                             }
                             
                             break;
                         }
                     case 'revoked':
                         {
-                            $status_text  = wp_kses( sprintf( __( 'Your %s license was <span class="trp-license-status-emphasized">refunded</span>.', 'translatepress-multilingual' ), '<strong>' . $translatepress_product . '</strong>' ), array( 'strong' => array(),'span' => array( 'class' => array() ) ) );
-                            $instructions = esc_html__( 'Please purchase a new license to continue receiving access to product downloads, automatic updates and support.', 'translatepress-multilingual' );
-                            $button       = esc_html__( 'Purchase a new license', 'translatepress-multilingual' );
-                            $link = 'https://translatepress.com/pricing/?utm_source=wpbackend&utm_medium=clientsite&utm_content=tpeditor&utm_campaign=TP-Refund';
+                            $status_text  = wp_kses( sprintf( __( 'Your %s license was <span class="lrp-license-status-emphasized">refunded</span>.', 'linguapress' ), '<strong>' . $linguapress_product . '</strong>' ), array( 'strong' => array(),'span' => array( 'class' => array() ) ) );
+                            $instructions = esc_html__( 'Please purchase a new license to continue receiving access to product downloads, automatic updates and support.', 'linguapress' );
+                            $button       = esc_html__( 'Purchase a new license', 'linguapress' );
+                            $link = 'https://linguapress.com/pricing/?utm_source=wpbackend&utm_medium=clientsite&utm_content=tpeditor&utm_campaign=TP-Refund';
                             break;
                         }
                     //  case 'missing' :
@@ -258,18 +258,18 @@ class TRP_Translation_Manager {
                     //  case 'no_activations_left':
                     default:
                         {
-                            $status_text  = wp_kses( sprintf( __( 'Your %s license is <span class="trp-license-status-emphasized">empty or incorrect</span>.', 'translatepress-multilingual' ), '<strong>' . $translatepress_product . '</strong>' ), array( 'strong' => array(),'span' => array( 'class' => array() ) ) );
-                            $instructions = esc_html__( 'Please enter a valid license to continue receiving access to product downloads, automatic updates and support.', 'translatepress-multilingual' );
-                            $button       = esc_html__( 'Enter a valid license', 'translatepress-multilingual' );
-                            $link         = admin_url( 'admin.php?page=trp_license_key' );
+                            $status_text  = wp_kses( sprintf( __( 'Your %s license is <span class="lrp-license-status-emphasized">empty or incorrect</span>.', 'linguapress' ), '<strong>' . $linguapress_product . '</strong>' ), array( 'strong' => array(),'span' => array( 'class' => array() ) ) );
+                            $instructions = esc_html__( 'Please enter a valid license to continue receiving access to product downloads, automatic updates and support.', 'linguapress' );
+                            $button       = esc_html__( 'Enter a valid license', 'linguapress' );
+                            $link         = admin_url( 'admin.php?page=lrp_license_key' );
                             break;
                         }
                 }
 
-                $button_class = 'trp-license-notice-button';
+                $button_class = 'lrp-license-notice-button';
 
-                if( trp_bf_show_promotion() )
-                    $button_class = 'trp-license-notice-button-red';
+                if( lrp_bf_show_promotion() )
+                    $button_class = 'lrp-license-notice-button-red';
 
                 $license_notice_content = '<p>' . $status_text . '</p><p>' . $instructions . '</p><p><a href="' . esc_url($link) . '" class="button-primary '. esc_attr( $button_class ) .'" target="_blank">' . $button . '</a></p>';
             }
@@ -279,7 +279,7 @@ class TRP_Translation_Manager {
     }
 
     public function get_default_editor_user_meta() {
-        return apply_filters( 'trp_default_editor_user_meta', array(
+        return apply_filters( 'lrp_default_editor_user_meta', array(
             'helpPanelOpened'          => false,
             'dismissTooltipSave'       => false,
             'dismissTooltipNext'       => false,
@@ -291,15 +291,15 @@ class TRP_Translation_Manager {
     }
 
     public function get_editor_user_meta() {
-        $user_meta = get_user_meta( get_current_user_id(), 'trp_editor_user_meta', true );
+        $user_meta = get_user_meta( get_current_user_id(), 'lrp_editor_user_meta', true );
         $user_meta = wp_parse_args( $user_meta, $this->get_default_editor_user_meta() );
-        return apply_filters( 'trp_editor_user_meta', $user_meta );
+        return apply_filters( 'lrp_editor_user_meta', $user_meta );
     }
 
     public function save_editor_user_meta() {
-        if ( defined( 'DOING_AJAX' ) && DOING_AJAX && current_user_can( apply_filters( 'trp_translating_capability', 'manage_options' ) ) ) {
-            check_ajax_referer( 'trp_editor_user_meta', 'security' );
-            if ( isset( $_POST['action'] ) && $_POST['action'] === 'trp_save_editor_user_meta' && !empty( $_POST['user_meta'] ) ) {
+        if ( defined( 'DOING_AJAX' ) && DOING_AJAX && current_user_can( apply_filters( 'lrp_translating_capability', 'manage_options' ) ) ) {
+            check_ajax_referer( 'lrp_editor_user_meta', 'security' );
+            if ( isset( $_POST['action'] ) && $_POST['action'] === 'lrp_save_editor_user_meta' && !empty( $_POST['user_meta'] ) ) {
                 $submitted_user_meta = json_decode( stripslashes( $_POST['user_meta'] ), true ); /* phpcs:ignore */ /* sanitized bellow */
                 $existing_user_meta = $this->get_editor_user_meta();
                 foreach ( $existing_user_meta as $key => $existing ) {
@@ -307,25 +307,25 @@ class TRP_Translation_Manager {
                         $existing_user_meta[ $key ] = (bool)$submitted_user_meta[ $key ];
                     }
                 }
-                update_user_meta( get_current_user_id(), 'trp_editor_user_meta', $existing_user_meta );
+                update_user_meta( get_current_user_id(), 'lrp_editor_user_meta', $existing_user_meta );
             }
         }
-        echo trp_safe_json_encode( array() );//phpcs:ignore
+        echo lrp_safe_json_encode( array() );//phpcs:ignore
         die();
     }
 
     public function string_groups() {
         $string_groups = array(
-            'slugs'           => esc_html__( 'Slugs', 'translatepress-multilingual' ),
-            'metainformation' => esc_html__( 'Meta Information', 'translatepress-multilingual' ),
-            'stringlist'      => esc_html__( 'String List', 'translatepress-multilingual' ),
-            'gettextstrings'  => esc_html__( 'Gettext Strings', 'translatepress-multilingual' ),
-            'images'          => esc_html__( 'Images', 'translatepress-multilingual' ),
-            'videos'          => esc_html__( 'Videos', 'translatepress-multilingual' ),
-            'audios'          => esc_html__( 'Audios', 'translatepress-multilingual' ),
-            'dynamicstrings'  => esc_html__( 'Dynamically Added Strings', 'translatepress-multilingual' ),
+            'slugs'           => esc_html__( 'Slugs', 'linguapress' ),
+            'metainformation' => esc_html__( 'Meta Information', 'linguapress' ),
+            'stringlist'      => esc_html__( 'String List', 'linguapress' ),
+            'gettextstrings'  => esc_html__( 'Gettext Strings', 'linguapress' ),
+            'images'          => esc_html__( 'Images', 'linguapress' ),
+            'videos'          => esc_html__( 'Videos', 'linguapress' ),
+            'audios'          => esc_html__( 'Audios', 'linguapress' ),
+            'dynamicstrings'  => esc_html__( 'Dynamically Added Strings', 'linguapress' ),
         );
-        return apply_filters( 'trp_string_groups', $string_groups );
+        return apply_filters( 'lrp_string_groups', $string_groups );
     }
 
     public function editor_nonces() {
@@ -338,15 +338,15 @@ class TRP_Translation_Manager {
             'savetranslationsnoncepostslug' => wp_create_nonce( 'postslug_save_translations' ),
             'splittbnonce'                  => wp_create_nonce( 'split_translation_block' ),
             'mergetbnonce'                  => wp_create_nonce( 'merge_translation_block' ),
-            'logged_out'                    => wp_create_nonce( 'trp_view_aslogged_out' . get_current_user_id() ),
+            'logged_out'                    => wp_create_nonce( 'lrp_view_aslogged_out' . get_current_user_id() ),
             'getsimilarstring'              => wp_create_nonce( 'getsimilarstring' ),
-            'trp_editor_user_meta'          => wp_create_nonce( 'trp_editor_user_meta' ),
+            'lrp_editor_user_meta'          => wp_create_nonce( 'lrp_editor_user_meta' ),
             'scangettextnonce'              => wp_create_nonce( 'scangettextnonce' ),
             'get_missing_strings'           => wp_create_nonce( 'string_translation_get_missing_strings_gettext' ),
             'get_strings_by_original_id'    => wp_create_nonce( 'string_translation_get_strings_by_original_ids_gettext' )
         );
 
-        return apply_filters( 'trp_editor_nonces', $nonces );
+        return apply_filters( 'lrp_editor_nonces', $nonces );
     }
 
     /**
@@ -355,20 +355,20 @@ class TRP_Translation_Manager {
      * @return array
      */
     public function get_editors_navigation() {
-        return apply_filters( 'trp_editors_navigation', array(
+        return apply_filters( 'lrp_editors_navigation', array(
             'show' => true,
             'tabs' => array(
                 array(
                     'handle'  => 'visualeditor',
-                    'label'   => __( 'Translation Editor', 'translatepress-multilingual' ),
-                    'path'    => add_query_arg( 'trp-edit-translation', 'true', home_url() ),
-                    'tooltip' => esc_html__('Edit translations by visually selecting them on each site page', 'translatepress-multilingual')
+                    'label'   => __( 'Translation Editor', 'linguapress' ),
+                    'path'    => add_query_arg( 'lrp-edit-translation', 'true', home_url() ),
+                    'tooltip' => esc_html__('Edit translations by visually selecting them on each site page', 'linguapress')
                 ),
                 array(
                     'handle'  => 'stringtranslation',
-                    'label'   => __( 'String Translation', 'translatepress-multilingual' ),
-                    'path'    => add_query_arg( 'trp-string-translation', 'true', home_url() ) . '#/slugs/',
-                    'tooltip' => esc_html__('Edit url slug translations, plugins and theme translation (emails, forms etc.)', 'translatepress-multilingual')
+                    'label'   => __( 'String Translation', 'linguapress' ),
+                    'path'    => add_query_arg( 'lrp-string-translation', 'true', home_url() ) . '#/slugs/',
+                    'tooltip' => esc_html__('Edit url slug translations, plugins and theme translation (emails, forms etc.)', 'linguapress')
                 )
             )
         ) );
@@ -377,13 +377,13 @@ class TRP_Translation_Manager {
     /**
      * Enqueue scripts and styles for translation Editor parent window.
      *
-     * hooked to trp_translation_manager_footer
+     * hooked to lrp_translation_manager_footer
      */
     public function enqueue_scripts_and_styles() {
-        wp_enqueue_style( 'trp-editor-style', TRP_PLUGIN_URL . 'assets/css/trp-editor.css', array( 'dashicons', 'buttons' ), TRP_PLUGIN_VERSION );
-        wp_enqueue_script( 'trp-editor', TRP_PLUGIN_URL . 'assets/js/trp-editor.js', array(), TRP_PLUGIN_VERSION );
+        wp_enqueue_style( 'lrp-editor-style', LRP_PLUGIN_URL . 'assets/css/lrp-editor.css', array( 'dashicons', 'buttons' ), LRP_PLUGIN_VERSION );
+        wp_enqueue_script( 'lrp-editor', LRP_PLUGIN_URL . 'assets/js/lrp-editor.js', array(), LRP_PLUGIN_VERSION );
 
-        wp_localize_script( 'trp-editor', 'trp_editor_data', $this->get_trp_editor_data() );
+        wp_localize_script( 'lrp-editor', 'lrp_editor_data', $this->get_lrp_editor_data() );
 
 
         // Show upload media dialog in default language
@@ -398,10 +398,10 @@ class TRP_Translation_Manager {
         // Necessary for translate-dom-changes to have a nonce as the same user as the Editor.
         // The Preview iframe (which loads translate-dom-changes script) can load as logged out which sets an different nonce
         $nonces = $this->editor_nonces();
-        wp_add_inline_script( 'trp-editor', 'var trp_dynamic_nonce = "' . $nonces['gettranslationsnonceregular'] . '";' );
+        wp_add_inline_script( 'lrp-editor', 'var lrp_dynamic_nonce = "' . $nonces['gettranslationsnonceregular'] . '";' );
 
-        $scripts_to_print = apply_filters( 'trp-scripts-for-editor', array( 'jquery', 'jquery-ui-core', 'jquery-effects-core', 'jquery-ui-resizable', 'trp-editor' ) );
-        $styles_to_print  = apply_filters( 'trp-styles-for-editor', array( 'dashicons', 'trp-editor-style', 'media-views', 'imgareaselect', 'buttons' /*'wp-admin', 'common', 'site-icon', 'buttons'*/ ) );
+        $scripts_to_print = apply_filters( 'lrp-scripts-for-editor', array( 'jquery', 'jquery-ui-core', 'jquery-effects-core', 'jquery-ui-resizable', 'lrp-editor' ) );
+        $styles_to_print  = apply_filters( 'lrp-styles-for-editor', array( 'dashicons', 'lrp-editor-style', 'media-views', 'imgareaselect', 'buttons' /*'wp-admin', 'common', 'site-icon', 'buttons'*/ ) );
         wp_print_scripts( $scripts_to_print );
         wp_print_styles( $styles_to_print );
 
@@ -415,37 +415,37 @@ class TRP_Translation_Manager {
      *
      * @return array
      */
-    public function get_trp_editor_data() {
-        global $TRP_LANGUAGE;
-        $trp                = TRP_Translate_Press::get_trp_instance();
-        $trp_languages      = $trp->get_component( 'languages' );
-        $translation_render = $trp->get_component( 'translation_render' );
-        $url_converter      = $trp->get_component( 'url_converter' );
+    public function get_lrp_editor_data() {
+        global $LRP_LANGUAGE;
+        $lrp                = LRP_Lingua_Press::get_lrp_instance();
+        $lrp_languages      = $lrp->get_component( 'languages' );
+        $translation_render = $lrp->get_component( 'translation_render' );
+        $url_converter      = $lrp->get_component( 'url_converter' );
 
-        $language_names = $trp_languages->get_language_names( $this->settings['translation-languages'] );
+        $language_names = $lrp_languages->get_language_names( $this->settings['translation-languages'] );
 
         // move the current language to the beginning of the array
         $translation_languages = $this->settings['translation-languages'];
-        if ( $TRP_LANGUAGE != $this->settings['default-language'] ) {
-            $current_language_key = array_search( $TRP_LANGUAGE, $this->settings['translation-languages'] );
+        if ( $LRP_LANGUAGE != $this->settings['default-language'] ) {
+            $current_language_key = array_search( $LRP_LANGUAGE, $this->settings['translation-languages'] );
             unset( $translation_languages[ $current_language_key ] );
-            $translation_languages = array_merge( array( $TRP_LANGUAGE ), array_values( $translation_languages ) );
+            $translation_languages = array_merge( array( $LRP_LANGUAGE ), array_values( $translation_languages ) );
         }
         $default_language_key = array_search( $this->settings['default-language'], $translation_languages );
         unset( $translation_languages[ $default_language_key ] );
         $ordered_secondary_languages = array_values( $translation_languages );
 
-        $current_language_published = ( in_array( $TRP_LANGUAGE, $this->settings['publish-languages'] ) );
+        $current_language_published = ( in_array( $LRP_LANGUAGE, $this->settings['publish-languages'] ) );
         $current_url                = $url_converter->cur_page_url();
 
         $selectors       = $translation_render->get_accessors_array( '-' ); // suffix selectors such as array( '-alt', '-src', '-title', '-content', '-value', '-placeholder', '-href', '-outertext', '-innertext' )
-        $selectors[]     = '';                                              // empty string suffix added for using just the base attribute data-trp-translate-id  (instead of data-trp-translate-id-alt)
+        $selectors[]     = '';                                              // empty string suffix added for using just the base attribute data-lrp-translate-id  (instead of data-lrp-translate-id-alt)
         $data_attributes = $translation_render->get_base_attribute_selectors();
 
         //setup view_as roles
         $view_as_roles = array(
-            __( 'Current User', 'translatepress-multilingual' ) => 'current_user',
-            __( 'Logged Out', 'translatepress-multilingual' )   => 'logged_out'
+            __( 'Current User', 'linguapress' ) => 'current_user',
+            __( 'Logged Out', 'linguapress' )   => 'logged_out'
         );
         $all_roles     = wp_roles()->roles;
 
@@ -454,47 +454,47 @@ class TRP_Translation_Manager {
                 $view_as_roles[ $role['name'] ] = '';
         }
 
-        $view_as_roles = apply_filters( 'trp_view_as_values', $view_as_roles );
-        $string_groups = apply_filters( 'trp_string_group_order', array_values( $this->string_groups() ) );
+        $view_as_roles = apply_filters( 'lrp_view_as_values', $view_as_roles );
+        $string_groups = apply_filters( 'lrp_string_group_order', array_values( $this->string_groups() ) );
 
         $flags_path      = array();
         $flags_file_name = array();
         foreach ( $this->settings['translation-languages'] as $language_code ) {
-            $default_path                      = TRP_PLUGIN_URL . 'assets/images/flags/';
-            $flags_path[ $language_code ]      = apply_filters( 'trp_flags_path', $default_path, $language_code );
+            $default_path                      = LRP_PLUGIN_URL . 'assets/images/flags/';
+            $flags_path[ $language_code ]      = apply_filters( 'lrp_flags_path', $default_path, $language_code );
             $default_flag_file_name            = $language_code . '.png';
-            $flags_file_name[ $language_code ] = apply_filters( 'trp_flag_file_name', $default_flag_file_name, $language_code );
+            $flags_file_name[ $language_code ] = apply_filters( 'lrp_flag_file_name', $default_flag_file_name, $language_code );
         }
 
         $editors_navigation = $this->get_editors_navigation();
         $string_types       = array( 'regular', 'gettext', 'postslug' );
 
 
-        $trp_editor_data = array(
-            'trp_localized_strings'       => $this->localized_text(),
-            'trp_settings'                => $this->settings,
+        $lrp_editor_data = array(
+            'lrp_localized_strings'       => $this->localized_text(),
+            'lrp_settings'                => $this->settings,
             'language_names'              => $language_names,
             'ordered_secondary_languages' => $ordered_secondary_languages,
-            'current_language'            => $TRP_LANGUAGE,
+            'current_language'            => $LRP_LANGUAGE,
             'on_screen_language'          => ( isset( $ordered_secondary_languages[0] ) ) ? $ordered_secondary_languages[0] : '',
             'view_as_roles'               => $view_as_roles,
-            'url_to_load'                 => add_query_arg( 'trp-edit-translation', 'preview', $current_url ),
+            'url_to_load'                 => add_query_arg( 'lrp-edit-translation', 'preview', $current_url ),
             'string_selectors'            => $selectors,
             'data_attributes'             => $data_attributes,
             'editor_nonces'               => $this->editor_nonces(),
-            'ajax_url'                    => apply_filters( 'trp_wp_ajax_url', admin_url( 'admin-ajax.php' ) ),
-            'string_types'                => apply_filters( 'trp_string_types', $string_types ),
+            'ajax_url'                    => apply_filters( 'lrp_wp_ajax_url', admin_url( 'admin-ajax.php' ) ),
+            'string_types'                => apply_filters( 'lrp_string_types', $string_types ),
             'string_group_order'          => $string_groups,
             'merge_rules'                 => $this->get_merge_rules(),
-            'paid_version'                => trp_is_paid_version() ? 'true' : 'false',
-            'black_friday'                => trp_bf_show_promotion() ? 'true' : 'false',
-            'trp_license_status'          => trp_get_license_status(),
+            'paid_version'                => lrp_is_paid_version() ? 'true' : 'false',
+            'black_friday'                => lrp_bf_show_promotion() ? 'true' : 'false',
+            'lrp_license_status'          => lrp_get_license_status(),
             'flags_path'                  => $flags_path,
             'flags_file_name'             => $flags_file_name,
             'editors_navigation'          => $editors_navigation,
             'help_panel_content'          => $this->get_help_panel_content(),
             'user_meta'                   => $this->get_editor_user_meta(),
-            'upgraded_gettext'            => ! ( ( get_option( 'trp_updated_database_gettext_original_id_update', 'yes' ) == 'no' ) ),
+            'upgraded_gettext'            => ! ( ( get_option( 'lrp_updated_database_gettext_original_id_update', 'yes' ) == 'no' ) ),
             'notice_upgrade_gettext'      => $this->display_notice_to_upgrade_gettext_in_editor(''),
             'notice_upgrade_slugs'        => $this->display_notice_to_upgrade_slugs_in_editor(''),
             'upsale_slugs'                => $this->is_seo_pack_active(),
@@ -502,7 +502,7 @@ class TRP_Translation_Manager {
             'license_notice_content'      => $this->get_license_notice_content()
         );
 
-        return apply_filters( 'trp_editor_data', $trp_editor_data );
+        return apply_filters( 'lrp_editor_data', $lrp_editor_data );
     }
 
     /**
@@ -510,8 +510,8 @@ class TRP_Translation_Manager {
      */
     public function enqueue_preview_scripts_and_styles() {
         if ( $this->conditions_met( 'preview' ) ) {
-            wp_enqueue_script( 'trp-translation-manager-preview-script', TRP_PLUGIN_URL . 'assets/js/trp-iframe-preview-script.js', array( 'jquery' ), TRP_PLUGIN_VERSION );
-            wp_enqueue_style( 'trp-preview-iframe-style', TRP_PLUGIN_URL . 'assets/css/trp-preview-iframe-style.css', array( 'dashicons' ), TRP_PLUGIN_VERSION );
+            wp_enqueue_script( 'lrp-translation-manager-preview-script', LRP_PLUGIN_URL . 'assets/js/lrp-iframe-preview-script.js', array( 'jquery' ), LRP_PLUGIN_VERSION );
+            wp_enqueue_style( 'lrp-preview-iframe-style', LRP_PLUGIN_URL . 'assets/css/lrp-preview-iframe-style.css', array( 'dashicons' ), LRP_PLUGIN_VERSION );
         }
     }
 
@@ -523,37 +523,37 @@ class TRP_Translation_Manager {
      * @param $wp_admin_bar
      */
     public function add_shortcut_to_translation_editor( $wp_admin_bar ) {
-        if ( !current_user_can( apply_filters( 'trp_translating_capability', 'manage_options' ) ) ) {
+        if ( !current_user_can( apply_filters( 'lrp_translating_capability', 'manage_options' ) ) ) {
             return;
         }
 
         if ( is_admin() ) {
-            $url = add_query_arg( 'trp-edit-translation', 'true', trailingslashit( home_url() ) );
+            $url = add_query_arg( 'lrp-edit-translation', 'true', trailingslashit( home_url() ) );
 
-            $title      = __( 'Translate Site', 'translatepress-multilingual' );
+            $title      = __( 'Translate Site', 'linguapress' );
             $url_target = '_blank';
         } else {
 
             if ( !$this->url_converter ) {
-                $trp                 = TRP_Translate_Press::get_trp_instance();
-                $this->url_converter = $trp->get_component( 'url_converter' );
+                $lrp                 = LRP_Lingua_Press::get_lrp_instance();
+                $this->url_converter = $lrp->get_component( 'url_converter' );
             }
 
             $url = $this->url_converter->cur_page_url();
 
-            $url = apply_filters( 'trp_edit_translation_url', add_query_arg( 'trp-edit-translation', 'true', $url ) );
+            $url = apply_filters( 'lrp_edit_translation_url', add_query_arg( 'lrp-edit-translation', 'true', $url ) );
 
-            $title      = __( 'Translate Page', 'translatepress-multilingual' );
+            $title      = __( 'Translate Page', 'linguapress' );
             $url_target = '';
         }
 
         $wp_admin_bar->add_node(
             array(
-                'id'    => 'trp_edit_translation',
+                'id'    => 'lrp_edit_translation',
                 'title' => '<span class="ab-icon"></span><span class="ab-label">' . $title . '</span>',
                 'href'  => $url,
                 'meta'  => array(
-                    'class'  => 'trp-edit-translation',
+                    'class'  => 'lrp-edit-translation',
                     'target' => $url_target
                 )
             )
@@ -561,12 +561,12 @@ class TRP_Translation_Manager {
 
         $wp_admin_bar->add_node(
             array(
-                'id'     => 'trp_settings_page',
-                'title'  => __( 'Settings', 'translatepress-multilingual' ),
-                'href'   => admin_url( 'options-general.php?page=translate-press' ),
-                'parent' => 'trp_edit_translation',
+                'id'     => 'lrp_settings_page',
+                'title'  => __( 'Settings', 'linguapress' ),
+                'href'   => admin_url( 'options-general.php?page=lingua-press' ),
+                'parent' => 'lrp_edit_translation',
                 'meta'   => array(
-                    'class' => 'trp-settings-page'
+                    'class' => 'lrp-settings-page'
                 )
             )
         );
@@ -574,42 +574,42 @@ class TRP_Translation_Manager {
     }
 
     /**
-     * adds shortcut to trp editor in gutenberg editor
+     * adds shortcut to lrp editor in gutenberg editor
      */
 
-    function trp_add_shortcut_to_trp_editor_gutenberg(){
-        wp_enqueue_script( 'custom-link-in-toolbar', TRP_PLUGIN_URL. '/assets/js/trp-gutenberg-editor-shortcut.js', array("jquery"), TRP_PLUGIN_VERSION, true );
-        wp_localize_script( 'custom-link-in-toolbar', 'trp_localized', array( 'dont_adjust_width' => apply_filters( 'trp_dont_adjust_width_of_ls_in_gutenberg', false ) ) );
-        $trp           = TRP_Translate_Press::get_trp_instance();
-        $url_converter = $trp->get_component('url_converter');
+    function lrp_add_shortcut_to_lrp_editor_gutenberg(){
+        wp_enqueue_script( 'custom-link-in-toolbar', LRP_PLUGIN_URL. '/assets/js/lrp-gutenberg-editor-shortcut.js', array("jquery"), LRP_PLUGIN_VERSION, true );
+        wp_localize_script( 'custom-link-in-toolbar', 'lrp_localized', array( 'dont_adjust_width' => apply_filters( 'lrp_dont_adjust_width_of_ls_in_gutenberg', false ) ) );
+        $lrp           = LRP_Lingua_Press::get_lrp_instance();
+        $url_converter = $lrp->get_component('url_converter');
 
-        //$settings = $trp->get_component('settings');
+        //$settings = $lrp->get_component('settings');
 
         global $post;
-        global $TRP_LANGUAGE;
+        global $LRP_LANGUAGE;
 
         $url_translation_editor = array();
 
-        add_filter('trp_add_language_to_home_url_check_for_admin', '__return_false');
+        add_filter('lrp_add_language_to_home_url_check_for_admin', '__return_false');
 
         if ($post) {
-            $trp_permalink_post = $url_converter->get_url_for_language( $TRP_LANGUAGE, get_permalink( $post->ID ) );
+            $lrp_permalink_post = $url_converter->get_url_for_language( $LRP_LANGUAGE, get_permalink( $post->ID ) );
             if ( $post->post_status !== "publish" ) {
-                $trp_permalink_post = $url_converter->get_url_for_language( $TRP_LANGUAGE, get_preview_post_link( $post->ID ) );
+                $lrp_permalink_post = $url_converter->get_url_for_language( $LRP_LANGUAGE, get_preview_post_link( $post->ID ) );
             }
         }else{
-            $trp_permalink_post = $url_converter->get_url_for_language( $TRP_LANGUAGE, home_url() );
+            $lrp_permalink_post = $url_converter->get_url_for_language( $LRP_LANGUAGE, home_url() );
         }
 
-        $url_translation_editor = apply_filters('trp_edit_translation_url', add_query_arg('trp-edit-translation', 'true', $trp_permalink_post));
+        $url_translation_editor = apply_filters('lrp_edit_translation_url', add_query_arg('lrp-edit-translation', 'true', $lrp_permalink_post));
 
-        $title = esc_attr__('Opens post in the translation editor. Post must be saved as draft or published beforehand.', 'translatepress-multilingual');
+        $title = esc_attr__('Opens post in the translation editor. Post must be saved as draft or published beforehand.', 'linguapress');
 
-        $trp_editor_button[0] =  "<a id='trp-link-id' class='components-button' href='" . esc_url($url_translation_editor) ."'  title='"  . $title ."' ><button class='button-primary' style='height: 33px'>" . esc_html__('Translate Page', 'translatepress-multilingual') ."</button></a>";
+        $lrp_editor_button[0] =  "<a id='lrp-link-id' class='components-button' href='" . esc_url($url_translation_editor) ."'  title='"  . $title ."' ><button class='button-primary' style='height: 33px'>" . esc_html__('Translate Page', 'linguapress') ."</button></a>";
 
-        wp_localize_script('custom-link-in-toolbar', 'trp_url_tp_editor', $trp_editor_button);
+        wp_localize_script('custom-link-in-toolbar', 'lrp_url_tp_editor', $lrp_editor_button);
 
-        remove_filter('trp_add_language_to_home_url_check_for_admin', '__return_false');
+        remove_filter('lrp_add_language_to_home_url_check_for_admin', '__return_false');
     }
 
     /**
@@ -618,12 +618,12 @@ class TRP_Translation_Manager {
      * hooked to admin_head action
      */
     public function add_styling_to_admin_bar_button() {
-        echo "<style type='text/css'> #wpadminbar #wp-admin-bar-trp_edit_translation .ab-icon:before {    content: '\\f326';    top: 3px;}
-		#wpadminbar #wp-admin-bar-trp_edit_translation > .ab-item {
+        echo "<style type='text/css'> #wpadminbar #wp-admin-bar-lrp_edit_translation .ab-icon:before {    content: '\\f326';    top: 3px;}
+		#wpadminbar #wp-admin-bar-lrp_edit_translation > .ab-item {
 			text-indent: 0;
 		}
 
-		#wpadminbar li#wp-admin-bar-trp_edit_translation {
+		#wpadminbar li#wp-admin-bar-lrp_edit_translation {
 			display: block;
 		}</style>";
     }
@@ -660,13 +660,13 @@ class TRP_Translation_Manager {
 		$rest_prefix         = trailingslashit( rest_get_url_prefix() );
 		$is_rest_api_request = strpos( $_SERVER['REQUEST_URI'], $rest_prefix ) !== false; /* phpcs:ignore */
 
-		return apply_filters( 'trp_is_rest_api_request', $is_rest_api_request );
+		return apply_filters( 'lrp_is_rest_api_request', $is_rest_api_request );
 	}
 
     /**
      * Filter sanitize_title() to use our own remove_accents() function so it's based on the default language, not current locale.
      *
-     * Also removes trp gettext tags before running the filter because it strip # and ! and / making it impossible to strip the #trpst later
+     * Also removes lrp gettext tags before running the filter because it strip # and ! and / making it impossible to strip the #lrpst later
      *
      * @param string $title
      * @param string $raw_title
@@ -675,16 +675,16 @@ class TRP_Translation_Manager {
      * @since 1.3.1
      *
      */
-    public function trp_sanitize_title( $title, $raw_title, $context ) {
-        // remove trp_tags before sanitization, because otherwise some characters (#,!,/, spaces ) are stripped later, and it becomes impossible to strip trp-gettext later
-        $raw_title = TRP_Gettext_Manager::strip_gettext_tags( $raw_title );
+    public function lrp_sanitize_title( $title, $raw_title, $context ) {
+        // remove lrp_tags before sanitization, because otherwise some characters (#,!,/, spaces ) are stripped later, and it becomes impossible to strip lrp-gettext later
+        $raw_title = LRP_Gettext_Manager::strip_gettext_tags( $raw_title );
 
         if ( 'save' == $context )
-            $title = trp_remove_accents( $raw_title );
+            $title = lrp_remove_accents( $raw_title );
 
-        remove_filter( 'sanitize_title', array( $this, 'trp_sanitize_title' ), 1 );
+        remove_filter( 'sanitize_title', array( $this, 'lrp_sanitize_title' ), 1 );
         $title = apply_filters( 'sanitize_title', $title, $raw_title, $context );
-        add_filter( 'sanitize_title', array( $this, 'trp_sanitize_title' ), 1, 3 );
+        add_filter( 'sanitize_title', array( $this, 'lrp_sanitize_title' ), 1, 3 );
 
         return $title;
     }
@@ -695,9 +695,9 @@ class TRP_Translation_Manager {
      * @return array
      */
     public function add_language_to_body_class( $classes ) {
-        global $TRP_LANGUAGE;
-        if ( !empty( $TRP_LANGUAGE ) ) {
-            $classes[] = 'translatepress-' . $TRP_LANGUAGE;
+        global $LRP_LANGUAGE;
+        if ( !empty( $LRP_LANGUAGE ) ) {
+            $classes[] = 'linguapress-' . $LRP_LANGUAGE;
         }
         return $classes;
     }
@@ -705,28 +705,28 @@ class TRP_Translation_Manager {
     /**
      * Function that switches the view of the user to other roles
      */
-    public function trp_view_as_user() {
-        if ( !is_admin() || TRP_Gettext_Manager::is_ajax_on_frontend() ) {
-            if ( isset( $_REQUEST['trp-edit-translation'] ) && $_REQUEST['trp-edit-translation'] === 'preview' && isset( $_REQUEST['trp-view-as'] ) && isset( $_REQUEST['trp-view-as-nonce'] ) ) {
+    public function lrp_view_as_user() {
+        if ( !is_admin() || LRP_Gettext_Manager::is_ajax_on_frontend() ) {
+            if ( isset( $_REQUEST['lrp-edit-translation'] ) && $_REQUEST['lrp-edit-translation'] === 'preview' && isset( $_REQUEST['lrp-view-as'] ) && isset( $_REQUEST['lrp-view-as-nonce'] ) ) {
 
-                if ( apply_filters( 'trp_allow_translator_role_to_view_page_as_other_roles', true ) ) {
-                    $current_user_can_change_roles = current_user_can( apply_filters( 'trp_translating_capability', 'manage_options' ) ) || current_user_can( 'manage_options' );
+                if ( apply_filters( 'lrp_allow_translator_role_to_view_page_as_other_roles', true ) ) {
+                    $current_user_can_change_roles = current_user_can( apply_filters( 'lrp_translating_capability', 'manage_options' ) ) || current_user_can( 'manage_options' );
                 } else {
                     $current_user_can_change_roles = current_user_can( 'manage_options' );
                 }
 
                 if ($current_user_can_change_roles) {
-                    if (!wp_verify_nonce( sanitize_text_field($_REQUEST['trp-view-as-nonce'] ), 'trp_view_as' . sanitize_text_field($_REQUEST['trp-view-as']) . get_current_user_id())) {
-                        wp_die(esc_html__('Security check', 'translatepress-multilingual'));
+                    if (!wp_verify_nonce( sanitize_text_field($_REQUEST['lrp-view-as-nonce'] ), 'lrp_view_as' . sanitize_text_field($_REQUEST['lrp-view-as']) . get_current_user_id())) {
+                        wp_die(esc_html__('Security check', 'linguapress'));
                     } else {
                         global $current_user;
-                        $view_as = sanitize_text_field( $_REQUEST['trp-view-as'] );
+                        $view_as = sanitize_text_field( $_REQUEST['lrp-view-as'] );
                         if ( $view_as === 'current_user' ) {
                             return;
                         } elseif ( $view_as === 'logged_out' ) {
-                            $current_user = new WP_User( 0, 'trp_logged_out' );
+                            $current_user = new WP_User( 0, 'lrp_logged_out' );
                         } else {
-                            $current_user = apply_filters( 'trp_temporary_change_current_user_role', $current_user, $view_as );
+                            $current_user = apply_filters( 'lrp_temporary_change_current_user_role', $current_user, $view_as );
                         }
                     }
                 }
@@ -786,11 +786,11 @@ class TRP_Translation_Manager {
      * @return mixed
      */
     public function display_possible_db_errors( $dictionary, $prepared_query, $strings_array ) {
-        global $trp_editor_notices;
-        if ( trp_is_translation_editor( 'preview' ) && is_array( $dictionary ) && count( $dictionary ) === 0 ) {
+        global $lrp_editor_notices;
+        if ( lrp_is_translation_editor( 'preview' ) && is_array( $dictionary ) && count( $dictionary ) === 0 ) {
             if ( $this->has_bad_characters( $prepared_query ) ) {
-                $html = "<div class='trp-notice trp-notice-warning'><p class='trp-bad-encoded-strings'>" . __( '<strong>Warning:</strong> Some strings have possibly incorrectly encoded characters. This may result in breaking the queries, rendering the page untranslated in live mode. Consider revising the following strings or their method of outputting.', 'translatepress-multilingual' ) . "</p>";
-                $html .= "<ul class='trp-bad-encoded-strings-list'>";
+                $html = "<div class='lrp-notice lrp-notice-warning'><p class='lrp-bad-encoded-strings'>" . __( '<strong>Warning:</strong> Some strings have possibly incorrectly encoded characters. This may result in breaking the queries, rendering the page untranslated in live mode. Consider revising the following strings or their method of outputting.', 'linguapress' ) . "</p>";
+                $html .= "<ul class='lrp-bad-encoded-strings-list'>";
                 foreach ( $strings_array as $string ) {
                     if ( $this->has_bad_characters( $string ) ) {
                         $html .= "<li>" . $string . "</li>";
@@ -798,7 +798,7 @@ class TRP_Translation_Manager {
                 }
                 $html .= "</ul></div>";
 
-                $trp_editor_notices .= $html;
+                $lrp_editor_notices .= $html;
             }
         }
 
@@ -806,43 +806,43 @@ class TRP_Translation_Manager {
         return $dictionary;
     }
 
-	public function display_notice_to_upgrade_gettext_in_editor( $trp_editor_notices ) {
-		if (  ( get_option( 'trp_updated_database_gettext_original_id_update', 'yes' ) == 'no' ) ){
+	public function display_notice_to_upgrade_gettext_in_editor( $lrp_editor_notices ) {
+		if (  ( get_option( 'lrp_updated_database_gettext_original_id_update', 'yes' ) == 'no' ) ){
 			$url = add_query_arg( array(
-				'page'                      => 'trp_update_database',
+				'page'                      => 'lrp_update_database',
 			), site_url('wp-admin/admin.php') );
 
 			// maybe change notice color to blue #28B1FF
-			$html = "<div class='trp-notice trp-notice-warning'>";
-			$html .= '<p><strong>' . esc_html__( 'TranslatePress data update', 'translatepress-multilingual' ) . '</strong> &#8211; ' . esc_html__( 'We need to update your translations database to the latest version.', 'translatepress-multilingual' ) . '</p>';
-			$html .= '<p>' . esc_html__( 'Updating will allow editing translations of localized text from plugins and theme. Existing translation will still work as expected.', 'translatepress-multilingual' ) . '</p>';
+			$html = "<div class='lrp-notice lrp-notice-warning'>";
+			$html .= '<p><strong>' . esc_html__( 'LinguaPress data update', 'linguapress' ) . '</strong> &#8211; ' . esc_html__( 'We need to update your translations database to the latest version.', 'linguapress' ) . '</p>';
+			$html .= '<p>' . esc_html__( 'Updating will allow editing translations of localized text from plugins and theme. Existing translation will still work as expected.', 'linguapress' ) . '</p>';
 
-			$html .= '<p><a class="trp-button-primary" target="_blank" href="' . esc_url( $url ) . '" onclick="return confirm( \'' . __( 'IMPORTANT: It is strongly recommended to first backup the database!\nAre you sure you want to continue?', 'translatepress-multilingual' ) . '\');" class="button-primary">' . esc_html__( 'Run the updater', 'translatepress-multilingual' ) . '</a></p>';
+			$html .= '<p><a class="lrp-button-primary" target="_blank" href="' . esc_url( $url ) . '" onclick="return confirm( \'' . __( 'IMPORTANT: It is strongly recommended to first backup the database!\nAre you sure you want to continue?', 'linguapress' ) . '\');" class="button-primary">' . esc_html__( 'Run the updater', 'linguapress' ) . '</a></p>';
 			$html .= '</div>';
 
-			$trp_editor_notices = $html;
+			$lrp_editor_notices = $html;
 		}
 
-		return $trp_editor_notices;
+		return $lrp_editor_notices;
 	}
 
-    public function display_notice_to_upgrade_slugs_in_editor( $trp_editor_notices ) {
-        if (  ( get_option( 'trp_migrate_old_slug_to_new_parent_and_translate_slug_table_term_meta_284', 'not_set' ) == 'no' ) ){
+    public function display_notice_to_upgrade_slugs_in_editor( $lrp_editor_notices ) {
+        if (  ( get_option( 'lrp_migrate_old_slug_to_new_parent_and_translate_slug_table_term_meta_284', 'not_set' ) == 'no' ) ){
             $url = add_query_arg( array(
-                'page'                      => 'trp_update_database',
+                'page'                      => 'lrp_update_database',
             ), site_url('wp-admin/admin.php') );
 
-            $html = "<div class='trp-notice trp-notice-warning'>";
-            $html .= '<p><strong>' . esc_html__( 'TranslatePress data update', 'translatepress-multilingual' ) . '</strong> &#8211; ' . esc_html__( 'We need to update your translations database to the latest version.', 'translatepress-multilingual' ) . '</p>';
-            $html .= '<p>' . esc_html__( 'Updating will allow editing translations of slugs. Existing translation will still work as expected.', 'translatepress-multilingual' ) . '</p>';
+            $html = "<div class='lrp-notice lrp-notice-warning'>";
+            $html .= '<p><strong>' . esc_html__( 'LinguaPress data update', 'linguapress' ) . '</strong> &#8211; ' . esc_html__( 'We need to update your translations database to the latest version.', 'linguapress' ) . '</p>';
+            $html .= '<p>' . esc_html__( 'Updating will allow editing translations of slugs. Existing translation will still work as expected.', 'linguapress' ) . '</p>';
 
-            $html .= '<p><a class="trp-button-primary" target="_blank" href="' . esc_url( $url ) . '" onclick="return confirm( \'' . __( 'IMPORTANT: It is strongly recommended to first backup the database!\nAre you sure you want to continue?', 'translatepress-multilingual' ) . '\');" class="button-primary">' . esc_html__( 'Run the updater', 'translatepress-multilingual' ) . '</a></p>';
+            $html .= '<p><a class="lrp-button-primary" target="_blank" href="' . esc_url( $url ) . '" onclick="return confirm( \'' . __( 'IMPORTANT: It is strongly recommended to first backup the database!\nAre you sure you want to continue?', 'linguapress' ) . '\');" class="button-primary">' . esc_html__( 'Run the updater', 'linguapress' ) . '</a></p>';
             $html .= '</div>';
 
-            $trp_editor_notices = $html;
+            $lrp_editor_notices = $html;
         }
 
-        return $trp_editor_notices;
+        return $lrp_editor_notices;
     }
 
     /**
@@ -854,13 +854,13 @@ class TRP_Translation_Manager {
      * @return mixed
      */
     public function filter_the_date( $date_format ) {
-        global $TRP_LANGUAGE;
+        global $LRP_LANGUAGE;
 
-        if ( !empty( $TRP_LANGUAGE ) && $this->settings["default-language"] === $TRP_LANGUAGE ) {
+        if ( !empty( $LRP_LANGUAGE ) && $this->settings["default-language"] === $LRP_LANGUAGE ) {
             return $date_format;
         } else {
-            if ( isset ( $this->settings["trp_advanced_settings"]["language_date_format"][ $TRP_LANGUAGE ] ) && !empty ( $this->settings["trp_advanced_settings"]["language_date_format"][ $TRP_LANGUAGE ] ) ) {
-                return $this->settings["trp_advanced_settings"]["language_date_format"][ $TRP_LANGUAGE ];
+            if ( isset ( $this->settings["lrp_advanced_settings"]["language_date_format"][ $LRP_LANGUAGE ] ) && !empty ( $this->settings["lrp_advanced_settings"]["language_date_format"][ $LRP_LANGUAGE ] ) ) {
+                return $this->settings["lrp_advanced_settings"]["language_date_format"][ $LRP_LANGUAGE ];
             } else {
                 return $date_format;
             }
@@ -870,7 +870,7 @@ class TRP_Translation_Manager {
     /**
      * Prevent indexing edit translation preview pages.
      *
-     * Hooked to trp_head, wp_head
+     * Hooked to lrp_head, wp_head
      *
      */
     public function output_noindex_tag()
@@ -884,15 +884,15 @@ class TRP_Translation_Manager {
 		// Check if SEO Pack is inactive
 		if ($this->is_seo_pack_active() === false) {
 			// Check if Pro version (Personal, Business or Developer) is active
-			if (trp_is_paid_version()) {
+			if (lrp_is_paid_version()) {
 				// Display activation message instead of upsale for Pro users
-				$html = '<div class="trp-text-and-image-upsale-slugs">';
-				$html .= '<div class="trp-text-upsale-slugs">';
+				$html = '<div class="lrp-text-and-image-upsale-slugs">';
+				$html .= '<div class="lrp-text-upsale-slugs">';
 				$html .= '<p>';
-				$html .= esc_html__('Please activate the SEO Addon from <br/>WordPress -> Settings -> TranslatePress -> Addons section', 'translatepress-multilingual' );
+				$html .= esc_html__('Please activate the SEO Addon from <br/>WordPress -> Settings -> LinguaPress -> Addons section', 'linguapress' );
 				$html .= '</p>';
-				$html .= '<a target="_blank" href="' . esc_url(admin_url('admin.php?page=trp_addons_page')) . '" class="trp-learn-more-upsale button-primary">';
-				$html .= esc_html__('Go to Addons', 'translatepress-multilingual' );
+				$html .= '<a target="_blank" href="' . esc_url(admin_url('admin.php?page=lrp_addons_page')) . '" class="lrp-learn-more-upsale button-primary">';
+				$html .= esc_html__('Go to Addons', 'linguapress' );
 				$html .= '</a>';
 				$html .= '</div>';
 				$html .= '</div>';
@@ -902,40 +902,40 @@ class TRP_Translation_Manager {
 		}
 	
 		// Default upsale text for free version
-		$upsale_url = 'https://translatepress.com/pricing/?utm_source=wpbackend&utm_medium=clientsite&utm_content=tpstringeditor&utm_campaign=tpfree';
+		$upsale_url = 'https://linguapress.com/pricing/?utm_source=wpbackend&utm_medium=clientsite&utm_content=tpstringeditor&utm_campaign=tpfree';
 
-		$html = '<div class="trp-text-and-image-upsale-slugs">';
-		$html .= '<div class="trp-text-upsale-slugs">';
+		$html = '<div class="lrp-text-and-image-upsale-slugs">';
+		$html .= '<div class="lrp-text-upsale-slugs">';
 		$html .= '<p>';
-		$html .= esc_html__('The SEO Pack add-on allows translation of all the URL slugs:', 'translatepress-multilingual' );
-		$html .= '<ul class="trp-url-slugs-list">';
+		$html .= esc_html__('The SEO Pack add-on allows translation of all the URL slugs:', 'linguapress' );
+		$html .= '<ul class="lrp-url-slugs-list">';
 		$html .= '<li>';
-		$html .= esc_html__('Taxonomy slugs', 'translatepress-multilingual' );
+		$html .= esc_html__('Taxonomy slugs', 'linguapress' );
 		$html .= '</li>';
 		$html .= '<li>';
-		$html .= esc_html__('Term slugs', 'translatepress-multilingual' );
+		$html .= esc_html__('Term slugs', 'linguapress' );
 		$html .= '</li>';
 		$html .= '<li>';
-		$html .= esc_html__('Post slugs (this includes pages and custom post types)', 'translatepress-multilingual' );
+		$html .= esc_html__('Post slugs (this includes pages and custom post types)', 'linguapress' );
 		$html .= '</li>';
 		$html .= '<li>';
-		$html .= esc_html__('Post type base slugs', 'translatepress-multilingual' );
+		$html .= esc_html__('Post type base slugs', 'linguapress' );
 		$html .= '</li>';
 		$html .= '<li>';
-		$html .= esc_html__('WooCommerce slugs', 'translatepress-multilingual' );
+		$html .= esc_html__('WooCommerce slugs', 'linguapress' );
 		$html .= '</li>';
 		$html .= '</ul>';
 		$html .= '</p>';
 		$html .= '<p>';
-		$html .= esc_html__('The SEO Pack add-on is available with ALL premium versions of the plugin.', 'translatepress-multilingual' );
+		$html .= esc_html__('The SEO Pack add-on is available with ALL premium versions of the plugin.', 'linguapress' );
 		$html .= '</p>';
-		$html .= '<a target="_blank" href="' . esc_url($upsale_url) . '" class="trp-learn-more-upsale button-primary">';
-		$html .= esc_html__('Upgrade to Pro', 'translatepress-multilingual' );
+		$html .= '<a target="_blank" href="' . esc_url($upsale_url) . '" class="lrp-learn-more-upsale button-primary">';
+		$html .= esc_html__('Upgrade to Pro', 'linguapress' );
 		$html .= '</a>';
 		$html .= '</div>';
-		$html .= '<div class="trp-image-upsale-slugs">';
-		$html .= '<div class="trp-image-container">';
-		$html .= '<img src="' . esc_url(TRP_PLUGIN_URL.'assets/images/slug-upsale-new-editor-new.png') . '" class="trp-image-zoom" alt="SEO Pack Add-on">';
+		$html .= '<div class="lrp-image-upsale-slugs">';
+		$html .= '<div class="lrp-image-container">';
+		$html .= '<img src="' . esc_url(LRP_PLUGIN_URL.'assets/images/slug-upsale-new-editor-new.png') . '" class="lrp-image-zoom" alt="SEO Pack Add-on">';
 		$html .= '</div>';
 		$html .= '</div>';
 		$html .= '</div>';
@@ -944,7 +944,7 @@ class TRP_Translation_Manager {
 	}
 
 	public function is_seo_pack_active(){
-		return class_exists( 'TRP_IN_Seo_Pack');
+		return class_exists( 'LRP_IN_Seo_Pack');
 	}
 
 }

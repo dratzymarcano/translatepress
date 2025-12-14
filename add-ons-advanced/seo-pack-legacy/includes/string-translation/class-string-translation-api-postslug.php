@@ -5,8 +5,8 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
-    class TRP_String_Translation_API_Post_Slug
+if( !class_exists('LRP_String_Translation_API_Post_Slug') ) {
+    class LRP_String_Translation_API_Post_Slug
     {
         protected $type = 'postslug';
         protected $id_column_name = 'post_id';
@@ -19,17 +19,17 @@ if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
         public function __construct($settings)
         {
             $this->settings = $settings;
-            $this->helper = new TRP_String_Translation_Helper();
-            $this->meta_based_strings = new TRP_IN_SP_Meta_Based_Strings();
-            $this->option_based_strings = new TRP_IN_SP_Option_Based_Strings();
+            $this->helper = new LRP_String_Translation_Helper();
+            $this->meta_based_strings = new LRP_IN_SP_Meta_Based_Strings();
+            $this->option_based_strings = new LRP_IN_SP_Option_Based_Strings();
         }
 
         public function get_strings()
         {
             $this->helper->check_ajax($this->type, 'get');
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $trp_query = $trp->get_component('query');
-            $string_translation = $trp->get_component('string_translation');
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $lrp_query = $lrp->get_component('query');
+            $string_translation = $lrp->get_component('string_translation');
             $config = $string_translation->get_configuration_options();
             $sanitized_args = $this->helper->get_sanitized_query_args($this->type);
             $dictionary_by_original = array();
@@ -45,7 +45,7 @@ if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
             if (!empty($sanitized_args['status'])) {
                 add_filter('posts_where', array($this, 'replace_meta_key_compare_wildcard'));
                 add_filter('posts_join', array($this, 'replace_meta_key_compare_wildcard'));
-                $wp_query_args = $this->meta_based_strings->get_translation_status_wp_query_args($wp_query_args, $sanitized_args, $trp_query);
+                $wp_query_args = $this->meta_based_strings->get_translation_status_wp_query_args($wp_query_args, $sanitized_args, $lrp_query);
             }
 
             // order and orderby
@@ -62,11 +62,11 @@ if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
             // search filter
             if (!empty($sanitized_args['s'])) {
                 add_filter('posts_where', array($this, 'add_query_on_post_name'), 10, 2);
-                $wp_query_args['trp_post_name_like'] = $sanitized_args['s'];
+                $wp_query_args['lrp_post_name_like'] = $sanitized_args['s'];
             }
 
             // post status filter
-            if ($sanitized_args['post-status'] != 'trp_any') {
+            if ($sanitized_args['post-status'] != 'lrp_any') {
                 $wp_query_args['post_status'] = (empty($sanitized_args['post-status'])) ? 'publish' : $sanitized_args['post-status'];
             }
 
@@ -77,7 +77,7 @@ if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
                 $wp_query_args['post_type'] = $sanitized_args['post-type'];
             }
 
-            $wp_query_args = apply_filters('trp_string_translation_query_args_' . $this->type, $wp_query_args, $sanitized_args);
+            $wp_query_args = apply_filters('lrp_string_translation_query_args_' . $this->type, $wp_query_args, $sanitized_args);
 
             // query for needed strings
             $resulted_wp_query = new WP_Query($wp_query_args);
@@ -93,7 +93,7 @@ if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
                 $sql_results = $this->meta_based_strings->get_translations_from_meta_table($post_ids, 'postmeta', $this->id_column_name);
 
                 // construct dictionary by original
-                $translationsArrays = $this->meta_based_strings->get_translations_array_from_sql_results($post_ids, $sql_results, $trp_query, $this->id_column_name);
+                $translationsArrays = $this->meta_based_strings->get_translations_array_from_sql_results($post_ids, $sql_results, $lrp_query, $this->id_column_name);
                 foreach ($resulted_wp_query->posts as $post) {
                     // it's possible that draft posts don't have slug yet so check if post_name is empty
                     if (!empty($post->post_name)) {
@@ -107,7 +107,7 @@ if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
                 }
             }
 
-            echo trp_safe_json_encode(array( //phpcs:ignore
+            echo lrp_safe_json_encode(array( //phpcs:ignore
                 'dictionary' => $dictionary_by_original,
                 'totalItems' => $found_items
             ));
@@ -125,7 +125,7 @@ if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
          */
         public function replace_meta_key_compare_wildcard($where)
         {
-            $this->meta_based_strings = new TRP_IN_SP_Meta_Based_Strings();
+            $this->meta_based_strings = new LRP_IN_SP_Meta_Based_Strings();
 
             $where = str_replace("meta_key='" . $this->meta_based_strings->get_human_translated_slug_meta() . "$", "meta_key LIKE '" . $this->meta_based_strings->get_human_translated_slug_meta() . "%", $where);
             $where = str_replace("meta_key = '" . $this->meta_based_strings->get_human_translated_slug_meta() . "$", "meta_key LIKE '" . $this->meta_based_strings->get_human_translated_slug_meta() . "%", $where);
@@ -138,8 +138,8 @@ if( !class_exists('TRP_String_Translation_API_Post_Slug') ) {
         public function add_query_on_post_name($where, $wp_query)
         {
             global $wpdb;
-            if ($trp_post_name_like = $wp_query->get('trp_post_name_like')) {
-                $where .= ' AND ' . $wpdb->posts . '.post_name LIKE \'%' . esc_sql($wpdb->esc_like(sanitize_title($trp_post_name_like))) . '%\'';
+            if ($lrp_post_name_like = $wp_query->get('lrp_post_name_like')) {
+                $where .= ' AND ' . $wpdb->posts . '.post_name LIKE \'%' . esc_sql($wpdb->esc_like(sanitize_title($lrp_post_name_like))) . '%\'';
             }
             return $where;
         }

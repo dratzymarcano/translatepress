@@ -4,16 +4,16 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-class TRP_Translation_Memory {
+class LRP_Translation_Memory {
     protected $db;
     protected $settings;
-    /* @var TRP_Query */
-    protected $trp_query;
+    /* @var LRP_Query */
+    protected $lrp_query;
 
     const MIN_NUMBER_OF_CHARS_FOR_FULLTEXT = 20;
 
     /**
-     * TRP_Translation_Memory constructor.
+     * LRP_Translation_Memory constructor.
      * @param $settings
      */
     public function __construct( $settings ){
@@ -36,15 +36,15 @@ class TRP_Translation_Memory {
             return array();
         }
 
-        $trp = TRP_Translate_Press::get_trp_instance();
-        if ( ! $this->trp_query ) {
-            $this->trp_query = $trp->get_component( 'query' );
+        $lrp = LRP_Lingua_Press::get_lrp_instance();
+        if ( ! $this->lrp_query ) {
+            $this->lrp_query = $lrp->get_component( 'query' );
         }
 
         $query = '';
         $query .= "SELECT original,translated, status FROM `"
                  . sanitize_text_field( $table_name )
-                 . "` WHERE status != " . TRP_Query::NOT_TRANSLATED . " AND `original` != '%s' AND MATCH(original) AGAINST ('%s' IN NATURAL LANGUAGE MODE ) LIMIT " . $number;
+                 . "` WHERE status != " . LRP_Query::NOT_TRANSLATED . " AND `original` != '%s' AND MATCH(original) AGAINST ('%s' IN NATURAL LANGUAGE MODE ) LIMIT " . $number;
 
         $query = $this->db->prepare( $query, array($string, $string) );
         $result = $this->db->get_results( $query, ARRAY_A );
@@ -59,30 +59,30 @@ class TRP_Translation_Memory {
      */
     public function ajax_get_similar_string_translation(){
         if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-            if (isset($_POST['action']) && $_POST['action'] === 'trp_get_similar_string_translation' && !empty($_POST['original_string']) && !empty($_POST['language']) && !empty($_POST['type']) && in_array($_POST['language'], $this->settings['translation-languages']) )
+            if (isset($_POST['action']) && $_POST['action'] === 'lrp_get_similar_string_translation' && !empty($_POST['original_string']) && !empty($_POST['language']) && !empty($_POST['type']) && in_array($_POST['language'], $this->settings['translation-languages']) )
             {
-                global $TRP_LANGUAGE;
+                global $LRP_LANGUAGE;
                 check_ajax_referer('getsimilarstring', 'security');
                 $string = ( isset($_POST['original_string']) ) ? $_POST['original_string'] : '';//phpcs:ignore
-                $language_code = ( isset($_POST['language']) ) ? sanitize_text_field( $_POST['language'] ) : $TRP_LANGUAGE;
+                $language_code = ( isset($_POST['language']) ) ? sanitize_text_field( $_POST['language'] ) : $LRP_LANGUAGE;
                 $type = ( isset($_POST['type']) ) ? sanitize_text_field( $_POST['type'] ) : '';
                 $number = ( isset($_POST['number']) ) ? (int) $_POST['number'] : 3;
 
-                $trp = TRP_Translate_Press::get_trp_instance();
-                if ( ! $this->trp_query ) {
-                    $this->trp_query = $trp->get_component( 'query' );
+                $lrp = LRP_Lingua_Press::get_lrp_instance();
+                if ( ! $this->lrp_query ) {
+                    $this->lrp_query = $lrp->get_component( 'query' );
                 }
 
                 $table_name = null;
 
                 // there is no dictionary table with the default language
                 if ( $language_code !== $this->settings['default-language'] ) {
-                    // data-trp-translate-id, data-trp-translate-id-innertext are in the wp_trp_dictionary_* tables
-                    $table_name = $this->trp_query->get_table_name( $language_code );
+                    // data-lrp-translate-id, data-lrp-translate-id-innertext are in the wp_lrp_dictionary_* tables
+                    $table_name = $this->lrp_query->get_table_name( $language_code );
                 }
 
                 if( $type == "gettext" ){
-                    $table_name = $this->trp_query->get_gettext_table_name( $language_code );
+                    $table_name = $this->lrp_query->get_gettext_table_name( $language_code );
                 }
 
                 if ( $table_name === null ) {

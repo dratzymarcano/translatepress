@@ -5,24 +5,24 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 /**
- * Class TRP_Gettext_Normalization
+ * Class LRP_Gettext_Normalization
  *
  * Queries for inserting and updating strings in gettext tables
  *
  * To access this component use:
- *        $trp = TRP_Translate_Press::get_trp_instance();
- *      $trp_query = $trp->get_component( 'query' );
- *      $gettext_insert_update = $trp_query->get_query_component('gettext_insert_update');
+ *        $lrp = LRP_Lingua_Press::get_lrp_instance();
+ *      $lrp_query = $lrp->get_component( 'query' );
+ *      $gettext_insert_update = $lrp_query->get_query_component('gettext_insert_update');
  *
  */
-class TRP_Gettext_Insert_Update extends TRP_Query {
+class LRP_Gettext_Insert_Update extends LRP_Query {
 
 	public    $db;
 	protected $settings;
 	protected $error_manager;
 
 	/**
-	 * TRP_Query constructor.
+	 * LRP_Query constructor.
 	 *
 	 * @param $settings
 	 */
@@ -33,7 +33,7 @@ class TRP_Gettext_Insert_Update extends TRP_Query {
 	}
 
 	/**
-	 * Inserts gettext strings in trp_gettext_{language_code} table and trp_gettext_original_strings table
+	 * Inserts gettext strings in lrp_gettext_{language_code} table and lrp_gettext_original_strings table
 	 *
 	 * @param $new_strings
 	 * @param $language_code
@@ -190,7 +190,7 @@ class TRP_Gettext_Insert_Update extends TRP_Query {
 	}
 
 	/**
-	 * Update gettext strings in trp_gettext_{language_code} table
+	 * Update gettext strings in lrp_gettext_{language_code} table
 	 *
 	 * @param $updated_strings
 	 * @param $language_code

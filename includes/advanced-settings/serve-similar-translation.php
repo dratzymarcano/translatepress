@@ -4,14 +4,14 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-add_filter('trp_register_advanced_settings', 'serve_similar_translation', 1050);
+add_filter('lrp_register_advanced_settings', 'serve_similar_translation', 1050);
 function serve_similar_translation($settings_array)
 {
     $settings_array[] = array(
         'name'  => 'serve_similar_translation',
         'type'  => 'checkbox',
-        'label' => esc_html__('Automatic Translation Memory', 'translatepress-multilingual'),
-        'description'   => wp_kses(__('Serve same translation for similar text. The strings need to have a percentage of 95% similarity.<br>Helps prevent losing existing translation when correcting typos or making minor adjustments to the original text. <br>If a translation already exists for a very similar original string, it will automatically be used for the current original string.<br>Does not work when making changes to a text that is part of a translation block unless the new text is manually merged again in a translation block.<br>Each string needs to have a minimum of 50 characters.', 'translatepress-multilingual'), array('br' => array())) . '<br><p class="trp-settings-warning" style="width: 100%;">' . esc_html__( 'WARNING: This feature can negatively impact page loading times in secondary languages, particularly with large databases (for example websites with a lot of pages or products). If you experience slow loading times, disable this and try again.', 'translatepress-multilingual') . '</p>',
+        'label' => esc_html__('Automatic Translation Memory', 'linguapress'),
+        'description'   => wp_kses(__('Serve same translation for similar text. The strings need to have a percentage of 95% similarity.<br>Helps prevent losing existing translation when correcting typos or making minor adjustments to the original text. <br>If a translation already exists for a very similar original string, it will automatically be used for the current original string.<br>Does not work when making changes to a text that is part of a translation block unless the new text is manually merged again in a translation block.<br>Each string needs to have a minimum of 50 characters.', 'linguapress'), array('br' => array())) . '<br><p class="lrp-settings-warning" style="width: 100%;">' . esc_html__( 'WARNING: This feature can negatively impact page loading times in secondary languages, particularly with large databases (for example websites with a lot of pages or products). If you experience slow loading times, disable this and try again.', 'linguapress') . '</p>',
         'id'            => 'miscellaneous_options',
         'container'     => 'miscellaneous_options'
     );
@@ -19,9 +19,9 @@ function serve_similar_translation($settings_array)
 }
 
 
-add_filter('trp_add_similar_and_original_strings_to_db', 'trp_add_similar_and_original_strings_to_db');
+add_filter('lrp_add_similar_and_original_strings_to_db', 'lrp_add_similar_and_original_strings_to_db');
 
-function trp_add_similar_and_original_strings_to_db($bool){
+function lrp_add_similar_and_original_strings_to_db($bool){
 
     $bool = true;
     return $bool;
@@ -33,26 +33,26 @@ function trp_add_similar_and_original_strings_to_db($bool){
  * with an already existing translation in DB
  */
 
-add_filter( 'trp_get_existing_translations', 'trp_serve_similar_translations', 5, 5);
-function trp_serve_similar_translations ( $dictionary, $prepared_query, $strings_array, $language_code, $block_type ){
-    if( isset($_GET['trp-edit-translation']) ){
+add_filter( 'lrp_get_existing_translations', 'lrp_serve_similar_translations', 5, 5);
+function lrp_serve_similar_translations ( $dictionary, $prepared_query, $strings_array, $language_code, $block_type ){
+    if( isset($_GET['lrp-edit-translation']) ){
         return $dictionary;
     }
 
-    $trp = TRP_Translate_Press::get_trp_instance();
-    $trp_query = $trp->get_component( 'query' );
-    $table_name = $trp_query->get_table_name($language_code);
+    $lrp = LRP_Lingua_Press::get_lrp_instance();
+    $lrp_query = $lrp->get_component( 'query' );
+    $table_name = $lrp_query->get_table_name($language_code);
 
-    $option = get_option( 'trp_advanced_settings', true );
+    $option = get_option( 'lrp_advanced_settings', true );
     if ( isset( $option['serve_similar_translation'] ) && $option['serve_similar_translation'] === 'yes' ) {
 
         //here we set the minimum number of characters a string should have to be considered for checking similarity
         //in our case is set to 50 characters but it can be changed
-        $minimal_characters_per_strings_considered_for_similarity = apply_filters('trp_minimal_characters_per_strings_considered_for_similarity', 50);
+        $minimal_characters_per_strings_considered_for_similarity = apply_filters('lrp_minimal_characters_per_strings_considered_for_similarity', 50);
 
         //here we set the minimal percentage of compatibility between the string in the DB and the similar ones
         //we set it at 95% but it can be changed
-        $minimal_percent_of_compatibility = apply_filters('trp_minimal_percent_of_compatibility_for_strings_to_be_similar', 0.95);
+        $minimal_percent_of_compatibility = apply_filters('lrp_minimal_percent_of_compatibility_for_strings_to_be_similar', 0.95);
 
         foreach ( $strings_array as $string ) {
             //we try to get the translated strings from the dictionary
@@ -60,16 +60,16 @@ function trp_serve_similar_translations ( $dictionary, $prepared_query, $strings
                 $result = false;
                 $query  = "SELECT original,translated, status FROM `"
                     . sanitize_text_field( $table_name )
-                    . "` WHERE status != " . TRP_Query::NOT_TRANSLATED . " AND `original` != '%s' AND MATCH(original) AGAINST ('%s' IN NATURAL LANGUAGE MODE ) LIMIT 1";
+                    . "` WHERE status != " . LRP_Query::NOT_TRANSLATED . " AND `original` != '%s' AND MATCH(original) AGAINST ('%s' IN NATURAL LANGUAGE MODE ) LIMIT 1";
 
-                $query  = $trp_query->db->prepare( $query, array( $string, $string ) );
-                $result = $trp_query->db->get_results( $query, OBJECT_K );
+                $query  = $lrp_query->db->prepare( $query, array( $string, $string ) );
+                $result = $lrp_query->db->get_results( $query, OBJECT_K );
                 if ( !empty( $result ) ) {
                     // we reset the found query which has multiple arguments to the $original argument which is the unaltered string in the default language
-                    // after this, we check the minimal length of the two strings and use the function 'trp_dice_match' to determine the percentage of similarity
+                    // after this, we check the minimal length of the two strings and use the function 'lrp_dice_match' to determine the percentage of similarity
                     // if the percentage is higher or equal to the chosen value, the similar string gets all the arguments from the string in DB including the translation
                     $original = reset( $result )->original;
-                    if ( strlen( $string ) >= $minimal_characters_per_strings_considered_for_similarity && strlen( $original ) >= $minimal_characters_per_strings_considered_for_similarity && trp_dice_match( $string, $original ) >= $minimal_percent_of_compatibility) {
+                    if ( strlen( $string ) >= $minimal_characters_per_strings_considered_for_similarity && strlen( $original ) >= $minimal_characters_per_strings_considered_for_similarity && lrp_dice_match( $string, $original ) >= $minimal_percent_of_compatibility) {
                         $dictionary[ $string ] = reset( $result );
                     }
 
@@ -84,7 +84,7 @@ function trp_serve_similar_translations ( $dictionary, $prepared_query, $strings
 // https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
 // PHP clone of https://github.com/stephenjjbrown/string-similarity-js/blob/master/src/string-similarity.ts
 
-function trp_dice_match($string1, $string2)
+function lrp_dice_match($string1, $string2)
 {
     // we're ignoring punctuation and making everything lowercase in hopes of getting better matches.
     $string1 = strtolower(str_replace(['?', '!', '.', ',', ';', ':'], '', $string1));

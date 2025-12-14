@@ -8,9 +8,9 @@ if ( !defined('ABSPATH' ) )
  *
  * Uses customization options from Shortcode language switcher.
  */
-function trp_the_language_switcher(){
-    $trp = TRP_Translate_Press::get_trp_instance();
-    $language_switcher = $trp->get_component( 'language_switcher' );
+function lrp_the_language_switcher(){
+    $lrp = LRP_Lingua_Press::get_lrp_instance();
+    $language_switcher = $lrp->get_component( 'language_switcher' );
     echo $language_switcher->language_switcher(); /* phpcs:ignore */ /* escaped inside the function */
 }
 
@@ -19,8 +19,8 @@ function trp_the_language_switcher(){
  * @param $value
  * @return mixed|string|void
  */
-function trp_safe_json_encode($value){
-    if (version_compare(PHP_VERSION, '5.4.0') >= 0 && apply_filters('trp_safe_json_encode_pretty_print', true )) {
+function lrp_safe_json_encode($value){
+    if (version_compare(PHP_VERSION, '5.4.0') >= 0 && apply_filters('lrp_safe_json_encode_pretty_print', true )) {
         $encoded = json_encode($value, JSON_PRETTY_PRINT);
     } else {
         $encoded = json_encode($value);
@@ -37,8 +37,8 @@ function trp_safe_json_encode($value){
         case JSON_ERROR_SYNTAX:
             return 'Syntax error, malformed JSON'; // or trigger_error() or throw new Exception()
         case JSON_ERROR_UTF8:
-            $clean = trp_utf8ize($value);
-            return trp_safe_json_encode($clean);
+            $clean = lrp_utf8ize($value);
+            return lrp_safe_json_encode($clean);
         default:
             return 'Unknown error'; // or trigger_error() or throw new Exception()
 
@@ -46,14 +46,14 @@ function trp_safe_json_encode($value){
 }
 
 /**
- * Helper function for trp_safe_json_encode that helps eliminate utf8 json encode errors
+ * Helper function for lrp_safe_json_encode that helps eliminate utf8 json encode errors
  * @param $mixed
  * @return array|string
  */
-function trp_utf8ize($mixed) {
+function lrp_utf8ize($mixed) {
     if (is_array($mixed)) {
         foreach ($mixed as $key => $value) {
-            $mixed[$key] = trp_utf8ize($value);
+            $mixed[$key] = lrp_utf8ize($value);
         }
     } else if (is_string ($mixed)) {
         return utf8_encode($mixed);
@@ -65,34 +65,34 @@ function trp_utf8ize($mixed) {
  * function that gets the translation for a string with context directly from a .mo file
  * @TODO this was developped firstly for woocommerce so it maybe needs further development.
 */
-function trp_x( $text, $context, $domain, $language ) {
+function lrp_x( $text, $context, $domain, $language ) {
     $original_text = $text;
 
-    $cache_key = 'trp_x_' . md5( $text . $context . $domain . $language );
+    $cache_key = 'lrp_x_' . md5( $text . $context . $domain . $language );
     $new_text  = wp_cache_get( $cache_key );
     if ( $new_text !== false ) {
         return $new_text;
     }
     /* try to find the correct path for the textdomain */
-    $path_cache_key = 'trp_x_path_' . md5( $domain . $language );
+    $path_cache_key = 'lrp_x_path_' . md5( $domain . $language );
     $path           = wp_cache_get( $path_cache_key );
     if ( $path === false ) {
-        $path = trp_find_translation_location_for_domain( $domain, $language );
+        $path = lrp_find_translation_location_for_domain( $domain, $language );
         wp_cache_set( $path_cache_key, $path );
     }
 
     if ( !empty( $path ) ) {
 
-        $mo_file = trp_cache_get( 'trp_x_' . $domain . '_' . $language );
+        $mo_file = lrp_cache_get( 'lrp_x_' . $domain . '_' . $language );
 
         if ( false === $mo_file ) {
             $mo_file = new MO();
             $mo_file->import_from_file( $path );
-            wp_cache_set( 'trp_x_' . $domain . '_' . $language, $mo_file );
+            wp_cache_set( 'lrp_x_' . $domain . '_' . $language, $mo_file );
         }
 
         if ( !$mo_file ) {
-            $return = apply_filters( 'trp_x', $text, $original_text, $context, $domain, $language );
+            $return = apply_filters( 'lrp_x', $text, $original_text, $context, $domain, $language );
             wp_cache_set( $cache_key, $return );
             return $return;
         }
@@ -102,17 +102,17 @@ function trp_x( $text, $context, $domain, $language ) {
         }
     }
 
-    $return = apply_filters( 'trp_x', $text, $original_text, $context, $domain, $language );
+    $return = apply_filters( 'lrp_x', $text, $original_text, $context, $domain, $language );
     wp_cache_set( $cache_key, $return );
     return $return;
 }
 
 /**
  * updated function that gets the translation for a string with context directly from a .po file
- * @TODO the initial trp_x function was returning the translation in english  for the slugs I tried to search even if they were translation for them
- * the trp_x function also searches the .mo file witch doesn't seem to be the right file, but the .po file instead
+ * @TODO the initial lrp_x function was returning the translation in english  for the slugs I tried to search even if they were translation for them
+ * the lrp_x function also searches the .mo file witch doesn't seem to be the right file, but the .po file instead
  */
-function trp_x_updated( $original_text, $context, $domain, $language ){
+function lrp_x_updated( $original_text, $context, $domain, $language ){
     // Define the base path to the plugin's languages directory
     $basePath = WP_CONTENT_DIR . '/languages/plugins/';
 
@@ -140,11 +140,11 @@ function trp_x_updated( $original_text, $context, $domain, $language ){
  * @param $language the language in which you want the translation
  * @return string the path of the mo file if it is found else an empty string
  */
-function trp_find_translation_location_for_domain( $domain, $language ){
-    global $trp_template_directory;
-    if ( !isset($trp_template_directory)){
+function lrp_find_translation_location_for_domain( $domain, $language ){
+    global $lrp_template_directory;
+    if ( !isset($lrp_template_directory)){
         // "caching" this because it sometimes leads to increased page load time due to many calls
-        $trp_template_directory = get_template_directory();
+        $lrp_template_directory = get_template_directory();
     }
     $path = '';
 
@@ -158,8 +158,8 @@ function trp_find_translation_location_for_domain( $domain, $language ){
     } else {
         $possible_translation_folders = array( '', 'languages/', 'language/', 'translations/', 'translation/', 'lang/' );
         foreach( $possible_translation_folders as $possible_translation_folder ){
-            if (file_exists($trp_template_directory . '/' . $possible_translation_folder . $domain . '-' . $language . '.mo')) {
-                $path = $trp_template_directory . '/' . $possible_translation_folder . $domain . '-' . $language . '.mo';
+            if (file_exists($lrp_template_directory . '/' . $possible_translation_folder . $domain . '-' . $language . '.mo')) {
+                $path = $lrp_template_directory . '/' . $possible_translation_folder . $domain . '-' . $language . '.mo';
             } elseif ( file_exists(WP_PLUGIN_DIR . '/' . $domain . '/' . $possible_translation_folder . $domain . '-' . $language . '.mo') ) {
                 $path = WP_PLUGIN_DIR . '/' . $domain . '/' . $possible_translation_folder . $domain . '-' . $language . '.mo';
             }
@@ -174,22 +174,22 @@ function trp_find_translation_location_for_domain( $domain, $language ){
  * @param $link string the given url to append
  * @return string url with the added affiliate_id
  */
-function trp_add_affiliate_id_to_link( $link ){
+function lrp_add_affiliate_id_to_link( $link ){
 
     //Avangate Affiliate Network
-    $avg_affiliate_id = get_option('translatepress_avg_affiliate_id');
+    $avg_affiliate_id = get_option('linguapress_avg_affiliate_id');
     if  ( !empty( $avg_affiliate_id ) ) {
         $link = add_query_arg( 'avgref', $avg_affiliate_id, $link );
     }
     else{
         // AffiliateWP
-        $affiliate_id = get_option('translatepress_affiliate_id');
+        $affiliate_id = get_option('linguapress_affiliate_id');
         if  ( !empty( $affiliate_id ) ) {
             $link = add_query_arg( 'ref', $affiliate_id, $link );
         }
     }
 
-    return esc_url( apply_filters( 'trp_affiliate_link', $link ) );
+    return esc_url( apply_filters( 'lrp_affiliate_link', $link ) );
 }
 
 /**
@@ -199,7 +199,7 @@ function trp_add_affiliate_id_to_link( $link ){
  * Removes any unwanted html code from the string.
  * Do not confuse with trim.
  */
-function trp_sanitize_string( $filtered, $execute_wp_kses = true ){
+function lrp_sanitize_string( $filtered, $execute_wp_kses = true ){
     if (!is_string($filtered)) return '';
 
 	$filtered = preg_replace( '/<script\b[^>]*>(.*?)<\/script>/is', '', $filtered );
@@ -220,22 +220,22 @@ function trp_sanitize_string( $filtered, $execute_wp_kses = true ){
 	}
 
     if ( $execute_wp_kses ){
-        $filtered = trp_wp_kses( $filtered );
+        $filtered = lrp_wp_kses( $filtered );
     }
     return $filtered;
 }
 
-function trp_wp_kses($string){
-    if ( apply_filters('trp_apply_wp_kses_on_strings', true) ){
-        add_filter( 'wp_kses_allowed_html', 'trp_prevent_kses_from_stripping_trp_wbr_tag', 10, 2 );
+function lrp_wp_kses($string){
+    if ( apply_filters('lrp_apply_wp_kses_on_strings', true) ){
+        add_filter( 'wp_kses_allowed_html', 'lrp_prevent_kses_from_stripping_lrp_wbr_tag', 10, 2 );
         $string = wp_kses_post($string);
-        remove_filter('wp_kses_allowed_html', 'trp_prevent_kses_from_stripping_trp_wbr_tag', 10);
+        remove_filter('wp_kses_allowed_html', 'lrp_prevent_kses_from_stripping_lrp_wbr_tag', 10);
     }
 
     return $string;
 }
 
-function trp_prevent_kses_from_stripping_trp_wbr_tag( $allowedposttags, $context ){
+function lrp_prevent_kses_from_stripping_lrp_wbr_tag( $allowedposttags, $context ){
 
     if ( $context === 'post' ){
         $allowedposttags['wbr'] = true;
@@ -245,12 +245,12 @@ function trp_prevent_kses_from_stripping_trp_wbr_tag( $allowedposttags, $context
 }
 
 /**
- * function that checks if $_REQUEST['trp-edit-translation'] is set or if it has a certain value
+ * function that checks if $_REQUEST['lrp-edit-translation'] is set or if it has a certain value
  */
-function trp_is_translation_editor( $value = '' ){
-    if( isset( $_REQUEST['trp-edit-translation'] ) ){
+function lrp_is_translation_editor( $value = '' ){
+    if( isset( $_REQUEST['lrp-edit-translation'] ) ){
         if( !empty( $value ) ) {
-            if( $_REQUEST['trp-edit-translation'] === $value ) {
+            if( $_REQUEST['lrp-edit-translation'] === $value ) {
                 return true;
             }
             else{
@@ -259,7 +259,7 @@ function trp_is_translation_editor( $value = '' ){
         }
         else{
             $possible_values = array ('preview', 'true');
-            if( in_array( $_REQUEST['trp-edit-translation'], $possible_values ) ) {
+            if( in_array( $_REQUEST['lrp-edit-translation'], $possible_values ) ) {
                 return true;
             }
         }
@@ -268,7 +268,7 @@ function trp_is_translation_editor( $value = '' ){
     return false;
 }
 
-function trp_remove_accents( $string ){
+function lrp_remove_accents( $string ){
 
     if ( !preg_match('/[\x80-\xff]/', $string) )
         return $string;
@@ -451,9 +451,9 @@ function trp_remove_accents( $string ){
         );
 
         // Used for locale-specific rules
-        $trp = TRP_Translate_Press::get_trp_instance();
-        $trp_settings = $trp->get_component( 'settings' );
-        $settings = $trp_settings->get_settings();
+        $lrp = LRP_Lingua_Press::get_lrp_instance();
+        $lrp_settings = $lrp->get_component( 'settings' );
+        $settings = $lrp_settings->get_settings();
 
         $default_language= $settings["default-language"];
         $locale = $default_language;
@@ -512,16 +512,16 @@ function trp_remove_accents( $string ){
  *
  * @param string $icon The icon to output. Default no icon.
  */
-function trp_output_svg( $icon = '' ) {
+function lrp_output_svg( $icon = '' ) {
     switch ( $icon ) {
         case 'check':
             ?>
-            <svg class="trp-svg-icon fas-check-circle"><use xlink:href="#check-circle"></use></svg>
+            <svg class="lrp-svg-icon fas-check-circle"><use xlink:href="#check-circle"></use></svg>
             <?php
             break;
         case 'error':
             ?>
-            <svg class="trp-svg-icon fas-times-circle"><use xlink:href="#times-circle"></use></svg>
+            <svg class="lrp-svg-icon fas-times-circle"><use xlink:href="#times-circle"></use></svg>
             <?php
             break;
         default:
@@ -537,7 +537,7 @@ function trp_output_svg( $icon = '' ) {
  * @param bool $enabled
  * @param array $logger
  */
-function trp_bulk_debug($debug = false, $logger = array()){
+function lrp_bulk_debug($debug = false, $logger = array()){
     if(!$debug){
         return;
     }
@@ -559,12 +559,12 @@ function trp_bulk_debug($debug = false, $logger = array()){
  *
  * @return bool
  */
-function trp_is_paid_version() {
-	// Check if TranslatePress paid plugins are active
+function lrp_is_paid_version() {
+	// Check if LinguaPress paid plugins are active
 	$paid_plugins = array(
-		'TranslatePress - Personal'  => 'translatepress-personal/index.php',
-		'TranslatePress - Business'  => 'translatepress-business/index.php',
-		'TranslatePress - Developer' => 'translatepress-developer/index.php'
+		'LinguaPress - Personal'  => 'linguapress-personal/index.php',
+		'LinguaPress - Business'  => 'linguapress-business/index.php',
+		'LinguaPress - Developer' => 'linguapress-developer/index.php'
 	);
 
 
@@ -576,19 +576,19 @@ function trp_is_paid_version() {
     }
 
 	//list of class names
-	$addons = apply_filters( 'trp_paid_addons', array(
-		'TRP_IN_Automatic_Language_Detection',
-		'TRP_IN_Browse_as_other_Role',
-		'TRP_IN_Extra_Languages',
-		'TRP_IN_Navigation_Based_on_Language',
-		'TRP_IN_Seo_Pack',
-		'TRP_IN_Translator_Accounts',
-        'TRP_Automatic_Language_Detection',
-        'TRP_Browse_as_other_Role',
-        'TRP_Extra_Languages',
-        'TRP_Navigation_Based_on_Language',
-        'TRP_Seo_Pack',
-        'TRP_Translator_Accounts',
+	$addons = apply_filters( 'lrp_paid_addons', array(
+		'LRP_IN_Automatic_Language_Detection',
+		'LRP_IN_Browse_as_other_Role',
+		'LRP_IN_Extra_Languages',
+		'LRP_IN_Navigation_Based_on_Language',
+		'LRP_IN_Seo_Pack',
+		'LRP_IN_Translator_Accounts',
+        'LRP_Automatic_Language_Detection',
+        'LRP_Browse_as_other_Role',
+        'LRP_Extra_Languages',
+        'LRP_Navigation_Based_on_Language',
+        'LRP_Seo_Pack',
+        'LRP_Translator_Accounts',
 	) );
 
 	foreach ( $addons as $className ) {
@@ -607,7 +607,7 @@ function trp_is_paid_version() {
  * @param $tags_allowed     array       Array of tags allowed to be executed
  * @return string           string      Resulted string
  */
-function trp_do_these_shortcodes( $content, $tags_allowed ){
+function lrp_do_these_shortcodes( $content, $tags_allowed ){
     global $shortcode_tags;
     $copy_shortcode_tags = $shortcode_tags;
 
@@ -639,11 +639,11 @@ function trp_do_these_shortcodes( $content, $tags_allowed ){
  * @return mixed array with key/value pairs of published language codes and names
  *
  */
-function trp_get_languages($nodefault=null)
+function lrp_get_languages($nodefault=null)
 {
-    $trp_obj = TRP_Translate_Press::get_trp_instance();
-    $settings_obj = $trp_obj->get_component('settings');
-    $lang_obj = $trp_obj->get_component('languages');
+    $lrp_obj = LRP_Lingua_Press::get_lrp_instance();
+    $settings_obj = $lrp_obj->get_component('settings');
+    $lang_obj = $lrp_obj->get_component('languages');
 
     $default_lang_labels = $settings_obj->get_setting('default-language');
     $published_lang = $settings_obj->get_setting('publish-languages');
@@ -655,7 +655,7 @@ function trp_get_languages($nodefault=null)
 }
 
 /**
- * Wrapper function for wp_cache_get() that bypasses cache if TRP_DEBUG is on
+ * Wrapper function for wp_cache_get() that bypasses cache if LRP_DEBUG is on
  * @param int|string $key   The key under which the cache contents are stored.
  * @param string     $group Optional. Where the cache contents are grouped. Default empty.
  * @param bool       $force Optional. Whether to force an update of the local cache
@@ -665,8 +665,8 @@ function trp_get_languages($nodefault=null)
  * @return mixed|false The cache contents on success, false on failure to retrieve contents or false when WP_DEBUG is on
  *
  */
-function trp_cache_get( $key, $group = '', $force = false, &$found = null ){
-    if( defined( 'TRP_DEBUG' ) && TRP_DEBUG == true )
+function lrp_cache_get( $key, $group = '', $force = false, &$found = null ){
+    if( defined( 'LRP_DEBUG' ) && LRP_DEBUG == true )
         return false;
 
     $cache = wp_cache_get( $key, $group, $force, $found );
@@ -674,10 +674,10 @@ function trp_cache_get( $key, $group = '', $force = false, &$found = null ){
 }
 
 /**
- * Wrapper function for get_transient() that bypasses cache if TRP_DEBUG is on
+ * Wrapper function for get_transient() that bypasses cache if LRP_DEBUG is on
  */
-function trp_get_transient( $transient ){
-    if( ( defined( 'TRP_DEBUG' ) && TRP_DEBUG == true ) || defined( 'TRP_DEBUG_TRANSIENT' ) && TRP_DEBUG_TRANSIENT == true  )
+function lrp_get_transient( $transient ){
+    if( ( defined( 'LRP_DEBUG' ) && LRP_DEBUG == true ) || defined( 'LRP_DEBUG_TRANSIENT' ) && LRP_DEBUG_TRANSIENT == true  )
         return false;
 
     return get_transient($transient);
@@ -685,11 +685,11 @@ function trp_get_transient( $transient ){
 
 /**
  * Determine if the setting in Advanced Options should make us add a slash at end of string
- * @param $settings the TranslatePress settings object
+ * @param $settings the LinguaPress settings object
  * @return bool
  */
-function trp_force_slash_at_end_of_link( $settings ){
-    if ( !empty( $settings['trp_advanced_settings'] ) && isset( $settings['trp_advanced_settings']['force_slash_at_end_of_links'] ) && $settings['trp_advanced_settings']['force_slash_at_end_of_links'] === 'yes' )
+function lrp_force_slash_at_end_of_link( $settings ){
+    if ( !empty( $settings['lrp_advanced_settings'] ) && isset( $settings['lrp_advanced_settings']['force_slash_at_end_of_links'] ) && $settings['lrp_advanced_settings']['force_slash_at_end_of_links'] === 'yes' )
         return true;
     else
         return false;
@@ -704,16 +704,16 @@ function trp_force_slash_at_end_of_link( $settings ){
  * The array returned has the following indexes: language_name, language_code, short_language_name, flag_link, current_page_url
  */
 
-function trp_custom_language_switcher() {
-    $trp           = TRP_Translate_Press::get_trp_instance();
-    $trp_languages = $trp->get_component( 'languages' );
-    $trp_settings  = $trp->get_component( 'settings' );
-    $settings      = $trp_settings->get_settings();
+function lrp_custom_language_switcher() {
+    $lrp           = LRP_Lingua_Press::get_lrp_instance();
+    $lrp_languages = $lrp->get_component( 'languages' );
+    $lrp_settings  = $lrp->get_component( 'settings' );
+    $settings      = $lrp_settings->get_settings();
 
     $languages_to_display  = $settings['publish-languages'];
-    $translation_languages = $trp_languages->get_language_names( $languages_to_display );
+    $translation_languages = $lrp_languages->get_language_names( $languages_to_display );
 
-    $url_converter = $trp->get_component( 'url_converter' );
+    $url_converter = $lrp->get_component( 'url_converter' );
 
     $custom_ls_array = array();
 
@@ -723,11 +723,11 @@ function trp_custom_language_switcher() {
         $custom_ls_array[ $item ]['language_code']       = $item;
         $custom_ls_array[ $item ]['short_language_name'] = $url_converter->get_url_slug( $item, false );
 
-        $flags_path = TRP_PLUGIN_URL . 'assets/images/flags/';
-        $flags_path = apply_filters( 'trp_flags_path', $flags_path, $item );
+        $flags_path = LRP_PLUGIN_URL . 'assets/images/flags/';
+        $flags_path = apply_filters( 'lrp_flags_path', $flags_path, $item );
 
         $flag_file_name = $item . '.png';
-        $flag_file_name = apply_filters( 'trp_flag_file_name', $flag_file_name, $item );
+        $flag_file_name = apply_filters( 'lrp_flag_file_name', $flag_file_name, $item );
 
         $custom_ls_array[ $item ]['flag_link'] = esc_url( $flags_path . $flag_file_name );
 
@@ -744,34 +744,34 @@ function trp_custom_language_switcher() {
  * @param string $language is the language you want to translate the content into, if it is left undefined the content will be translated
  * to the current language; it's set to current language by default
  * @param bool $prevent_over_translation is a parameter that prevents the translated content from being translated again during the translation
- * of the page. This can be set to false if the translated content is used in a way that TranslatePress can't detect the text.
+ * of the page. This can be set to false if the translated content is used in a way that LinguaPress can't detect the text.
  * It's set to true by default
  * @return string is the translated content in the chosen language
  */
-function trp_translate( $content, $language = null, $prevent_over_translation = true ){
-    $trp = TRP_Translate_Press::get_trp_instance();
-    $trp_render = $trp->get_component( 'translation_render' );
-    global $TRP_LANGUAGE;
+function lrp_translate( $content, $language = null, $prevent_over_translation = true ){
+    $lrp = LRP_Lingua_Press::get_lrp_instance();
+    $lrp_render = $lrp->get_component( 'translation_render' );
+    global $LRP_LANGUAGE;
 
-    $lang_backup = $TRP_LANGUAGE;
+    $lang_backup = $LRP_LANGUAGE;
 
     if ($language !== null){
-        $TRP_LANGUAGE = $language;
+        $LRP_LANGUAGE = $language;
     }
-    $translated_custom_content = $trp_render->translate_page($content);
+    $translated_custom_content = $lrp_render->translate_page($content);
 
     if ($prevent_over_translation === true){
         $translated_custom_content = '<span data-no-translation>' . $translated_custom_content .'</span>';
     }
 
-    $TRP_LANGUAGE = $lang_backup;
+    $LRP_LANGUAGE = $lang_backup;
 
     return $translated_custom_content;
 }
 
-function trp_get_license_status(){
-    $license_details = get_option( 'trp_license_details' );
-    $is_demosite = ( strpos(site_url(), 'https://demo.translatepress.com' ) !== false );
+function lrp_get_license_status(){
+    $license_details = get_option( 'lrp_license_details' );
+    $is_demosite = ( strpos(site_url(), 'https://demo.linguapress.com' ) !== false );
     $status = 'free-version';
     if( !empty($license_details) && !$is_demosite) {
         /* if we have any invalid response for any of the addon show just the error notification and ignore any valid responses */
@@ -795,59 +795,59 @@ function trp_get_license_status(){
 
 /**
  * Used by third parties to briefly switch language such as when sending an email
- * To get a user's preferred language use this code: get_user_meta( $user_id, 'trp_language', true );
+ * To get a user's preferred language use this code: get_user_meta( $user_id, 'lrp_language', true );
  *
  * @param $language
  * @return void
  */
-function trp_switch_language($language){
-    global $TRP_LANGUAGE, $TRP_LANGUAGE_COPY, $TRP_LANGUAGE_ORIGINAL;
-    $language = trp_validate_language( $language );
-    $TRP_LANGUAGE_ORIGINAL = $TRP_LANGUAGE;
-    $TRP_LANGUAGE = $language;
-    $TRP_LANGUAGE_COPY = $language;
+function lrp_switch_language($language){
+    global $LRP_LANGUAGE, $LRP_LANGUAGE_COPY, $LRP_LANGUAGE_ORIGINAL;
+    $language = lrp_validate_language( $language );
+    $LRP_LANGUAGE_ORIGINAL = $LRP_LANGUAGE;
+    $LRP_LANGUAGE = $language;
+    $LRP_LANGUAGE_COPY = $language;
 
-    // Because of 'trp_before_translate_content' filter function is_ajax_frontend() is called and it changes the global $TRP_LANGUAGE according to the url from which it was called.
-    // Function trp_reset_language() is added on the hook in order to set global $TRP_LANGUAGE according to our need for the email language instead.
-    add_filter( 'trp_before_translate_content', 'trp_reset_language', 99999999 );
+    // Because of 'lrp_before_translate_content' filter function is_ajax_frontend() is called and it changes the global $LRP_LANGUAGE according to the url from which it was called.
+    // Function lrp_reset_language() is added on the hook in order to set global $LRP_LANGUAGE according to our need for the email language instead.
+    add_filter( 'lrp_before_translate_content', 'lrp_reset_language', 99999999 );
 
     switch_to_locale($language);
-    add_filter( 'plugin_locale', 'trp_get_locale', 99999999);
+    add_filter( 'plugin_locale', 'lrp_get_locale', 99999999);
 }
 
 /**
- * Return $TRP_LANGUAGE as plugin locale
+ * Return $LRP_LANGUAGE as plugin locale
  *
  * @return mixed
  */
-function trp_get_locale() {
-    global $TRP_LANGUAGE;
-    return $TRP_LANGUAGE;
+function lrp_get_locale() {
+    global $LRP_LANGUAGE;
+    return $LRP_LANGUAGE;
 }
 
 /**
- * The value of $TRP_LANGUAGE is set according to the url, which can be problematic in some cases when sending emails
- * Restore the $TRP_LANGUAGE value in which email will be sent
+ * The value of $LRP_LANGUAGE is set according to the url, which can be problematic in some cases when sending emails
+ * Restore the $LRP_LANGUAGE value in which email will be sent
  *
  * @param $output
  * @return mixed
  */
-function trp_reset_language( $output ){
-    global $TRP_LANGUAGE, $TRP_LANGUAGE_COPY;
-    $TRP_LANGUAGE = $TRP_LANGUAGE_COPY;
+function lrp_reset_language( $output ){
+    global $LRP_LANGUAGE, $LRP_LANGUAGE_COPY;
+    $LRP_LANGUAGE = $LRP_LANGUAGE_COPY;
     return $output;
 }
 
 /**
- * Return a valid TRP language in which the email will be sent
+ * Return a valid LRP language in which the email will be sent
  *
  * @param $language
  * @return mixed
  */
-function trp_validate_language( $language ){
-    $trp = TRP_Translate_Press::get_trp_instance();
-    $trp_settings = $trp->get_component( 'settings' );
-    $settings = $trp_settings->get_settings();
+function lrp_validate_language( $language ){
+    $lrp = LRP_Lingua_Press::get_lrp_instance();
+    $lrp_settings = $lrp->get_component( 'settings' );
+    $settings = $lrp_settings->get_settings();
     if( empty( $language ) || !in_array( $language, $settings['translation-languages'] ) ){
         $language = $settings['default-language'];
     }
@@ -855,15 +855,15 @@ function trp_validate_language( $language ){
 }
 
 /**
- * Used by third parties to restore original language after using trp_switch_language
+ * Used by third parties to restore original language after using lrp_switch_language
  */
-function trp_restore_language(){
-    global $TRP_LANGUAGE, $TRP_LANGUAGE_ORIGINAL;
-    remove_filter( 'trp_before_translate_content', 'trp_reset_language' );
+function lrp_restore_language(){
+    global $LRP_LANGUAGE, $LRP_LANGUAGE_ORIGINAL;
+    remove_filter( 'lrp_before_translate_content', 'lrp_reset_language' );
 
     restore_previous_locale();
-    remove_filter( 'plugin_locale', 'trp_get_locale' );
-    $TRP_LANGUAGE = $TRP_LANGUAGE_ORIGINAL;
+    remove_filter( 'plugin_locale', 'lrp_get_locale' );
+    $LRP_LANGUAGE = $LRP_LANGUAGE_ORIGINAL;
 }
 
 /**
@@ -872,8 +872,8 @@ function trp_restore_language(){
  * @param $user_id
  * @return mixed
  */
-function trp_get_user_language( $user_id ){
-    return trp_validate_language( get_user_meta( $user_id, 'trp_language', true ) );
+function lrp_get_user_language( $user_id ){
+    return lrp_validate_language( get_user_meta( $user_id, 'lrp_language', true ) );
 }
 /**
  * Wrapper function for WooCommerce HPOS add, delete and update operations
@@ -885,7 +885,7 @@ function trp_get_user_language( $user_id ){
  * @param $operation_type   string  Parameter used to determine the type of operation that needs to be performed.
  *                                  Accepts: add / delete / update
  */
-function trp_woo_hpos_manipulate_post_meta( $order_id, $meta_key, $meta_value, $operation_type ){
+function lrp_woo_hpos_manipulate_post_meta( $order_id, $meta_key, $meta_value, $operation_type ){
 
     if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) && Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
         $order    = wc_get_order( $order_id );
@@ -911,7 +911,7 @@ function trp_woo_hpos_manipulate_post_meta( $order_id, $meta_key, $meta_value, $
  * @param  $single         bool    Whether to return a single value or not. Default: false
  * @return                 mixed   An array of values if `$single` is false. The value of the meta field if `$single` is true. False for an invalid `$post_id` (non-numeric, zero, or negative value). An empty string if a valid but non-existing post ID is passed.
  */
-function trp_woo_hpos_get_post_meta( $order_id, $meta_key, $single = false ){
+function lrp_woo_hpos_get_post_meta( $order_id, $meta_key, $single = false ){
     if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) && Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
         $order = wc_get_order( $order_id );
 
@@ -937,7 +937,7 @@ function is_late_dom_html_plugin_active(){
         if ( class_exists( $class ) ) return true;
     }
 
-    return apply_filters( 'trp_delay_dom_changes_script', false );
+    return apply_filters( 'lrp_delay_dom_changes_script', false );
 }
 
 /**
@@ -946,7 +946,7 @@ function is_late_dom_html_plugin_active(){
  *
  * @return string
  */
-function trp_remove_prefix($prefix = '', $string = '') {
+function lrp_remove_prefix($prefix = '', $string = '') {
     // Check if the path starts with the prefix
     if (!empty($prefix)){
         if (strpos($string, $prefix) === 0) {

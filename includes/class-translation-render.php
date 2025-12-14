@@ -5,30 +5,30 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 /**
- * Class TRP_Translation_Render
+ * Class LRP_Translation_Render
  *
  * Translates pages.
  */
-class TRP_Translation_Render{
+class LRP_Translation_Render{
     protected $settings;
     protected $machine_translator;
-    /* @var TRP_Query */
-    protected $trp_query;
-	/* @var TRP_Url_Converter */
+    /* @var LRP_Query */
+    protected $lrp_query;
+	/* @var LRP_Url_Converter */
     protected $url_converter;
-    /* @var TRP_Translation_Manager */
+    /* @var LRP_Translation_Manager */
 	protected $translation_manager;
     protected $common_html_tags;
 
     /**
-     * TRP_Translation_Render constructor.
+     * LRP_Translation_Render constructor.
      *
      * @param array $settings       Settings options.
      */
     public function __construct( $settings ){
         $this->settings = $settings;
         // apply_filters only once instead of everytime is_html() is used
-        $this->common_html_tags = implode( '|', apply_filters('trp_common_html_tags', array( 'html', 'body', 'table', 'tbody', 'thead', 'th', 'td', 'tr', 'div', 'p', 'span', 'b', 'a', 'strong', 'center', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'img' ) ) );
+        $this->common_html_tags = implode( '|', apply_filters('lrp_common_html_tags', array( 'html', 'body', 'table', 'tbody', 'thead', 'th', 'td', 'tr', 'div', 'p', 'span', 'b', 'a', 'strong', 'center', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'img' ) ) );
 
     }
 
@@ -36,26 +36,26 @@ class TRP_Translation_Render{
      * Start Output buffer to translate page.
      */
     public function start_output_buffer(){
-        global $TRP_LANGUAGE;
+        global $LRP_LANGUAGE;
 
         //when we check if is an ajax request in frontend we also set proper REQUEST variables and language global so we need to run this for every buffer
-        $ajax_on_frontend = TRP_Gettext_Manager::is_ajax_on_frontend();//TODO refactor this function si it just checks and does not set variables
+        $ajax_on_frontend = LRP_Gettext_Manager::is_ajax_on_frontend();//TODO refactor this function si it just checks and does not set variables
 
-        if( ( is_admin() && !$ajax_on_frontend ) || trp_is_translation_editor( 'true' ) ){
+        if( ( is_admin() && !$ajax_on_frontend ) || lrp_is_translation_editor( 'true' ) ){
             return;//we have two cases where we don't do anything: we are on the admin side and we are not in an ajax call or we are in the left side of the translation editor
         }
         else {
-            global $trp_output_buffer_started;//use this global so we know that we started the output buffer. we can check it for instance when wrapping gettext
+            global $lrp_output_buffer_started;//use this global so we know that we started the output buffer. we can check it for instance when wrapping gettext
             mb_http_output("UTF-8");
-            if ( $TRP_LANGUAGE == $this->settings['default-language'] && !trp_is_translation_editor() ) {
-                // on default language when we are not in editor we just need to clear any trp tags that could still be present and handle links for special situation
+            if ( $LRP_LANGUAGE == $this->settings['default-language'] && !lrp_is_translation_editor() ) {
+                // on default language when we are not in editor we just need to clear any lrp tags that could still be present and handle links for special situation
                 $chunk_size = ($this->handle_custom_links_for_default_language() ) ? 0 : 4096;
-                $chunk_size = apply_filters("trp_output_buffer_chunk_size", $chunk_size);
+                $chunk_size = apply_filters("lrp_output_buffer_chunk_size", $chunk_size);
                 ob_start(array( $this, 'render_default_language' ), $chunk_size);
-                $trp_output_buffer_started = true;
+                $lrp_output_buffer_started = true;
             } else {
                 ob_start(array($this, 'translate_page'));//everywhere else translate the page
-                $trp_output_buffer_started = true;
+                $lrp_output_buffer_started = true;
             }
         }
     }
@@ -63,7 +63,7 @@ class TRP_Translation_Render{
     /**
      * Function to hide php errors and notice and instead log them in debug.log so we don't store the notice strings inside the db if WP_DEBUG is on
      */
-    public function trp_debug_mode_off(){
+    public function lrp_debug_mode_off(){
         if ( WP_DEBUG ) {
             ini_set('display_errors', 0);
             ini_set('log_errors', 1);
@@ -74,31 +74,31 @@ class TRP_Translation_Render{
     /**
      * Forces the language to be the first non default one in the preview translation editor.
      * We're doing this because we need the ID's.
-     * Otherwise we're just returning the global $TRP_LANGUAGE
+     * Otherwise we're just returning the global $LRP_LANGUAGE
      *
      * @return string       Language code.
      */
     protected function force_language_in_preview(){
-        global $TRP_LANGUAGE;
-        if ( in_array( $TRP_LANGUAGE, $this->settings['translation-languages'] ) ) {
-            if ( $TRP_LANGUAGE == $this->settings['default-language']  ){
+        global $LRP_LANGUAGE;
+        if ( in_array( $LRP_LANGUAGE, $this->settings['translation-languages'] ) ) {
+            if ( $LRP_LANGUAGE == $this->settings['default-language']  ){
                 // in the translation editor we need a different language then the default because we need string ID's.
                 // so we're forcing it to the first translation language because if it's the default, we're just returning the $output
-                if ( isset( $_REQUEST['trp-edit-translation'] ) && $_REQUEST['trp-edit-translation'] == 'preview' )  {
+                if ( isset( $_REQUEST['lrp-edit-translation'] ) && $_REQUEST['lrp-edit-translation'] == 'preview' )  {
                     if( count( $this->settings['translation-languages'] ) > 1 ){
                         foreach ($this->settings['translation-languages'] as $language) {
-                            if ($language != $TRP_LANGUAGE) {
+                            if ($language != $LRP_LANGUAGE) {
                                 // return the first language not default. only used for preview mode
                                 return $language;
                             }
                         }
                     }
                     else{
-                        return $TRP_LANGUAGE;
+                        return $LRP_LANGUAGE;
                     }
                 }
             }else {
-                return $TRP_LANGUAGE;
+                return $LRP_LANGUAGE;
             }
         }
         return false;
@@ -113,7 +113,7 @@ class TRP_Translation_Render{
 	 * @return string           Trimmed string.
 	 */
 	public function full_trim( $string ) {
-		return trp_full_trim( $string );
+		return lrp_full_trim( $string );
 	}
 
     /**
@@ -123,13 +123,13 @@ class TRP_Translation_Render{
      * @return string                           Category name.
      */
     protected function get_node_type_category( $current_node_type ){
-	    $trp = TRP_Translate_Press::get_trp_instance();
+	    $lrp = LRP_Lingua_Press::get_lrp_instance();
 	    if ( ! $this->translation_manager ) {
-		    $this->translation_manager = $trp->get_component( 'translation_manager' );
+		    $this->translation_manager = $lrp->get_component( 'translation_manager' );
 	    }
 	    $string_groups = $this->translation_manager->string_groups();
 
-        $node_type_categories = apply_filters( 'trp_node_type_categories', array(
+        $node_type_categories = apply_filters( 'lrp_node_type_categories', array(
             $string_groups['metainformation']   => array( 'meta_desc', 'page_title', 'meta_desc_img' ),
             $string_groups['images']            => array( 'image_src', 'picture_source_srcset', 'picture_image_src' ),
             $string_groups['videos']             => array( 'video_src', 'video_poster', 'video_source_src'),
@@ -152,107 +152,107 @@ class TRP_Translation_Render{
      * @return string                       Node description.
      */
     protected function get_node_description( $current_node ){
-        $node_type_descriptions = apply_filters( 'trp_node_type_descriptions',
+        $node_type_descriptions = apply_filters( 'lrp_node_type_descriptions',
             array(
                 array(
                     'type'          => 'meta_desc',
                     'attribute'     => 'name',
                     'value'         => 'description',
-                    'description'   => esc_html__( 'Description', 'translatepress-multilingual' )
+                    'description'   => esc_html__( 'Description', 'linguapress' )
                 ),
                 array(
                     'type'          => 'meta_desc',
                     'attribute'     => 'name',
                     'value'         => 'keywords',
-                    'description'   => esc_html__( 'Keywords', 'translatepress-multilingual' )
+                    'description'   => esc_html__( 'Keywords', 'linguapress' )
                 ),
                 array(
                     'type'          => 'meta_desc',
                     'attribute'     => 'property',
                     'value'         => 'article:section',
-                    'description'   => esc_html__( 'Article Section', 'translatepress-multilingual' )
+                    'description'   => esc_html__( 'Article Section', 'linguapress' )
                 ),
                 array(
                     'type'          => 'meta_desc',
                     'attribute'     => 'property',
                     'value'         => 'article:tag',
-                    'description'   => esc_html__( 'Article Tag', 'translatepress-multilingual' )
+                    'description'   => esc_html__( 'Article Tag', 'linguapress' )
                 ),
                 array(
                     'type'          => 'meta_desc',
                     'attribute'     => 'property',
                     'value'         => 'og:title',
-                    'description'   => esc_html__( 'OG Title', 'translatepress-multilingual' )
+                    'description'   => esc_html__( 'OG Title', 'linguapress' )
                 ),
                 array(
                     'type'          => 'meta_desc',
                     'attribute'     => 'property',
                     'value'         => 'og:site_name',
-                    'description'   => esc_html__( 'OG Site Name', 'translatepress-multilingual' )
+                    'description'   => esc_html__( 'OG Site Name', 'linguapress' )
                 ),
                 array(
                     'type'          => 'meta_desc',
                     'attribute'     => 'property',
                     'value'         => 'og:description',
-                    'description'   => esc_html__( 'OG Description', 'translatepress-multilingual' )
+                    'description'   => esc_html__( 'OG Description', 'linguapress' )
                 ),
 	            array(
 		            'type'          => 'meta_desc',
 		            'attribute'     => 'property',
 		            'value'         => 'og:image:alt',
-		            'description'   => esc_html__( 'OG Image Alt', 'translatepress-multilingual' )
+		            'description'   => esc_html__( 'OG Image Alt', 'linguapress' )
 	            ),
                 array(
                     'type'          => 'meta_desc',
                     'attribute'     => 'name',
                     'value'         => 'twitter:title',
-                    'description'   => esc_html__( 'Twitter Title', 'translatepress-multilingual' )
+                    'description'   => esc_html__( 'Twitter Title', 'linguapress' )
                 ),
                 array(
                     'type'          => 'meta_desc',
                     'attribute'     => 'name',
                     'value'         => 'twitter:description',
-                    'description'   => esc_html__( 'Twitter Description', 'translatepress-multilingual' )
+                    'description'   => esc_html__( 'Twitter Description', 'linguapress' )
                 ),
 	            array(
 		            'type'          => 'meta_desc',
 		            'attribute'     => 'name',
 		            'value'         => 'twitter:image:alt',
-		            'description'   => esc_html__( 'Twitter Image Alt', 'translatepress-multilingual' )
+		            'description'   => esc_html__( 'Twitter Image Alt', 'linguapress' )
 	            ),
                 array(
                     'type'          => 'page_title',
-                    'description'   => esc_html__( 'Page Title', 'translatepress-multilingual' )
+                    'description'   => esc_html__( 'Page Title', 'linguapress' )
                 ),
 	            array(
 		            'type'          => 'meta_desc',
 		            'attribute'     => 'name',
 		            'value'         => 'DC.Title',
-		            'description'   => esc_html__( 'Dublin Core Title', 'translatepress-multilingual' )
+		            'description'   => esc_html__( 'Dublin Core Title', 'linguapress' )
 	            ),
 	            array(
 		            'type'          => 'meta_desc',
 		            'attribute'     => 'name',
 		            'value'         => 'DC.Description',
-		            'description'   => esc_html__( 'Dublin Core Description', 'translatepress-multilingual' )
+		            'description'   => esc_html__( 'Dublin Core Description', 'linguapress' )
 	            ),
 	            array(
 		            'type'          => 'meta_desc_img',
 		            'attribute'     => 'property',
 		            'value'         => 'og:image',
-		            'description'   => esc_html__( 'OG Image', 'translatepress-multilingual' )
+		            'description'   => esc_html__( 'OG Image', 'linguapress' )
 	            ),
 	            array(
 		            'type'          => 'meta_desc_img',
 		            'attribute'     => 'property',
 		            'value'         => 'og:image:secure_url',
-		            'description'   => esc_html__( 'OG Image Secure URL', 'translatepress-multilingual' )
+		            'description'   => esc_html__( 'OG Image Secure URL', 'linguapress' )
 	            ),
 	            array(
 		            'type'          => 'meta_desc_img',
 		            'attribute'     => 'name',
 		            'value'         => 'twitter:image',
-		            'description'   => esc_html__( 'Twitter Image', 'translatepress-multilingual' )
+		            'description'   => esc_html__( 'Twitter Image', 'linguapress' )
 	            ),
 
             ));
@@ -290,7 +290,7 @@ class TRP_Translation_Render{
 	 * @return string
 	 */
     public function trim_translation_block( $string ){
-	    return preg_replace('/\s+/', ' ',   html_entity_decode( htmlspecialchars_decode( wp_strip_all_tags(trp_full_trim( $string )), ENT_QUOTES ) ) ) ;
+	    return preg_replace('/\s+/', ' ',   html_entity_decode( htmlspecialchars_decode( wp_strip_all_tags(lrp_full_trim( $string )), ENT_QUOTES ) ) ) ;
     }
 
     /**
@@ -352,7 +352,7 @@ class TRP_Translation_Render{
      */
     public function oembed_response_data($data, $post, $width, $height ){
         if ( !empty( $data )) {
-            $translatable_items = apply_filters( 'trp_oembed_response_data_translatable_items', array('title', 'html', 'provider_name') );
+            $translatable_items = apply_filters( 'lrp_oembed_response_data_translatable_items', array('title', 'html', 'provider_name') );
             foreach( $translatable_items as $item ){
                 if ( isset( $data[$item] ) ) {
                     $data[$item] = $this->translate_page( $data[$item] );
@@ -361,22 +361,22 @@ class TRP_Translation_Render{
         }
 
         // Otherwise we incorrectly unescape the sequence to end CDATA from ']]&gt;' to ']]>' breaking the xml. It needs to stay escaped in oembed response data.
-        remove_filter( 'trp_before_translate_content', array( $this, 'handle_cdata'), 1000);
+        remove_filter( 'lrp_before_translate_content', array( $this, 'handle_cdata'), 1000);
 
         return $data;
     }
 
 	/**
 	 * Handle generic REST API translations using configurable rules
-     * hooked on rest_pre_echo_response in class-translate-press.php
+     * hooked on rest_pre_echo_response in class-lingua-press.php
 	 * @param array $result
 	 * @param WP_REST_Server $server
 	 * @param WP_REST_Request $request
 	 * @return array
 	 */
 	public function handle_generic_rest_api_translations( $result, $server, $request ) {
-        $trp = TRP_Translate_Press::get_trp_instance();
-        $url_converter = $trp->get_component( 'url_converter' );
+        $lrp = LRP_Lingua_Press::get_lrp_instance();
+        $url_converter = $lrp->get_component( 'url_converter' );
         $language = $url_converter->get_lang_from_url_string( $url_converter->cur_page_url() );
 
         if ( $language == $this->settings['default-language'] || $language == null ) {
@@ -396,7 +396,7 @@ class TRP_Translation_Render{
 
 		// Translate the REST API response data using the matching configuration
 		if ( is_array( $result ) ) {
-			$max_depth = apply_filters( 'trp_rest_api_translation_max_depth', 5 );
+			$max_depth = apply_filters( 'lrp_rest_api_translation_max_depth', 5 );
 			$result = $this->translate_rest_api_data_recursive( $result, $matching_config, $language, 0, $max_depth );
 		}
 
@@ -428,7 +428,7 @@ class TRP_Translation_Render{
 			$default_config['wp/v2/' . $rest_base] = array( 'name', 'description' );
 		}
 		
-		return apply_filters( 'trp_rest_api_translation_config', $default_config );
+		return apply_filters( 'lrp_rest_api_translation_config', $default_config );
 	}
 
 	/**
@@ -481,10 +481,10 @@ class TRP_Translation_Render{
 		}
 
 		// Handle special case for slug translation if available
-		if ( isset( $data['slug'] ) && is_string( $data['slug'] ) && class_exists( 'TRP_Slug_Query' ) ) {
-			$trp_slug_query = new TRP_Slug_Query();
+		if ( isset( $data['slug'] ) && is_string( $data['slug'] ) && class_exists( 'LRP_Slug_Query' ) ) {
+			$lrp_slug_query = new LRP_Slug_Query();
 			$slug_array = array( $data['slug'] );
-			$translated_slugs = $trp_slug_query->get_translated_slugs_from_original( $slug_array, $language );
+			$translated_slugs = $lrp_slug_query->get_translated_slugs_from_original( $slug_array, $language );
 
 			if ( !empty( $translated_slugs ) && isset( $translated_slugs[$data['slug']] ) ) {
 				$data['slug'] = $translated_slugs[$data['slug']];
@@ -503,28 +503,28 @@ class TRP_Translation_Render{
      * @return string               Translated HTML page.
      */
     public function translate_page( $output ){
-    	if ( apply_filters( 'trp_stop_translating_page', false, $output ) ){
+    	if ( apply_filters( 'lrp_stop_translating_page', false, $output ) ){
     		return $output;
 	    }
 
-        global $TRP_HDOM_QUOTE_DEFAULT;
-        $TRP_HDOM_QUOTE_DEFAULT = apply_filters('trp_hdom_quote_default_double_quotes', '"');
+        global $LRP_HDOM_QUOTE_DEFAULT;
+        $LRP_HDOM_QUOTE_DEFAULT = apply_filters('lrp_hdom_quote_default_double_quotes', '"');
 
-    	global $trp_editor_notices;
+    	global $lrp_editor_notices;
 
         /* replace our special tags so we have valid html */
-        $output = str_ireplace('#!trpst#', '<', $output);
-        $output = str_ireplace('#!trpen#', '>', $output);
+        $output = str_ireplace('#!lrpst#', '<', $output);
+        $output = str_ireplace('#!lrpen#', '>', $output);
 
-        $output = apply_filters('trp_before_translate_content', $output);
+        $output = apply_filters('lrp_before_translate_content', $output);
 
         if ( $output == false || !is_string( $output ) || strlen( $output ) < 1 ) {
             return $output;
         }
 
         if ( ! $this->url_converter ) {
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $this->url_converter = $trp->get_component('url_converter');
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $this->url_converter = $lrp->get_component('url_converter');
         }
 
         if( $this->url_converter->is_sitemap_path( $this->url_converter->cur_page_url( false )) ){
@@ -542,18 +542,18 @@ class TRP_Translation_Render{
                 && current_filter() !== 'oembed_response_data'
                 && current_filter() !== 'rest_pre_echo_response' )
             {
-                $trpremoved = $this->remove_trp_html_tags( $output );
-                return $trpremoved;
+                $lrpremoved = $this->remove_lrp_html_tags( $output );
+                return $lrpremoved;
             }
         }
 
         /* don't do anything on xmlrpc.php  */
         if( strpos( $this->url_converter->cur_page_url( false ), 'xmlrpc.php' ) !== false ){
-            $trpremoved = $this->remove_trp_html_tags( $output );
-            return $trpremoved;
+            $lrpremoved = $this->remove_lrp_html_tags( $output );
+            return $lrpremoved;
         }
 
-        global $TRP_LANGUAGE;
+        global $LRP_LANGUAGE;
         $language_code = $this->force_language_in_preview();
         if ($language_code === false) {
             return $output;
@@ -565,9 +565,9 @@ class TRP_Translation_Render{
 	        $translate_normal_strings = true;
         }
 
-        $translate_normal_strings = apply_filters( 'trp_translate_regular_strings', $translate_normal_strings );
+        $translate_normal_strings = apply_filters( 'lrp_translate_regular_strings', $translate_normal_strings );
 
-	    $preview_mode = isset( $_REQUEST['trp-edit-translation'] ) && $_REQUEST['trp-edit-translation'] == 'preview';
+	    $preview_mode = isset( $_REQUEST['lrp-edit-translation'] ) && $_REQUEST['lrp-edit-translation'] == 'preview';
 
         $json_array = json_decode( $output, true );
 	    /* If we have a json response we need to parse it and only translate the nodes that contain html
@@ -578,7 +578,7 @@ class TRP_Translation_Render{
 	     */
 	    if( $json_array && $json_array != $output ) {
 		    /* if it's one of our own ajax calls don't do nothing */
-            if ( ! empty( $_REQUEST['action'] ) && strpos( sanitize_text_field( $_REQUEST['action'] ), 'trp_' ) === 0 && $_REQUEST['action'] != 'trp_split_translation_block' )
+            if ( ! empty( $_REQUEST['action'] ) && strpos( sanitize_text_field( $_REQUEST['action'] ), 'lrp_' ) === 0 && $_REQUEST['action'] != 'lrp_split_translation_block' )
 		        return $output;
 
 	        //check if we have a json response
@@ -590,7 +590,7 @@ class TRP_Translation_Render{
                 }
 	        }
 
-	        return trp_safe_json_encode( $json_array );
+	        return lrp_safe_json_encode( $json_array );
         }
 
         /**
@@ -598,7 +598,7 @@ class TRP_Translation_Render{
          * Solves the problem where a duplicate attribute inside a tag causes the plugin to remove the duplicated attribute and all the other attributes to the right of the it.
          */
 
-        $output = apply_filters( 'trp_pre_translating_html', $output );
+        $output = apply_filters( 'lrp_pre_translating_html', $output );
 
         $no_translate_attribute      = 'data-no-translation';
         $no_auto_translate_attribute = 'data-no-auto-translation';
@@ -610,23 +610,23 @@ class TRP_Translation_Render{
         $nodes = array();
         $nodes_manual = array();
 
-	    $trp = TRP_Translate_Press::get_trp_instance();
-	    if ( ! $this->trp_query ) {
-		    $this->trp_query = $trp->get_component( 'query' );
+	    $lrp = LRP_Lingua_Press::get_lrp_instance();
+	    if ( ! $this->lrp_query ) {
+		    $this->lrp_query = $lrp->get_component( 'query' );
 	    }
 	    if ( ! $this->translation_manager ) {
-		    $this->translation_manager = $trp->get_component( 'translation_manager' );
+		    $this->translation_manager = $lrp->get_component( 'translation_manager' );
 	    }
 
-	    $html = TranslatePress\str_get_html($output, true, true, TRP_DEFAULT_TARGET_CHARSET, false, TRP_DEFAULT_BR_TEXT, TRP_DEFAULT_SPAN_TEXT);
+	    $html = LinguaPress\str_get_html($output, true, true, LRP_DEFAULT_TARGET_CHARSET, false, LRP_DEFAULT_BR_TEXT, LRP_DEFAULT_SPAN_TEXT);
 	    if ( $html === false ){
-            $trpremoved = $this->remove_trp_html_tags( $output );
-		    return $trpremoved;
+            $lrpremoved = $this->remove_lrp_html_tags( $output );
+		    return $lrpremoved;
 	    }
 
 	    $count_translation_blocks = 0;
 	    if ( $translate_normal_strings ) {
-		    $all_existing_translation_blocks = $this->trp_query->get_all_translation_blocks( $language_code );
+		    $all_existing_translation_blocks = $this->lrp_query->get_all_translation_blocks( $language_code );
 		    // trim every translation block original now, to avoid over-calling trim function later
 		    foreach ( $all_existing_translation_blocks as $key => $existing_tb ) {
 			    $all_existing_translation_blocks[ $key ]->trimmed_original = $this->trim_translation_block( $all_existing_translation_blocks[ $key ]->original );
@@ -652,25 +652,25 @@ class TRP_Translation_Render{
 	    }
 
         /**
-         * When we are in the translation editor: Intercept the trp-gettext that was wrapped around all the gettext texts, grab the attribute data-trpgettextoriginal
-         * which contains the original translation id and move it to the parent node if the parent node only contains that string then remove the  wrap trp-gettext, otherwise replace it with another tag.
+         * When we are in the translation editor: Intercept the lrp-gettext that was wrapped around all the gettext texts, grab the attribute data-lrpgettextoriginal
+         * which contains the original translation id and move it to the parent node if the parent node only contains that string then remove the  wrap lrp-gettext, otherwise replace it with another tag.
          * Also set a no-translation attribute.
-         * When we are in a live translation case: Intercept the trp-gettext that was wrapped around all the gettext texts, set a no-translation attribute to the parent node if the parent node only contains that string
-         * then remove the  wrap trp-gettext, otherwise replace the wrap with another tag and do the same to it
-         * We identified two cases: the wrapper trp-gettext can be as a node in the dome or ot can be inside a html attribute ( for example value )
+         * When we are in a live translation case: Intercept the lrp-gettext that was wrapped around all the gettext texts, set a no-translation attribute to the parent node if the parent node only contains that string
+         * then remove the  wrap lrp-gettext, otherwise replace the wrap with another tag and do the same to it
+         * We identified two cases: the wrapper lrp-gettext can be as a node in the dome or ot can be inside a html attribute ( for example value )
          * and we need to treat them differently
          */
 
-        /* store the nodes in arrays so we can sort the $trp_rows which contain trp-gettext nodes from the DOM according to the number of children and we process the simplest first */
-        $trp_rows = array();
-        $trp_attr_rows = array();
+        /* store the nodes in arrays so we can sort the $lrp_rows which contain lrp-gettext nodes from the DOM according to the number of children and we process the simplest first */
+        $lrp_rows = array();
+        $lrp_attr_rows = array();
         foreach ( $html->find("*[!nuartrebuisaexiteatributulasta]") as $k => $row ){
-            if( $row->hasAttribute('data-trpgettextoriginal') ){
-                $trp_rows[count( $row->children )][] = $row;
+            if( $row->hasAttribute('data-lrpgettextoriginal') ){
+                $lrp_rows[count( $row->children )][] = $row;
             }
             else{
                 if( $row->nodetype !== 5 && $row->nodetype !== 3 )//add all tags that are not root or text, text nodes can't have attributes
-                    $trp_attr_rows[] = $row;
+                    $lrp_attr_rows[] = $row;
 
 	            if ( $translate_normal_strings && $count_translation_blocks > 0 ) {
 		            $translation_block = $this->find_translation_block( $row, $all_existing_translation_blocks, $merge_rules );
@@ -691,9 +691,9 @@ class TRP_Translation_Render{
 				            }
 			            } else if ( $preview_mode && $translation_block->block_type == 2 && $translation_block->status != 0 ) {
 				            // refactor to not do this for each
-				            $row->setAttribute( 'data-trp-translate-id', $translation_block->id );
-				            $row->setAttribute( 'data-trp-translate-id-deprecated', $translation_block->id );
-				            $row->setAttribute( 'class', $existing_classes . 'trp-deprecated-tb' );
+				            $row->setAttribute( 'data-lrp-translate-id', $translation_block->id );
+				            $row->setAttribute( 'data-lrp-translate-id-deprecated', $translation_block->id );
+				            $row->setAttribute( 'class', $existing_classes . 'lrp-deprecated-tb' );
 			            }
 		            }
 	            }
@@ -703,19 +703,19 @@ class TRP_Translation_Render{
 
         /* sort them here ascending by key where the key is the number of children */
         /* here we add support for gettext inside gettext */
-        ksort($trp_rows);
-        foreach( $trp_rows as $level ){
+        ksort($lrp_rows);
+        foreach( $lrp_rows as $level ){
             foreach( $level as $row ){
-                $original_gettext_translation_id = $row->getAttribute('data-trpgettextoriginal');
+                $original_gettext_translation_id = $row->getAttribute('data-lrpgettextoriginal');
                 /* Parent node has no other children and no other innertext besides the current node */
                 if( count( $row->parent()->children ) == 1 && $row->parent()->innertext == $row->outertext ){
                     $row->outertext = $row->innertext();
                     $row->parent()->setAttribute($no_translate_attribute, '');
-	                $row->parent()->setAttribute('data-trp-gettext', '');
+	                $row->parent()->setAttribute('data-lrp-gettext', '');
                     // we are in the editor
-                    if (isset($_REQUEST['trp-edit-translation']) && $_REQUEST['trp-edit-translation'] == 'preview') {
-                        //move up the data-trpgettextoriginal attribute
-                        $row->parent()->setAttribute('data-trpgettextoriginal', $original_gettext_translation_id);
+                    if (isset($_REQUEST['lrp-edit-translation']) && $_REQUEST['lrp-edit-translation'] == 'preview') {
+                        //move up the data-lrpgettextoriginal attribute
+                        $row->parent()->setAttribute('data-lrpgettextoriginal', $original_gettext_translation_id);
                     }
                 }
                 else{
@@ -724,31 +724,31 @@ class TRP_Translation_Render{
                     $row->setAttribute($no_translate_attribute, '');
 
                     /* Changes made to outertext take place only after saving the html object to a string */
-                    $row->outertext = '<trp-wrap class="trp-wrap" data-no-translation';
-                    if (isset($_REQUEST['trp-edit-translation']) && $_REQUEST['trp-edit-translation'] == 'preview') {
-                        $row->outertext .= ' data-trpgettextoriginal="'. $original_gettext_translation_id .'"';
+                    $row->outertext = '<lrp-wrap class="lrp-wrap" data-no-translation';
+                    if (isset($_REQUEST['lrp-edit-translation']) && $_REQUEST['lrp-edit-translation'] == 'preview') {
+                        $row->outertext .= ' data-lrpgettextoriginal="'. $original_gettext_translation_id .'"';
                     }
-                    $row->outertext .= '>'.$row->innertext().'</trp-wrap>';
+                    $row->outertext .= '>'.$row->innertext().'</lrp-wrap>';
                 }
             }
         }
 
-        foreach( $trp_attr_rows as $row ){
+        foreach( $lrp_attr_rows as $row ){
             $all_attributes = $row->getAllAttributes();
             if( !empty( $all_attributes ) ) {
                 foreach ($all_attributes as $attr_name => $attr_value) {
-                    if (strpos($attr_value, 'trp-gettext ') !== false) {
-                        //if we have json content in the value of the attribute, we don't do anything. The trp-wrap will be removed later in the code
+                    if (strpos($attr_value, 'lrp-gettext ') !== false) {
+                        //if we have json content in the value of the attribute, we don't do anything. The lrp-wrap will be removed later in the code
                         if (is_array($json_array = json_decode( html_entity_decode( $attr_value, ENT_QUOTES ), true ) ) ) {
                             continue;
                         }
 
                         // convert to a node
-                        $node_from_value = TranslatePress\str_get_html(html_entity_decode(htmlspecialchars_decode($attr_value, ENT_QUOTES)), true, true, TRP_DEFAULT_TARGET_CHARSET, false, TRP_DEFAULT_BR_TEXT, TRP_DEFAULT_SPAN_TEXT);
+                        $node_from_value = LinguaPress\str_get_html(html_entity_decode(htmlspecialchars_decode($attr_value, ENT_QUOTES)), true, true, LRP_DEFAULT_TARGET_CHARSET, false, LRP_DEFAULT_BR_TEXT, LRP_DEFAULT_SPAN_TEXT);
 	                    if ( $node_from_value === false ){
 		                    continue;
 	                    }
-                        foreach ($node_from_value->find('trp-gettext') as $nfv_row) {
+                        foreach ($node_from_value->find('lrp-gettext') as $nfv_row) {
                             $nfv_row->outertext = $nfv_row->innertext();
 	                        $saved_node_from_value = $node_from_value->save();
 
@@ -760,9 +760,9 @@ class TRP_Translation_Render{
 	                        $row->setAttribute($attr_name, $saved_node_from_value );
                             $row->setAttribute($no_translate_attribute . '-' . $attr_name, '');
                             // we are in the editor
-                            if (isset($_REQUEST['trp-edit-translation']) && $_REQUEST['trp-edit-translation'] == 'preview') {
-                                $original_gettext_translation_id = $nfv_row->getAttribute('data-trpgettextoriginal');
-                                $row->setAttribute('data-trpgettextoriginal-' . $attr_name, $original_gettext_translation_id);
+                            if (isset($_REQUEST['lrp-edit-translation']) && $_REQUEST['lrp-edit-translation'] == 'preview') {
+                                $original_gettext_translation_id = $nfv_row->getAttribute('data-lrpgettextoriginal');
+                                $row->setAttribute('data-lrpgettextoriginal-' . $attr_name, $original_gettext_translation_id);
                             }
 
                         }
@@ -774,18 +774,18 @@ class TRP_Translation_Render{
 
 	    if ( ! $translate_normal_strings ) {
             /* save it as a string */
-            $trpremoved = $html->save();
-            /* perform preg replace on the remaining trp-gettext tags */
-            $trpremoved = $this->remove_trp_html_tags($trpremoved );
-		    return $trpremoved;
+            $lrpremoved = $html->save();
+            /* perform preg replace on the remaining lrp-gettext tags */
+            $lrpremoved = $this->remove_lrp_html_tags($lrpremoved );
+		    return $lrpremoved;
 	    }
 
-        $no_translate_selectors = apply_filters( 'trp_no_translate_selectors', array( '#wpadminbar' ), $TRP_LANGUAGE );
-        $ignore_cdata = apply_filters('trp_ignore_cdata', true );
-        $translate_encoded_html_as_string = apply_filters('trp_translate_encoded_html_as_string', false );
-        $translate_encoded_html_as_html = apply_filters('trp_translate_encoded_html_as_html', true );
+        $no_translate_selectors = apply_filters( 'lrp_no_translate_selectors', array( '#wpadminbar' ), $LRP_LANGUAGE );
+        $ignore_cdata = apply_filters('lrp_ignore_cdata', true );
+        $translate_encoded_html_as_string = apply_filters('lrp_translate_encoded_html_as_string', false );
+        $translate_encoded_html_as_html = apply_filters('lrp_translate_encoded_html_as_html', true );
         // used for skipping minified scripts but can be used for anything
-        $skip_strings_containing_key_terms = apply_filters('trp_skip_strings_containing_key_terms',
+        $skip_strings_containing_key_terms = apply_filters('lrp_skip_strings_containing_key_terms',
             array(
                 array(
                     'terms'=> array( 'function', 'return', 'if', '==' ),
@@ -804,7 +804,7 @@ class TRP_Translation_Render{
             }
         }
 
-        $no_auto_translate_selectors = apply_filters( 'trp_no_auto_translate_selectors', array( ), $TRP_LANGUAGE );
+        $no_auto_translate_selectors = apply_filters( 'lrp_no_auto_translate_selectors', array( ), $LRP_LANGUAGE );
         foreach ( $no_auto_translate_selectors as $no_auto_translate_selector ){
             foreach ( $html->find( $no_auto_translate_selector ) as $k => $row ){
                 $row->setAttribute( $no_auto_translate_attribute, '' );
@@ -813,14 +813,14 @@ class TRP_Translation_Render{
 
 
         foreach ( $html->find('.translation-block') as $row ){
-            $trimmed_string = trp_full_trim( $row->innertext );
+            $trimmed_string = lrp_full_trim( $row->innertext );
             $parent = $row->parent();
             if( $trimmed_string!=""
                 && $parent->tag!="script"
                 && $parent->tag!="style"
                 && $parent->tag != 'title'
                 && strpos($row->outertext,'[vc_') === false
-                && !$this->trp_is_numeric($trimmed_string)
+                && !$this->lrp_is_numeric($trimmed_string)
                 && !preg_match('/^\d+%$/',$trimmed_string)
                 && $row->find_ancestor_tag( 'script' ) === null // sometimes the script/style has an html tree that gets detected, so script/style is not a direct parent
                 && $row->find_ancestor_tag( 'style' ) === null
@@ -829,22 +829,22 @@ class TRP_Translation_Render{
                 $string_count = array_push( $translateable_strings, $trimmed_string );
                 array_push( $nodes, array('node' => $row, 'type' => 'block'));
 
-                //add data-trp-post-id attribute if needed
+                //add data-lrp-post-id attribute if needed
                 $nodes = $this->maybe_add_post_id_in_node( $nodes, $row, $string_count );
             }
         }
 
-        foreach ( $html->find('trptext') as $row ){
+        foreach ( $html->find('lrptext') as $row ){
             $outertext = $row->outertext;
             $parent = $row->parent();
-            $trimmed_string = trp_full_trim( $outertext );
+            $trimmed_string = lrp_full_trim( $outertext );
             if( $trimmed_string!=""
                 && $parent->tag!="script"
                 && $parent->tag!="style"
                 && $parent->tag != 'title'
                 && $parent->tag != 'textarea' //explicitly exclude textarea strings
                 && strpos($outertext,'[vc_') === false
-                && !$this->trp_is_numeric($trimmed_string)
+                && !$this->lrp_is_numeric($trimmed_string)
                 && !preg_match('/^\d+%$/',$trimmed_string)
                 && !$this->has_ancestor_attribute( $row, $no_translate_attribute )
                 && !$this->has_ancestor_class( $row, 'translation-block')
@@ -859,19 +859,19 @@ class TRP_Translation_Render{
                     if ( $translate_encoded_html_as_html ){
                         if ( $this->is_html($trimmed_string) ){
                             // prevent potential infinite loops. Only call translate_page once recursively
-                            add_filter( 'trp_translate_encoded_html_as_html', '__return_false' );
+                            add_filter( 'lrp_translate_encoded_html_as_html', '__return_false' );
 
                             $row->outertext = str_replace( $trimmed_string, $this->translate_page( $trimmed_string ), $row->outertext );
-                            remove_filter( 'trp_translate_encoded_html_as_html', '__return_false' );
+                            remove_filter( 'lrp_translate_encoded_html_as_html', '__return_false' );
                             $is_html = true;
                         }else {
                             $entity_decoded_trimmed_string = html_entity_decode( $trimmed_string );
                             if ( $this->is_html( $entity_decoded_trimmed_string ) ) {
                                 // prevent potential infinite loops. Only call translate_page once recursively
-                                add_filter( 'trp_translate_encoded_html_as_html', '__return_false' );
+                                add_filter( 'lrp_translate_encoded_html_as_html', '__return_false' );
 
                                 $row->outertext = str_replace( $trimmed_string, htmlentities( $this->translate_page( $entity_decoded_trimmed_string ) ), $row->outertext );
-                                remove_filter( 'trp_translate_encoded_html_as_html', '__return_false' );
+                                remove_filter( 'lrp_translate_encoded_html_as_html', '__return_false' );
                                 $is_html = true;
                             }
                         }
@@ -886,20 +886,20 @@ class TRP_Translation_Render{
                 $node_type_to_push = ( in_array( $parent->tag, array( 'button', 'option' ) ) ) ? $parent->tag : 'text';
                 array_push($nodes, array('node' => $row, 'type' => $node_type_to_push ));
 
-                if ( ! apply_filters( 'trp_allow_machine_translation_for_string', true, $trimmed_string, null, null, $row ) ){
+                if ( ! apply_filters( 'lrp_allow_machine_translation_for_string', true, $trimmed_string, null, null, $row ) ){
                     array_push( $skip_machine_translating_strings, $trimmed_string );
                 }
 
-                if ( $parent->tag == 'a' && ! apply_filters( 'trp_allow_machine_translation_for_url', true, $trimmed_string ) ){
+                if ( $parent->tag == 'a' && ! apply_filters( 'lrp_allow_machine_translation_for_url', true, $trimmed_string ) ){
                     array_push( $skip_machine_translating_strings, $trimmed_string );
                     array_push( $do_not_add_this_alug_to_dictionary_table, $trimmed_string );
                 }
 
-                //add data-trp-post-id attribute if needed
+                //add data-lrp-post-id attribute if needed
                 $nodes = $this->maybe_add_post_id_in_node( $nodes, $row, $string_count );
             }
 
-            $row = apply_filters( 'trp_process_other_text_nodes', $row );
+            $row = apply_filters( 'lrp_process_other_text_nodes', $row );
 
         }
 
@@ -911,15 +911,15 @@ class TRP_Translation_Render{
 	    	if ( isset( $node_accessor['selector'] ) ){
 			    foreach ( $html->find( $node_accessor['selector'] ) as $k => $row ){
 			    	$current_node_accessor_selector = $node_accessor['accessor'];
-				    $trimmed_string = trp_full_trim( $row->$current_node_accessor_selector );
+				    $trimmed_string = lrp_full_trim( $row->$current_node_accessor_selector );
                     $translate_href = false;
 			    	if ( $current_node_accessor_selector === 'href' ) {
 					    $translate_href = ( $this->is_external_link( $trimmed_string, $home_url ) || $this->url_converter->url_is_file( $trimmed_string ) || $this->url_converter->url_is_extra($trimmed_string) );
-					    $translate_href = apply_filters( 'trp_translate_this_href', $translate_href, $row, $TRP_LANGUAGE, $trimmed_string );
+					    $translate_href = apply_filters( 'lrp_translate_this_href', $translate_href, $row, $LRP_LANGUAGE, $trimmed_string );
 					    $trimmed_string = ( $translate_href ) ? $trimmed_string : '';
 				    }
                     // outside preview mode we build the $translateable_strings_manual array for href
-                    // the similar condition above needs to remain in place for backwords compatibility with the filter trp_translate_this_href
+                    // the similar condition above needs to remain in place for backwords compatibility with the filter lrp_translate_this_href
                     if ( $translate_href && !$preview_mode )
                     {
                         $translateable_strings_manual[] = html_entity_decode( $trimmed_string );
@@ -937,7 +937,7 @@ class TRP_Translation_Render{
                     }
 
 				    if( $trimmed_string!=""
-				        && !$this->trp_is_numeric($trimmed_string)
+				        && !$this->lrp_is_numeric($trimmed_string)
 				        && !preg_match('/^\d+%$/',$trimmed_string)
 				        && !$this->has_ancestor_attribute( $row, $no_translate_attribute )
 				        && !$this->has_ancestor_attribute( $row, $no_translate_attribute . '-' . $current_node_accessor_selector )
@@ -952,10 +952,10 @@ class TRP_Translation_Render{
                             if ( $translate_encoded_html_as_html ){
                                 if ( $this->is_html($entity_decoded_trimmed_string) ){
                                     // prevent potential infinite loops. Only call translate_page once recursively
-                                    add_filter( 'trp_translate_encoded_html_as_html', '__return_false' );
+                                    add_filter( 'lrp_translate_encoded_html_as_html', '__return_false' );
 
                                     $row->setAttribute( $current_node_accessor_selector, str_replace( $trimmed_string, esc_attr( htmlentities($this->translate_page( $entity_decoded_trimmed_string )) ), $row->$current_node_accessor_selector ) );
-                                    remove_filter( 'trp_translate_encoded_html_as_html', '__return_false' );
+                                    remove_filter( 'lrp_translate_encoded_html_as_html', '__return_false' );
                                     continue;
                                 }
                             }
@@ -963,7 +963,7 @@ class TRP_Translation_Render{
 
 					    array_push( $translateable_strings, $entity_decoded_trimmed_string );
 					    array_push( $nodes, array( 'node'=>$row, 'type' => $node_accessor_key ) );
-					    if ( ! apply_filters( 'trp_allow_machine_translation_for_string', true, $entity_decoded_trimmed_string, $current_node_accessor_selector, $node_accessor, $row ) ){
+					    if ( ! apply_filters( 'lrp_allow_machine_translation_for_string', true, $entity_decoded_trimmed_string, $current_node_accessor_selector, $node_accessor, $row ) ){
 					    	array_push( $skip_machine_translating_strings, $entity_decoded_trimmed_string );
 					    }
 				    }
@@ -972,7 +972,7 @@ class TRP_Translation_Render{
 	    }
 
         $translateable_information = array( 'translateable_strings' => $translateable_strings, 'nodes' => $nodes );
-        $translateable_information = apply_filters( 'trp_translateable_strings', $translateable_information, $html, $no_translate_attribute, $TRP_LANGUAGE, $language_code, $this );
+        $translateable_information = apply_filters( 'lrp_translateable_strings', $translateable_information, $html, $no_translate_attribute, $LRP_LANGUAGE, $language_code, $this );
         $translateable_strings = $translateable_information['translateable_strings'];
         $nodes = $translateable_information['nodes'];
 
@@ -997,11 +997,11 @@ class TRP_Translation_Render{
 
         // serving translations for manual strings in the front-end: hrefs, src
         if ( !$preview_mode ){
-            $translateable_information_manual = apply_filters( 'trp_translateable_strings_manual', array( 'translateable_strings_manual' => $translateable_strings_manual, 'nodes_manual' => $nodes_manual ), $html, $no_translate_attribute, $TRP_LANGUAGE, $language_code, $this );
+            $translateable_information_manual = apply_filters( 'lrp_translateable_strings_manual', array( 'translateable_strings_manual' => $translateable_strings_manual, 'nodes_manual' => $nodes_manual ), $html, $no_translate_attribute, $LRP_LANGUAGE, $language_code, $this );
             $translateable_strings_manual = $translateable_information_manual['translateable_strings_manual'];
             $nodes_manual = $translateable_information_manual['nodes_manual'];
 
-            $translated_strings_manual_dictionary = $this->trp_query->get_existing_translations( array_values( $translateable_strings_manual ), $language_code );
+            $translated_strings_manual_dictionary = $this->lrp_query->get_existing_translations( array_values( $translateable_strings_manual ), $language_code );
             $translated_strings_manual = array();
             foreach ( $translateable_strings_manual as $i => $string_manual ) {
                 if ( isset( $translated_strings_manual_dictionary[ $string_manual ]->translated ) ) {
@@ -1018,16 +1018,16 @@ class TRP_Translation_Render{
                 if ( $current_node_accessor[ 'attribute' ] ){
                     $translateable_string_manual = $this->maybe_correct_translatable_string( $translateable_strings_manual[$i], $node_manual['node']->getAttribute( $accessor ) );
                     $node_manual['node']->setAttribute( $accessor, str_replace( $translateable_string_manual, esc_attr( $translated_strings_manual[$i] ), $node_manual['node']->getAttribute( $accessor ) ) );
-                    do_action( 'trp_set_translation_for_attribute', $node_manual['node'], $accessor, $translated_strings_manual[$i] );
+                    do_action( 'lrp_set_translation_for_attribute', $node_manual['node'], $accessor, $translated_strings_manual[$i] );
                 }else{
                     $translateable_string_manual = $this->maybe_correct_translatable_string( $translateable_strings_manual[$i], $node_manual['node']->$accessor );
-                    $nodes[$i]['node']->$accessor = str_replace( $translateable_string_manual, trp_sanitize_string($translated_strings_manual[$i]), $node_manual['node']->$accessor );
+                    $nodes[$i]['node']->$accessor = str_replace( $translateable_string_manual, lrp_sanitize_string($translated_strings_manual[$i]), $node_manual['node']->$accessor );
                 }
             }
-            do_action('trp_translateable_information_manual', $translateable_information_manual, $translated_strings_manual, $language_code);
+            do_action('lrp_translateable_information_manual', $translateable_information_manual, $translated_strings_manual, $language_code);
         }
 
-        do_action('trp_translateable_information', $translateable_information, $translated_strings, $language_code);
+        do_action('lrp_translateable_information', $translateable_information, $translated_strings, $language_code);
 
         //check for post_id meta on original strings, and insert for non existing
         /*
@@ -1052,11 +1052,11 @@ class TRP_Translation_Render{
                 $set_meta_for_this_url = get_transient('processed_original_string_meta_post_id_for_' . hash('md4', $current_permalink));
                 if( $set_meta_for_this_url === false ){
 
-                    $original_string_ids = $this->trp_query->get_original_string_ids($strings_in_post_content['strings']);
+                    $original_string_ids = $this->lrp_query->get_original_string_ids($strings_in_post_content['strings']);
 
                     if( !empty( $original_string_ids ) ){
                         //there is a correlation between the two arrays
-                        $this->trp_query->set_original_string_meta_post_id( $original_string_ids, $strings_in_post_content['post_ids'] );
+                        $this->lrp_query->set_original_string_meta_post_id( $original_string_ids, $strings_in_post_content['post_ids'] );
                     }
 
                     set_transient('processed_original_string_meta_post_id_for_' . hash('md4', $current_permalink), 'done', 60*60*24 );
@@ -1065,7 +1065,7 @@ class TRP_Translation_Render{
         }
 
         if ( $preview_mode ) {
-            $translated_string_ids = $this->trp_query->get_string_ids($translateable_strings, $language_code);
+            $translated_string_ids = $this->lrp_query->get_string_ids($translateable_strings, $language_code);
         }
 
         foreach ( $nodes as $i => $node ) {
@@ -1075,27 +1075,27 @@ class TRP_Translation_Render{
             }
             $current_node_accessor = $node_accessors[ $nodes[$i]['type'] ];
             $accessor = $current_node_accessor[ 'accessor' ];
-            if ( $translation_available && isset( $current_node_accessor ) && ! ( $preview_mode && ( $this->settings['default-language'] == $TRP_LANGUAGE ) ) ) {
+            if ( $translation_available && isset( $current_node_accessor ) && ! ( $preview_mode && ( $this->settings['default-language'] == $LRP_LANGUAGE ) ) ) {
 
                 $translateable_string = $translateable_strings[$i];
 
                 if ( $current_node_accessor[ 'attribute' ] ){
 	                $translateable_string = $this->maybe_correct_translatable_string( $translateable_string, $nodes[$i]['node']->getAttribute( $accessor ) );
                     $nodes[$i]['node']->setAttribute( $accessor, str_replace( $translateable_string, esc_attr( $translated_strings[$i] ), $nodes[$i]['node']->getAttribute( $accessor ) ) );
-                    do_action( 'trp_set_translation_for_attribute', $nodes[$i]['node'], $accessor, $translated_strings[$i] );
+                    do_action( 'lrp_set_translation_for_attribute', $nodes[$i]['node'], $accessor, $translated_strings[$i] );
                 }else{
 	                $translateable_string = $this->maybe_correct_translatable_string( $translateable_string, $nodes[$i]['node']->$accessor );
-                    $nodes[$i]['node']->$accessor = str_replace( $translateable_string, trp_sanitize_string($translated_strings[$i]), $nodes[$i]['node']->$accessor );
+                    $nodes[$i]['node']->$accessor = str_replace( $translateable_string, lrp_sanitize_string($translated_strings[$i]), $nodes[$i]['node']->$accessor );
                 }
 
             }
             if ( $preview_mode && !empty($translated_string_ids) ) {
                 if ( $accessor == 'outertext' && $nodes[$i]['type'] != 'button' ) {
-                    $outertext_details = '<translate-press data-trp-translate-id="' . $translated_string_ids[$translateable_strings[$i]]->id . '" data-trp-node-group="' . $this->get_node_type_category( $nodes[$i]['type'] ) . '"';
+                    $outertext_details = '<lingua-press data-lrp-translate-id="' . $translated_string_ids[$translateable_strings[$i]]->id . '" data-lrp-node-group="' . $this->get_node_type_category( $nodes[$i]['type'] ) . '"';
                     if ( $this->get_node_description( $nodes[$i] ) ) {
-                        $outertext_details .= ' data-trp-node-description="' . $this->get_node_description($nodes[$i] ) . '"';
+                        $outertext_details .= ' data-lrp-node-description="' . $this->get_node_description($nodes[$i] ) . '"';
                     }
-                    $outertext_details .= '>' . $nodes[$i]['node']->outertext . '</translate-press>';
+                    $outertext_details .= '>' . $nodes[$i]['node']->outertext . '</lingua-press>';
                     $nodes[$i]['node']->outertext = $outertext_details;
                 } else {
                     // button, option  can not be detected by the pencil, but the parent can.
@@ -1113,16 +1113,16 @@ class TRP_Translation_Render{
                     {
                         $parent = $nodes[$i]['node']->parent();
                         if (!array_key_exists('src', $parent->attr)){
-                            $parent->setAttribute('data-trp-translate-id-' . $accessor, $translated_string_ids[ $translateable_strings[$i] ]->id );
-                            $parent->setAttribute('data-trp-node-group-' . $accessor, $this->get_node_type_category( $nodes[$i]['type'] ) );
+                            $parent->setAttribute('data-lrp-translate-id-' . $accessor, $translated_string_ids[ $translateable_strings[$i] ]->id );
+                            $parent->setAttribute('data-lrp-node-group-' . $accessor, $this->get_node_type_category( $nodes[$i]['type'] ) );
                         }
                     }
 
-	                $nodes[$i]['node']->setAttribute('data-trp-translate-id-' . $accessor, $translated_string_ids[ $translateable_strings[$i] ]->id );
-                    $nodes[$i]['node']->setAttribute('data-trp-node-group-' . $accessor, $this->get_node_type_category( $nodes[$i]['type'] ) );
+	                $nodes[$i]['node']->setAttribute('data-lrp-translate-id-' . $accessor, $translated_string_ids[ $translateable_strings[$i] ]->id );
+                    $nodes[$i]['node']->setAttribute('data-lrp-node-group-' . $accessor, $this->get_node_type_category( $nodes[$i]['type'] ) );
 
                     if ( $this->get_node_description( $nodes[$i] ) ) {
-                        $nodes[$i]['node']->setAttribute('data-trp-node-description-' . $accessor, $this->get_node_description($nodes[$i]));
+                        $nodes[$i]['node']->setAttribute('data-lrp-node-description-' . $accessor, $this->get_node_description($nodes[$i]));
                     }
 
                 }
@@ -1135,7 +1135,7 @@ class TRP_Translation_Render{
         $handle_custom_links_in_translation_blocks = $this->settings['force-language-to-custom-links'] == 'yes';
         if( apply_filters('tp_handle_custom_links_in_translation_blocks', $handle_custom_links_in_translation_blocks) ) {
             $html_string = $html->save();
-            $html = TranslatePress\str_get_html($html_string, true, true, TRP_DEFAULT_TARGET_CHARSET, false, TRP_DEFAULT_BR_TEXT, TRP_DEFAULT_SPAN_TEXT);
+            $html = LinguaPress\str_get_html($html_string, true, true, LRP_DEFAULT_TARGET_CHARSET, false, LRP_DEFAULT_BR_TEXT, LRP_DEFAULT_SPAN_TEXT);
             if ( $html === false ){
                 return $html_string;
             }
@@ -1144,37 +1144,37 @@ class TRP_Translation_Render{
         $html = $this->handle_custom_links_and_forms( $html );
 
 	    // Append an html table containing the errors
-	    $trp_editor_notices = apply_filters( 'trp_editor_notices', $trp_editor_notices );
-	    if ( trp_is_translation_editor('preview') && $trp_editor_notices != '' ){
+	    $lrp_editor_notices = apply_filters( 'lrp_editor_notices', $lrp_editor_notices );
+	    if ( lrp_is_translation_editor('preview') && $lrp_editor_notices != '' ){
 		    $body = $html->find('body', 0 );
             if ( $body ) {
-                $body->innertext = '<div data-no-translation class="trp-editor-notices">' . $trp_editor_notices . "</div>" . $body->innertext;
+                $body->innertext = '<div data-no-translation class="lrp-editor-notices">' . $lrp_editor_notices . "</div>" . $body->innertext;
             }
 	    }
 	    $final_html = $html->save();
 
-       /* perform preg replace on the remaining trp-gettext tags */
-        $final_html = $this->remove_trp_html_tags( $final_html );
+       /* perform preg replace on the remaining lrp-gettext tags */
+        $final_html = $this->remove_lrp_html_tags( $final_html );
 
-	    return apply_filters( 'trp_translated_html', $final_html, $TRP_LANGUAGE, $language_code, $preview_mode );
+	    return apply_filters( 'lrp_translated_html', $final_html, $LRP_LANGUAGE, $language_code, $preview_mode );
     }
 
 
     public function handle_custom_links_and_forms( $html ){
-        global $TRP_LANGUAGE;
-        $preview_mode = isset( $_REQUEST['trp-edit-translation'] ) && $_REQUEST['trp-edit-translation'] == 'preview';
+        global $LRP_LANGUAGE;
+        $preview_mode = isset( $_REQUEST['lrp-edit-translation'] ) && $_REQUEST['lrp-edit-translation'] == 'preview';
         $home_url = home_url();
         $admin_url = admin_url();
         $wp_login_url = wp_login_url();
 	    $no_translate_attribute = 'data-no-translation';
         if ( ! $this->url_converter ) {
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $this->url_converter = $trp->get_component('url_converter');
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $this->url_converter = $lrp->get_component('url_converter');
         }
 
         // force custom links to have the correct language
         foreach( $html->find('a[href!="#"]') as $a_href)  {
-            $a_href->href = apply_filters( 'trp_href_from_translated_page', $a_href->href, $this->settings['default-language'] );
+            $a_href->href = apply_filters( 'lrp_href_from_translated_page', $a_href->href, $this->settings['default-language'] );
 
             if($a_href->href === true){
                 $a_href->href = ''; // an empty href <a href>Link</a> causes href to be true instead of empty string. Exit early and do not use get_url_for_lang() on it.
@@ -1189,28 +1189,28 @@ class TRP_Translation_Render{
             $is_admin_link = $this->is_admin_link($url, $admin_url, $wp_login_url);
 
             if( $preview_mode && ! $is_external_link ){
-                $a_href->setAttribute( 'data-trp-original-href', $url );
+                $a_href->setAttribute( 'data-lrp-original-href', $url );
             }
 
             if (
-            	( $TRP_LANGUAGE != $this->settings['default-language'] || $this->settings['add-subdirectory-to-default-language'] == 'yes' ) &&
+            	( $LRP_LANGUAGE != $this->settings['default-language'] || $this->settings['add-subdirectory-to-default-language'] == 'yes' ) &&
                 $this->settings['force-language-to-custom-links'] == 'yes' &&
 	            !$is_external_link &&
                 !$this->url_converter->url_is_file( $url ) &&
                 ( $this->url_converter->get_lang_from_url_string( $url ) == null || ( isset ($this->settings['add-subdirectory-to-default-language']) && $this->settings['add-subdirectory-to-default-language'] === 'yes' && $this->url_converter->get_lang_from_url_string( $url ) === $this->settings['default-language'] ) ) &&
 	            !$is_admin_link &&
-                strpos($url, '#TRPLINKPROCESSED') === false &&
-	            ( !$this->has_ancestor_attribute( $a_href, $no_translate_attribute ) || $this->has_ancestor_attribute($a_href, 'data-trp-gettext') ) // add language param to link if it's inside a gettext
+                strpos($url, '#LRPLINKPROCESSED') === false &&
+	            ( !$this->has_ancestor_attribute( $a_href, $no_translate_attribute ) || $this->has_ancestor_attribute($a_href, 'data-lrp-gettext') ) // add language param to link if it's inside a gettext
             ){
-                $a_href->href = apply_filters( 'trp_force_custom_links', $this->url_converter->get_url_for_language( $TRP_LANGUAGE, $url, '' ), $url, $TRP_LANGUAGE, $a_href );
+                $a_href->href = apply_filters( 'lrp_force_custom_links', $this->url_converter->get_url_for_language( $LRP_LANGUAGE, $url, '' ), $url, $LRP_LANGUAGE, $a_href );
                 $url = $a_href->href;
             }
 
             if( $preview_mode && ( $is_external_link || $this->is_different_language( $url ) || $is_admin_link ) ) {
-                $a_href->setAttribute( 'data-trp-unpreviewable', 'trp-unpreviewable' );
+                $a_href->setAttribute( 'data-lrp-unpreviewable', 'lrp-unpreviewable' );
             }
 
-            $a_href->href = str_replace('#TRPLINKPROCESSED', '', $a_href->href);
+            $a_href->href = str_replace('#LRPLINKPROCESSED', '', $a_href->href);
         }
 
         // pass the current language in forms where the action does not contain the language
@@ -1218,40 +1218,40 @@ class TRP_Translation_Render{
         foreach ( $html->find('form') as $k => $row ){
             $form_action      = $row->action;
             $is_admin_link    = $this->is_admin_link( $form_action, $admin_url, $wp_login_url );
-            $skip_this_action = apply_filters( 'trp_skip_form_action', false, $form_action );
+            $skip_this_action = apply_filters( 'lrp_skip_form_action', false, $form_action );
 
             if( !$is_admin_link && !$skip_this_action && !$this->is_external_link( $form_action, $home_url ) ) {
-                $row->setAttribute( 'data-trp-original-action', $row->action );
-                $row->innertext .= apply_filters( 'trp_form_inputs', '<input type="hidden" name="trp-form-language" value="' . $this->settings['url-slugs'][ $TRP_LANGUAGE ] . '"/>', $TRP_LANGUAGE, $this->settings['url-slugs'][ $TRP_LANGUAGE ], $row );
+                $row->setAttribute( 'data-lrp-original-action', $row->action );
+                $row->innertext .= apply_filters( 'lrp_form_inputs', '<input type="hidden" name="lrp-form-language" value="' . $this->settings['url-slugs'][ $LRP_LANGUAGE ] . '"/>', $LRP_LANGUAGE, $this->settings['url-slugs'][ $LRP_LANGUAGE ], $row );
 
                 $is_external_link = $this->is_external_link( $form_action, $home_url );
 
                 if ( !empty( $form_action )
                     && $this->settings['force-language-to-custom-links'] == 'yes'
                     && !$is_external_link
-                    && strpos( $form_action, '#TRPLINKPROCESSED' ) === false ) {
+                    && strpos( $form_action, '#LRPLINKPROCESSED' ) === false ) {
                     /* $form_action can have language slug in a secondary language but the path slugs in original language.
                      * By converting to default language first, it helps set the language slug to default language
                      * while keeping the path slugs unchanged (no language coincidences should appear because we check
                      * for uniqueness between secondary language translations and originals other than its own)
-                     * Use filter trp_change_form_action to hardcode particular cases
+                     * Use filter lrp_change_form_action to hardcode particular cases
                      */
                     $action_in_default_language = $this->url_converter->get_url_for_language( $this->settings['default-language'], $form_action, '' );
-                    $action_in_current_language = $this->url_converter->get_url_for_language( $TRP_LANGUAGE, $action_in_default_language, '' );
-                    $row->action                = apply_filters( 'trp_change_form_action', $action_in_current_language, $action_in_default_language, $TRP_LANGUAGE );
+                    $action_in_current_language = $this->url_converter->get_url_for_language( $LRP_LANGUAGE, $action_in_default_language, '' );
+                    $row->action                = apply_filters( 'lrp_change_form_action', $action_in_current_language, $action_in_default_language, $LRP_LANGUAGE );
                 }
 
                 // this should happen regardless of whether we made changes above
-                $row->action = str_replace( '#TRPLINKPROCESSED', '', esc_url( $row->action ) );
+                $row->action = str_replace( '#LRPLINKPROCESSED', '', esc_url( $row->action ) );
             }
         }
 
         foreach ( $html->find('link') as $link ) {
             if ( isset( $link->href ) ) {
                 if ( isset( $link->rel ) && ( $link->rel == 'next' || $link->rel == 'prev' ) )
-                    $link->href = $this->url_converter->get_url_for_language( $TRP_LANGUAGE, $link->href );
+                    $link->href = $this->url_converter->get_url_for_language( $LRP_LANGUAGE, $link->href );
 
-                $link->href = str_replace('#TRPLINKPROCESSED', '', $link->href);
+                $link->href = str_replace('#LRPLINKPROCESSED', '', $link->href);
             }
         }
 
@@ -1284,9 +1284,9 @@ class TRP_Translation_Render{
     }
 
     public function maybe_add_post_id_in_node( $nodes, $row, $string_count ){
-        $post_container_node = $this->has_ancestor_attribute( $row, 'data-trp-post-id' );
-        if( $post_container_node && $post_container_node->attr['data-trp-post-id'] ) {
-            $nodes[$string_count - 1]['post_id'] = $post_container_node->attr['data-trp-post-id'];
+        $post_container_node = $this->has_ancestor_attribute( $row, 'data-lrp-post-id' );
+        if( $post_container_node && $post_container_node->attr['data-lrp-post-id'] ) {
+            $nodes[$string_count - 1]['post_id'] = $post_container_node->attr['data-lrp-post-id'];
         }
         return $nodes;
     }
@@ -1294,7 +1294,7 @@ class TRP_Translation_Render{
     /*
      * Update other image attributes (srcset) with the translated image
      *
-     * Hooked to trp_set_translation_for_attribute
+     * Hooked to lrp_set_translation_for_attribute
      */
     public function translate_image_srcset_attributes( $node, $accessor, $translated_string){
 	    if( $accessor === 'src' ) {
@@ -1331,10 +1331,10 @@ class TRP_Translation_Render{
     /*
      * Do not automatically translate src and href attributes
      *
-     * Hooked to trp_allow_machine_translation_for_string
+     * Hooked to lrp_allow_machine_translation_for_string
      */
     public function allow_machine_translation_for_string( $allow, $entity_decoded_trimmed_string, $current_node_accessor_selector, $node_accessor ){
-    	$skip_attributes = apply_filters( 'trp_skip_machine_translation_for_attr', array( 'href', 'src', 'poster', 'srcset' ) );
+    	$skip_attributes = apply_filters( 'lrp_skip_machine_translation_for_attr', array( 'href', 'src', 'poster', 'srcset' ) );
 	    if ( in_array( $current_node_accessor_selector, $skip_attributes ) ){
 	    	// do not machine translate href and src
 	    	return false;
@@ -1345,7 +1345,7 @@ class TRP_Translation_Render{
     /*
      * Do not automatically translate html nodes with data-no-auto-translation attribute
      *
-     * Hooked to trp_allow_machine_translation_for_string
+     * Hooked to lrp_allow_machine_translation_for_string
      */
     function skip_automatic_translation_for_no_auto_translation_selector($allow, $entity_decoded_trimmed_string, $current_node_accessor_selector, $node_accessor, $row){
         $no_auto_translate_attribute = 'data-no-auto-translation';
@@ -1358,27 +1358,27 @@ class TRP_Translation_Render{
 
 
     /**
-     * function that removes any unwanted leftover <trp-gettext> tags
+     * function that removes any unwanted leftover <lrp-gettext> tags
      * @param $string
      * @return string|string[]|null
      */
-    function remove_trp_html_tags( $string ){
-        $string = preg_replace( '/(<|&lt;)trp-gettext (.*?)(>|&gt;)/i', '', $string );
-        $string = preg_replace( '/(<|&lt;)(\\\\)*\/trp-gettext(>|&gt;)/i', '', $string );
+    function remove_lrp_html_tags( $string ){
+        $string = preg_replace( '/(<|&lt;)lrp-gettext (.*?)(>|&gt;)/i', '', $string );
+        $string = preg_replace( '/(<|&lt;)(\\\\)*\/lrp-gettext(>|&gt;)/i', '', $string );
 
         // In case we have a gettext string which was run through rawurlencode(). See more details on iss6563
-        $string = preg_replace( '/%23%21trpst%23trp-gettext(.*?)%23%21trpen%23/i', '', $string );
-        $string = preg_replace( '/%23%21trpst%23%2Ftrp-gettext%23%21trpen%23/i', '', $string );
-        $string = preg_replace( '/%23%21trpst%23%5C%2Ftrp-gettext%23%21trpen%23/i', '', $string );
+        $string = preg_replace( '/%23%21lrpst%23lrp-gettext(.*?)%23%21lrpen%23/i', '', $string );
+        $string = preg_replace( '/%23%21lrpst%23%2Flrp-gettext%23%21lrpen%23/i', '', $string );
+        $string = preg_replace( '/%23%21lrpst%23%5C%2Flrp-gettext%23%21lrpen%23/i', '', $string );
 
-        if (!isset($_REQUEST['trp-edit-translation']) || $_REQUEST['trp-edit-translation'] != 'preview') {
-            $string = preg_replace('/(<|&lt;)trp-wrap (.*?)(>|&gt;)/i', '', $string);
-            $string = preg_replace('/(<|&lt;)(\\\\)*\/trp-wrap(>|&gt;)/i', '', $string);
+        if (!isset($_REQUEST['lrp-edit-translation']) || $_REQUEST['lrp-edit-translation'] != 'preview') {
+            $string = preg_replace('/(<|&lt;)lrp-wrap (.*?)(>|&gt;)/i', '', $string);
+            $string = preg_replace('/(<|&lt;)(\\\\)*\/lrp-wrap(>|&gt;)/i', '', $string);
         }
 
         //remove post containers before outputting
-        $string = preg_replace( '/(<|&lt;)trp-post-container (.*?)(>|&gt;)/i', '', $string );
-        $string = preg_replace( '/(<|&lt;)(\\\\)*\/trp-post-container(>|&gt;)/i', '', $string );
+        $string = preg_replace( '/(<|&lt;)lrp-post-container (.*?)(>|&gt;)/i', '', $string );
+        $string = preg_replace( '/(<|&lt;)(\\\\)*\/lrp-post-container(>|&gt;)/i', '', $string );
 
         return $string;
     }
@@ -1393,10 +1393,10 @@ class TRP_Translation_Render{
         if ( $html_decoded_value != strip_tags( $html_decoded_value ) ) {
 
             $value = $this->translate_page( $value );
-            /*the translate-press tag can appear on a gettext string without html and should not be left in the json
+            /*the lingua-press tag can appear on a gettext string without html and should not be left in the json
             as we don't know how it will be inserted into the page by js */
-            $value = preg_replace( '/(<|&lt;)translate-press (.*?)(>|&gt;)/', '', $value );
-            $value = preg_replace( '/(<|&lt;)(\\\\)*\/translate-press(>|&gt;)/', '', $value );
+            $value = preg_replace( '/(<|&lt;)lingua-press (.*?)(>|&gt;)/', '', $value );
+            $value = preg_replace( '/(<|&lt;)(\\\\)*\/lingua-press(>|&gt;)/', '', $value );
         }
     }
 
@@ -1408,7 +1408,7 @@ class TRP_Translation_Render{
 		//check if it a html text and translate
 		$html_decoded_value = html_entity_decode( (string) $value );
 		if ( $html_decoded_value != strip_tags( $html_decoded_value ) ) {
-			$html = TranslatePress\str_get_html( $value, true, true, TRP_DEFAULT_TARGET_CHARSET, false, TRP_DEFAULT_BR_TEXT, TRP_DEFAULT_SPAN_TEXT );
+			$html = LinguaPress\str_get_html( $value, true, true, LRP_DEFAULT_TARGET_CHARSET, false, LRP_DEFAULT_BR_TEXT, LRP_DEFAULT_SPAN_TEXT );
 			if( $html ) {
                 $html = $this->handle_custom_links_and_forms($html);
                 $value = $html->save();
@@ -1419,17 +1419,17 @@ class TRP_Translation_Render{
     public function handle_custom_links_for_default_language(){
         return ( $this->settings['force-language-to-custom-links'] == 'yes' &&
             $this->is_first_language_not_default_language() &&
-            apply_filters('trp_handle_custom_links_and_forms_in_default_language', true ) );
+            apply_filters('lrp_handle_custom_links_and_forms_in_default_language', true ) );
     }
 
     /**
      * Function that should be called only on the default language and when we are not in the editor mode and it is designed as a fallback to clear
-     * any trp gettext tags that we added and for some reason show up  although they should not
+     * any lrp gettext tags that we added and for some reason show up  although they should not
      * @param $output
      * @return mixed
      */
     public function render_default_language( $output ){
-        if ( $this->handle_custom_links_for_default_language() && !apply_filters( 'trp_stop_translating_page', false, $output ) ) {
+        if ( $this->handle_custom_links_for_default_language() && !apply_filters( 'lrp_stop_translating_page', false, $output ) ) {
 
 	        $json_array = json_decode( $output, true );
 	        /* If we have a json response we need to parse it and only translate the nodes that contain html
@@ -1440,7 +1440,7 @@ class TRP_Translation_Render{
 			 */
 	        if( $json_array && $json_array != $output ) {
 		        /* if it's one of our own ajax calls don't do nothing */
-		        if ( ! empty( $_REQUEST['action'] ) && strpos( sanitize_text_field( $_REQUEST['action'] ), 'trp_' ) === 0 && $_REQUEST['action'] != 'trp_split_translation_block' ) {
+		        if ( ! empty( $_REQUEST['action'] ) && strpos( sanitize_text_field( $_REQUEST['action'] ), 'lrp_' ) === 0 && $_REQUEST['action'] != 'lrp_split_translation_block' ) {
 			        return $output;
 		        }
 
@@ -1450,7 +1450,7 @@ class TRP_Translation_Render{
 				        array_walk_recursive($json_array, array($this, 'custom_links_and_forms_json'));
 			        } else {
 
-				        $html = TranslatePress\str_get_html( $json_array, true, true, TRP_DEFAULT_TARGET_CHARSET, false, TRP_DEFAULT_BR_TEXT, TRP_DEFAULT_SPAN_TEXT );
+				        $html = LinguaPress\str_get_html( $json_array, true, true, LRP_DEFAULT_TARGET_CHARSET, false, LRP_DEFAULT_BR_TEXT, LRP_DEFAULT_SPAN_TEXT );
 				        if( $html ) {
                             $html = $this->handle_custom_links_and_forms($html);
                             $json_array = $html->save();
@@ -1458,17 +1458,17 @@ class TRP_Translation_Render{
 			        }
 		        }
 
-		        return trp_safe_json_encode( $json_array );
+		        return lrp_safe_json_encode( $json_array );
 	        }
 
-            $html = TranslatePress\str_get_html( $output, true, true, TRP_DEFAULT_TARGET_CHARSET, false, TRP_DEFAULT_BR_TEXT, TRP_DEFAULT_SPAN_TEXT );
+            $html = LinguaPress\str_get_html( $output, true, true, LRP_DEFAULT_TARGET_CHARSET, false, LRP_DEFAULT_BR_TEXT, LRP_DEFAULT_SPAN_TEXT );
             if( $html ) {
                 $html = $this->handle_custom_links_and_forms($html);
                 $output = $html->save();
             }
         }
 
-        return TRP_Translation_Manager::strip_gettext_tags($output);
+        return LRP_Translation_Manager::strip_gettext_tags($output);
     }
 
     /**
@@ -1558,16 +1558,16 @@ class TRP_Translation_Render{
      * @return bool                 Whether given url links to a different language than the current one.
      */
     protected function is_different_language( $url ){
-        global $TRP_LANGUAGE;
+        global $LRP_LANGUAGE;
         if ( ! $this->url_converter ) {
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $this->url_converter = $trp->get_component('url_converter');
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $this->url_converter = $lrp->get_component('url_converter');
         }
         $lang = $this->url_converter->get_lang_from_url_string( $url );
         if ( $lang == null ){
             $lang = $this->settings['default-language'];
         }
-        if ( $lang == $TRP_LANGUAGE ){
+        if ( $lang == $LRP_LANGUAGE ){
             return false;
         }else{
             return true;
@@ -1597,7 +1597,7 @@ class TRP_Translation_Render{
 		    $is_admin_link = false;
 	    }
 
-	    return apply_filters('trp_is_admin_link', $is_admin_link, $url, $admin_url, $wp_login_url);
+	    return apply_filters('lrp_is_admin_link', $is_admin_link, $url, $admin_url, $wp_login_url);
 
     }
 
@@ -1616,8 +1616,8 @@ class TRP_Translation_Render{
         }
 
         if ( !$this->machine_translator ) {
-            $trp                      = TRP_Translate_Press::get_trp_instance();
-            $this->machine_translator = $trp->get_component( 'machine_translator' );
+            $lrp                      = LRP_Lingua_Press::get_lrp_instance();
+            $this->machine_translator = $lrp->get_component( 'machine_translator' );
         }
 
         $translated_strings            = array();
@@ -1625,13 +1625,13 @@ class TRP_Translation_Render{
 
         $originals_without_translation_in_db_that_are_similar_with_already_translated_strings = array();
 
-        if ( !$this->trp_query ) {
-            $trp             = TRP_Translate_Press::get_trp_instance();
-            $this->trp_query = $trp->get_component( 'query' );
+        if ( !$this->lrp_query ) {
+            $lrp             = LRP_Lingua_Press::get_lrp_instance();
+            $this->lrp_query = $lrp->get_component( 'query' );
         }
 
         // get existing translations
-        $dictionary = $this->trp_query->get_existing_translations( array_values( $translateable_strings ), $language_code );
+        $dictionary = $this->lrp_query->get_existing_translations( array_values( $translateable_strings ), $language_code );
         if ( $dictionary === false ) {
             return array();
         }
@@ -1640,7 +1640,7 @@ class TRP_Translation_Render{
         $machine_translatable_strings    = array();
 
         /**
-         * The filter 'trp_add_similar_and_original_strings_to_db' becomes true only when TranslatePress Settings->Advanced Settings->Serve similar translations for strings that are almost identical
+         * The filter 'lrp_add_similar_and_original_strings_to_db' becomes true only when LinguaPress Settings->Advanced Settings->Serve similar translations for strings that are almost identical
          * is set to 'Yes'
          * This filter appears in multiple places in this class since we use the function process_strings to make sure all the strings are inserted in the DataBase with their corresponding translation
          * The similar strings we reference are strings that are almost identical with strings that are in the DB and have translations.
@@ -1656,7 +1656,7 @@ class TRP_Translation_Render{
          * We collect these similar strings in an array so we can merge them later in new_strings in order to be introduced into the DB.
          */
 
-        if ( apply_filters( 'trp_add_similar_and_original_strings_to_db', false ) ) {
+        if ( apply_filters( 'lrp_add_similar_and_original_strings_to_db', false ) ) {
             foreach ( array_keys( $dictionary ) as $value ) {
                 if ( $value != $dictionary[ $value ]->original ) {
                     $originals_without_translation_in_db_that_are_similar_with_already_translated_strings[] = $value;
@@ -1669,7 +1669,7 @@ class TRP_Translation_Render{
             // prevent accidentally machine translated strings from db such as for src to be displayed
             $skip_string = in_array( $string, $skip_machine_translating_strings );
 
-            if ( isset( $dictionary[ $string ]->translated ) && $dictionary[ $string ]->status == $this->trp_query->get_constant_machine_translated() && $skip_string ) {
+            if ( isset( $dictionary[ $string ]->translated ) && $dictionary[ $string ]->status == $this->lrp_query->get_constant_machine_translated() && $skip_string ) {
                 continue;
             }
             //strings existing in database,
@@ -1684,8 +1684,8 @@ class TRP_Translation_Render{
                 // if the string is not a url then allow machine translation for it
 
                 if ( !$this->url_converter ){
-                    $trp = TRP_Translate_Press::get_trp_instance();
-                    $this->url_converter = $trp->get_component('url_converter');
+                    $lrp = LRP_Lingua_Press::get_lrp_instance();
+                    $this->url_converter = $lrp->get_component('url_converter');
                 }
 
                 if ( $machine_translation_available && !$skip_string && filter_var( $new_strings[ $i ], FILTER_VALIDATE_URL ) === false && !$this->url_converter->url_is_extra( $new_strings[ $i ] ) ) {
@@ -1697,7 +1697,7 @@ class TRP_Translation_Render{
              * Here we look through the $translateable_strings found and if they are also in the array $originals_without_translation_in_db_that_are_similar_with_already_translated_strings
              * then we assign them to new_strings to prepare them for being inserted into DB.
              */
-            if ( apply_filters( 'trp_add_similar_and_original_strings_to_db', false ) ) {
+            if ( apply_filters( 'lrp_add_similar_and_original_strings_to_db', false ) ) {
                 if ( in_array( $translateable_strings[ $i ], $originals_without_translation_in_db_that_are_similar_with_already_translated_strings ) ) {
                     $new_strings[ $i ] = $translateable_strings[ $i ];
                 }
@@ -1705,7 +1705,7 @@ class TRP_Translation_Render{
 
         }
 
-        $untranslated_list                                                    = $this->trp_query->get_untranslated_strings( $new_strings, $language_code );
+        $untranslated_list                                                    = $this->lrp_query->get_untranslated_strings( $new_strings, $language_code );
         $update_strings                                                       = array();
         $unique_original_strings_with_machine_translations                    = array();
 
@@ -1717,11 +1717,11 @@ class TRP_Translation_Render{
 
         /**
          * If the option is activated,we use the below code so the variable $original_to_be_synced contains the array of strings that are to be sent to a machine translation
-         * engine together with the similar one, so they have entries into the table the trp_original_strings
+         * engine together with the similar one, so they have entries into the table the lrp_original_strings
          */
         $originals_to_be_synced= array_merge( $unique_original_strings_with_machine_translations, $originals_without_translation_in_db_that_are_similar_with_already_translated_strings );
 
-        $original_inserts = $this->trp_query->original_strings_sync( $language_code, $originals_to_be_synced );
+        $original_inserts = $this->lrp_query->original_strings_sync( $language_code, $originals_to_be_synced );
 
         if ( $machine_translation_available ) {
             // insert unique machine translations into db. Only for strings newly discovered
@@ -1730,9 +1730,9 @@ class TRP_Translation_Render{
                 array_push( $update_strings, array(
                     'id'          => $id,
                     'original_id' => $original_inserts[ $string ]->id,
-                    'original'    => trp_sanitize_string( $string, false ),
-                    'translated'  => trp_sanitize_string( $machine_strings[ $string ] ),
-                    'status'      => $this->trp_query->get_constant_machine_translated() ) );
+                    'original'    => lrp_sanitize_string( $string, false ),
+                    'translated'  => lrp_sanitize_string( $machine_strings[ $string ] ),
+                    'status'      => $this->lrp_query->get_constant_machine_translated() ) );
             }
         }else{
             $machine_strings = false;
@@ -1753,7 +1753,7 @@ class TRP_Translation_Render{
              * The similar strings have status 3 in DB.
              */
 
-            if ( apply_filters('trp_add_similar_and_original_strings_to_db', false) ) {
+            if ( apply_filters('lrp_add_similar_and_original_strings_to_db', false) ) {
 
                 if (isset($new_strings[$i]) && in_array($new_strings[$i],$originals_without_translation_in_db_that_are_similar_with_already_translated_strings ) ) {
 
@@ -1761,8 +1761,8 @@ class TRP_Translation_Render{
                     array_push( $update_strings, array(
                         'id'          => $id,
                         'original'    => $new_strings[$i],
-                        'translated'  => trp_sanitize_string( $dictionary[$string]->translated ),
-                        'status'      => $this->trp_query->get_constant_similar_translated(),
+                        'translated'  => lrp_sanitize_string( $dictionary[$string]->translated ),
+                        'status'      => $this->lrp_query->get_constant_similar_translated(),
                         'original_id' => $original_inserts[ $string ]->id) );
 
                     unset($new_strings[$i]);
@@ -1776,8 +1776,8 @@ class TRP_Translation_Render{
         }
 
 
-        $this->trp_query->insert_strings( $new_strings, $language_code, $block_type );
-        $this->trp_query->update_strings( $update_strings, $language_code, array( 'id','original', 'translated', 'status', 'original_id' ) );
+        $this->lrp_query->insert_strings( $new_strings, $language_code, $block_type );
+        $this->lrp_query->update_strings( $update_strings, $language_code, array( 'id','original', 'translated', 'status', 'original_id' ) );
 
         return $translated_strings;
     }
@@ -1831,7 +1831,7 @@ class TRP_Translation_Render{
 	 * @return array
 	 */
     public function get_node_accessors(){
-	    return apply_filters( 'trp_node_accessors', array(
+	    return apply_filters( 'lrp_node_accessors', array(
 		    'text' => array(
 			    'accessor' => 'outertext',
 			    'attribute' => false
@@ -1935,22 +1935,22 @@ class TRP_Translation_Render{
 
 		// so far only when woocommerce is active we need to enqueue this script on all pages
 		if ( class_exists( 'WooCommerce' ) ){
-			wp_enqueue_script('trp-frontend-compatibility', TRP_PLUGIN_URL . 'assets/js/trp-frontend-compatibility.js', array(), TRP_PLUGIN_VERSION );
+			wp_enqueue_script('lrp-frontend-compatibility', LRP_PLUGIN_URL . 'assets/js/lrp-frontend-compatibility.js', array(), LRP_PLUGIN_VERSION );
 		}
 
 	}
 
-	public function get_trp_data(){
-		global $TRP_LANGUAGE;
+	public function get_lrp_data(){
+		global $LRP_LANGUAGE;
 
-		$trp = TRP_Translate_Press::get_trp_instance();
+		$lrp = LRP_Lingua_Press::get_lrp_instance();
 		if ( ! $this->translation_manager ) {
-			$this->translation_manager = $trp->get_component( 'translation_manager' );
+			$this->translation_manager = $lrp->get_component( 'translation_manager' );
 		}
 		$nonces = $this->translation_manager->editor_nonces();
 
-		$language_to_query = $TRP_LANGUAGE;
-		if ( $TRP_LANGUAGE == $this->settings['default-language']  ) {
+		$language_to_query = $LRP_LANGUAGE;
+		if ( $LRP_LANGUAGE == $this->settings['default-language']  ) {
 			foreach ($this->settings['translation-languages'] as $language) {
 				if ( $language != $this->settings['default-language'] ) {
 					$language_to_query = $language;
@@ -1961,22 +1961,22 @@ class TRP_Translation_Render{
 		$language_to_query = ( count ( $this->settings['translation-languages'] ) < 2 ) ? '' : $language_to_query;
 
 		return array(
-            'trp_custom_ajax_url'                                  => apply_filters( 'trp_custom_ajax_url', TRP_PLUGIN_URL . 'includes/trp-ajax.php' ),
-            'trp_wp_ajax_url'                                      => apply_filters( 'trp_wp_ajax_url', admin_url( 'admin-ajax.php' ) ),
-            'trp_language_to_query'                                => $language_to_query,
-            'trp_original_language'                                => $this->settings['default-language'],
-            'trp_current_language'                                 => $TRP_LANGUAGE,
-            'trp_skip_selectors'                                   => apply_filters( 'trp_skip_selectors_from_dynamic_translation', array( '[data-no-translation]', '[data-no-dynamic-translation]', '[data-trp-translate-id-innertext]', 'script', 'style', 'head', 'trp-span', 'translate-press' ), $TRP_LANGUAGE, $this->settings ), // data-trp-translate-id-innertext refers to translation block and it shouldn't be detected
-            'trp_base_selectors'                                   => $this->get_base_attribute_selectors(),
-            'trp_attributes_selectors'                             => $this->get_node_accessors(),
-            'trp_attributes_accessors'                             => $this->get_accessors_array(),
+            'lrp_custom_ajax_url'                                  => apply_filters( 'lrp_custom_ajax_url', LRP_PLUGIN_URL . 'includes/lrp-ajax.php' ),
+            'lrp_wp_ajax_url'                                      => apply_filters( 'lrp_wp_ajax_url', admin_url( 'admin-ajax.php' ) ),
+            'lrp_language_to_query'                                => $language_to_query,
+            'lrp_original_language'                                => $this->settings['default-language'],
+            'lrp_current_language'                                 => $LRP_LANGUAGE,
+            'lrp_skip_selectors'                                   => apply_filters( 'lrp_skip_selectors_from_dynamic_translation', array( '[data-no-translation]', '[data-no-dynamic-translation]', '[data-lrp-translate-id-innertext]', 'script', 'style', 'head', 'lrp-span', 'lingua-press' ), $LRP_LANGUAGE, $this->settings ), // data-lrp-translate-id-innertext refers to translation block and it shouldn't be detected
+            'lrp_base_selectors'                                   => $this->get_base_attribute_selectors(),
+            'lrp_attributes_selectors'                             => $this->get_node_accessors(),
+            'lrp_attributes_accessors'                             => $this->get_accessors_array(),
             'gettranslationsnonceregular'                          => $nonces['gettranslationsnonceregular'],
-            'showdynamiccontentbeforetranslation'                  => apply_filters( 'trp_show_dynamic_content_before_translation', false ),
-            'skip_strings_from_dynamic_translation'                => apply_filters( 'trp_skip_strings_from_dynamic_translation', array() ),
-            'skip_strings_from_dynamic_translation_for_substrings' => apply_filters( 'trp_skip_strings_from_dynamic_translation_for_substrings', array( 'href' => array('amazon-adsystem', 'googleads', 'g.doubleclick') ) ),
-            'duplicate_detections_allowed'                         => apply_filters( 'trp_duplicate_detections_allowed', 100 ),
-            'trp_translate_numerals_opt'                           => isset ($this->settings["trp_advanced_settings"]["enable_numerals_translation"]) ? $this->settings["trp_advanced_settings"]["enable_numerals_translation"] : 'no',
-            'trp_no_auto_translation_selectors'                    => apply_filters( 'trp_no_auto_translate_selectors', array( '[data-no-auto-translation]' ), $TRP_LANGUAGE )
+            'showdynamiccontentbeforetranslation'                  => apply_filters( 'lrp_show_dynamic_content_before_translation', false ),
+            'skip_strings_from_dynamic_translation'                => apply_filters( 'lrp_skip_strings_from_dynamic_translation', array() ),
+            'skip_strings_from_dynamic_translation_for_substrings' => apply_filters( 'lrp_skip_strings_from_dynamic_translation_for_substrings', array( 'href' => array('amazon-adsystem', 'googleads', 'g.doubleclick') ) ),
+            'duplicate_detections_allowed'                         => apply_filters( 'lrp_duplicate_detections_allowed', 100 ),
+            'lrp_translate_numerals_opt'                           => isset ($this->settings["lrp_advanced_settings"]["enable_numerals_translation"]) ? $this->settings["lrp_advanced_settings"]["enable_numerals_translation"] : 'no',
+            'lrp_no_auto_translation_selectors'                    => apply_filters( 'lrp_no_auto_translate_selectors', array( '[data-no-auto-translation]' ), $LRP_LANGUAGE )
 		);
 	}
 
@@ -1984,14 +1984,14 @@ class TRP_Translation_Render{
      * Enqueue dynamic translation script.
      */
     public function enqueue_dynamic_translation(){
-        $enable_dynamic_translation = apply_filters( 'trp_enable_dynamic_translation', true );
+        $enable_dynamic_translation = apply_filters( 'lrp_enable_dynamic_translation', true );
         if ( ! $enable_dynamic_translation ){
             return;
         }
 
-        global $TRP_LANGUAGE;
+        global $LRP_LANGUAGE;
 
-        if ( $TRP_LANGUAGE != $this->settings['default-language'] || ( isset( $_REQUEST['trp-edit-translation'] ) && $_REQUEST['trp-edit-translation'] == 'preview' ) ) {
+        if ( $LRP_LANGUAGE != $this->settings['default-language'] || ( isset( $_REQUEST['lrp-edit-translation'] ) && $_REQUEST['lrp-edit-translation'] == 'preview' ) ) {
             $this->output_dynamic_translation_script();
         }
     }
@@ -2005,13 +2005,13 @@ class TRP_Translation_Render{
      *
      */
     public function output_dynamic_translation_script(){
-        $script_src     = TRP_PLUGIN_URL . 'assets/js/trp-translate-dom-changes.js';
-        $trp_data       = $this->get_trp_data();
-        $trp_plugin_ver = TRP_PLUGIN_VERSION;
+        $script_src     = LRP_PLUGIN_URL . 'assets/js/lrp-translate-dom-changes.js';
+        $lrp_data       = $this->get_lrp_data();
+        $lrp_plugin_ver = LRP_PLUGIN_VERSION;
 
-        $echo_scripts = function() use ( $script_src, $trp_data, $trp_plugin_ver ){
-            echo '<script type="text/javascript" id="trp-dynamic-translator-js-extra"> var trp_data = ' . json_encode( $trp_data ) . ';</script>';
-            echo '<script src="' . esc_url( $script_src  ) . '?ver=' . esc_attr($trp_plugin_ver) .'" id="trp-dynamic-translator-js"></script>';
+        $echo_scripts = function() use ( $script_src, $lrp_data, $lrp_plugin_ver ){
+            echo '<script type="text/javascript" id="lrp-dynamic-translator-js-extra"> var lrp_data = ' . json_encode( $lrp_data ) . ';</script>';
+            echo '<script src="' . esc_url( $script_src  ) . '?ver=' . esc_attr($lrp_plugin_ver) .'" id="lrp-dynamic-translator-js"></script>';
         };
 
         if ( is_late_dom_html_plugin_active() ){
@@ -2019,16 +2019,16 @@ class TRP_Translation_Render{
             return;
         }
 
-        wp_enqueue_script('trp-dynamic-translator', $script_src, array('jquery'), TRP_PLUGIN_VERSION, true );
-        wp_localize_script('trp-dynamic-translator', 'trp_data', $trp_data );
+        wp_enqueue_script('lrp-dynamic-translator', $script_src, array('jquery'), LRP_PLUGIN_VERSION, true );
+        wp_localize_script('lrp-dynamic-translator', 'lrp_data', $lrp_data );
     }
 
 	/**
-	 * Skip base selectors (data-trp-translate-id, data-trpgettextoriginal etc.)
+	 * Skip base selectors (data-lrp-translate-id, data-lrpgettextoriginal etc.)
 	 *
 	 * The base selectors (without any suffixes) are placed only if their children do not contain any nodes that are translatable
 	 *
- 	 * hooked to trp_skip_selectors_from_dynamic_translation
+ 	 * hooked to lrp_skip_selectors_from_dynamic_translation
 	 *
 	 * @param $skip_selectors
 	 *
@@ -2047,7 +2047,7 @@ class TRP_Translation_Render{
 	 * Get base attribute selectors
 	 */
 	public function get_base_attribute_selectors(){
-		return apply_filters( 'trp_base_attribute_selectors', array( 'data-trp-translate-id', 'data-trpgettextoriginal', 'data-trp-post-slug' ) );
+		return apply_filters( 'lrp_base_attribute_selectors', array( 'data-lrp-translate-id', 'data-lrpgettextoriginal', 'data-lrp-post-slug' ) );
 	}
 
 
@@ -2080,26 +2080,26 @@ class TRP_Translation_Render{
      * @since 1.0.8
      */
     public function force_preview_on_url_redirect( $location, $status ){
-        if( isset( $_REQUEST['trp-edit-translation'] ) && $_REQUEST['trp-edit-translation'] == 'preview' ){
-            $location = add_query_arg( 'trp-edit-translation', 'preview', $location );
+        if( isset( $_REQUEST['lrp-edit-translation'] ) && $_REQUEST['lrp-edit-translation'] == 'preview' ){
+            $location = add_query_arg( 'lrp-edit-translation', 'preview', $location );
         }
         return $location;
     }
 
     /**
-     * Filters the location redirect to add the current language based on the trp-form-language parameter
+     * Filters the location redirect to add the current language based on the lrp-form-language parameter
      * @param $location
      * @param $status
      * @return string
      * @since 1.1.2
      */
     public function force_language_on_form_url_redirect( $location, $status ){
-        if( isset( $_REQUEST[ 'trp-form-language' ] ) && !empty($_REQUEST[ 'trp-form-language' ]) ){
-            $form_language_slug = sanitize_text_field($_REQUEST[ 'trp-form-language' ]);
+        if( isset( $_REQUEST[ 'lrp-form-language' ] ) && !empty($_REQUEST[ 'lrp-form-language' ]) ){
+            $form_language_slug = sanitize_text_field($_REQUEST[ 'lrp-form-language' ]);
             $form_language = array_search($form_language_slug, $this->settings['url-slugs']);
             if ( ! $this->url_converter ) {
-                $trp = TRP_Translate_Press::get_trp_instance();
-                $this->url_converter = $trp->get_component('url_converter');
+                $lrp = LRP_Lingua_Press::get_lrp_instance();
+                $this->url_converter = $lrp->get_component('url_converter');
             }
 
             $location = $this->url_converter->get_url_for_language( $form_language, $location );
@@ -2114,13 +2114,13 @@ class TRP_Translation_Render{
      * @since 1.0.8
      */
     public function force_preview_on_url_in_ajax( $output ){
-        if ( TRP_Gettext_Manager::is_ajax_on_frontend() && isset( $_REQUEST['trp-edit-translation'] ) && $_REQUEST['trp-edit-translation'] === 'preview' && $output != false ) {
+        if ( LRP_Gettext_Manager::is_ajax_on_frontend() && isset( $_REQUEST['lrp-edit-translation'] ) && $_REQUEST['lrp-edit-translation'] === 'preview' && $output != false ) {
             $result = json_decode($output, TRUE);
             if ( json_last_error() === JSON_ERROR_NONE) {
                 if( !is_array( $result ) )//make sure we send an array as json_decode even with true parameter might not return one
                     $result = array($result);
                 array_walk_recursive($result, array($this, 'callback_add_preview_arg'));
-                $output = trp_safe_json_encode($result);
+                $output = lrp_safe_json_encode($result);
             } //endif
         } //endif
         return $output;
@@ -2136,7 +2136,7 @@ class TRP_Translation_Render{
      */
     function callback_add_preview_arg(&$item, $key){
         if ( filter_var($item, FILTER_VALIDATE_URL) !== FALSE ) {
-            $item = add_query_arg( 'trp-edit-translation', 'preview', $item );
+            $item = add_query_arg( 'lrp-edit-translation', 'preview', $item );
         }
     }
 
@@ -2147,11 +2147,11 @@ class TRP_Translation_Render{
      * @since 1.1.2
      */
     public function force_form_language_on_url_in_ajax( $output ){
-        if ( TRP_Gettext_Manager::is_ajax_on_frontend() && isset( $_REQUEST[ 'trp-form-language' ] ) && !empty( $_REQUEST[ 'trp-form-language' ] ) ) {
+        if ( LRP_Gettext_Manager::is_ajax_on_frontend() && isset( $_REQUEST[ 'lrp-form-language' ] ) && !empty( $_REQUEST[ 'lrp-form-language' ] ) ) {
             $result = json_decode($output, TRUE);
             if ( is_array( $result ) && json_last_error() === JSON_ERROR_NONE) {
                 array_walk_recursive($result, array($this, 'callback_add_language_to_url'));
-                $output = trp_safe_json_encode($result);
+                $output = lrp_safe_json_encode($result);
             } //endif
         } //endif
         return $output;
@@ -2167,15 +2167,15 @@ class TRP_Translation_Render{
      */
     function callback_add_language_to_url(&$item, $key){
         if ( filter_var($item, FILTER_VALIDATE_URL) !== FALSE ) {
-            $form_language_slug = isset( $_REQUEST[ 'trp-form-language' ] ) ? sanitize_text_field($_REQUEST[ 'trp-form-language' ]) : '';
+            $form_language_slug = isset( $_REQUEST[ 'lrp-form-language' ] ) ? sanitize_text_field($_REQUEST[ 'lrp-form-language' ]) : '';
             $form_language = array_search($form_language_slug, $this->settings['url-slugs']);
             if ( ! $this->url_converter ) {
-                $trp = TRP_Translate_Press::get_trp_instance();
-                $this->url_converter = $trp->get_component('url_converter');
+                $lrp = LRP_Lingua_Press::get_lrp_instance();
+                $this->url_converter = $lrp->get_component('url_converter');
             }
 
             $item = $this->url_converter->get_url_for_language( $form_language, $item );
-	        $item  = str_replace('#TRPLINKPROCESSED', '', $item);
+	        $item  = str_replace('#LRPLINKPROCESSED', '', $item);
         }
     }
 
@@ -2198,10 +2198,10 @@ class TRP_Translation_Render{
      * @return string
      */
     function fix_wptexturize_characters( $translated, $text, $context, $domain ){
-        global $TRP_LANGUAGE;
-        $trp = TRP_Translate_Press::get_trp_instance();
-        $trp_settings = $trp->get_component( 'settings' );
-        $settings = $trp_settings->get_settings();
+        global $LRP_LANGUAGE;
+        $lrp = LRP_Lingua_Press::get_lrp_instance();
+        $lrp_settings = $lrp->get_component( 'settings' );
+        $settings = $lrp_settings->get_settings();
 
         $default_language= $settings["default-language"];
 
@@ -2220,28 +2220,28 @@ class TRP_Translation_Render{
             'Comma-separated list of replacement words in your language' => '&#8217;tain&#8217;t,&#8217;twere,&#8217;twas,&#8217;tis,&#8217;twill,&#8217;til,&#8217;bout,&#8217;nuff,&#8217;round,&#8217;cause,&#8217;em'
         );
 
-        if( $default_language != $TRP_LANGUAGE && array_key_exists($context, $list_of_context_text) && in_array($text, $list_of_context_text) ){
-            return trp_x( $text, $context, '', $default_language );
+        if( $default_language != $LRP_LANGUAGE && array_key_exists($context, $list_of_context_text) && in_array($text, $list_of_context_text) ){
+            return lrp_x( $text, $context, '', $default_language );
         }
 
         return $translated;
     }
 
     /**
-     * Function that wraps the post title and the post content in a custom trp wrap trp-post-container so we can know in
+     * Function that wraps the post title and the post content in a custom lrp wrap lrp-post-container so we can know in
      * the function translate_page() if a string is part of the content of a post so we can store a meta that gives the string context
      * @param $content
      * @param null $id
      * @return string
      */
     function wrap_with_post_id( $content, $id = null ){
-        global $post, $TRP_LANGUAGE, $wp_query;
+        global $post, $LRP_LANGUAGE, $wp_query;
 
         if( empty($post->ID) )
             return $content;
 
         //we try to wrap only the actual content of the post and not when the filters are executed in SEO plugins for example
-        if( ( !$wp_query->in_the_loop || !is_main_query() ) && apply_filters('trp_wrap_with_post_id_overrule', true ) )
+        if( ( !$wp_query->in_the_loop || !is_main_query() ) && apply_filters('lrp_wrap_with_post_id_overrule', true ) )
             return $content;
 
         //for the_tile filter we have an $id and we can compare it with the post we are on ..to avoid wrapping titles in menus for example
@@ -2249,9 +2249,9 @@ class TRP_Translation_Render{
             return $content;
         }
 
-        if ( $TRP_LANGUAGE !== $this->settings['default-language'] ) {
+        if ( $LRP_LANGUAGE !== $this->settings['default-language'] ) {
             if ( is_singular() && !empty($post->ID)) {
-                $content = "<trp-post-container data-trp-post-id='" . $post->ID . "'>" . $content . "</trp-post-container>";//changed " to ' to not break cases when the filter is applied inside an html attribute (title for example)
+                $content = "<lrp-post-container data-lrp-post-id='" . $post->ID . "'>" . $content . "</lrp-post-container>";//changed " to ' to not break cases when the filter is applied inside an html attribute (title for example)
             }
         }
 
@@ -2264,9 +2264,9 @@ class TRP_Translation_Render{
 	 * @param $str
 	 * @return bool
 	 */
-    function trp_is_numeric($str){
+    function lrp_is_numeric($str){
     	if (is_numeric($str)){
-    		if (isset($this->settings["trp_advanced_settings"]["enable_numerals_translation"]) && $this->settings["trp_advanced_settings"]["enable_numerals_translation"] === 'yes') {
+    		if (isset($this->settings["lrp_advanced_settings"]["enable_numerals_translation"]) && $this->settings["lrp_advanced_settings"]["enable_numerals_translation"] === 'yes') {
 	            return false;
 		        } else {
 			    return true;
@@ -2324,17 +2324,17 @@ class TRP_Translation_Render{
 
     /**
      * Searches for strings that are emails that go through antispambot() function in wp and saves them in the db not html encoded.
-     * Hooks on the trp_translateable_strings filter defined in translate_page()
+     * Hooks on the lrp_translateable_strings filter defined in translate_page()
      *
      * @param $translateable_information
      * @param $html
      * @param $no_translate_attribute
-     * @param $global_TRP_LANGUAGE
+     * @param $global_LRP_LANGUAGE
      * @param $language_code
-     * @param $instance_TRP_Translation_Render
+     * @param $instance_LRP_Translation_Render
      * @return array
      */
-    public function antispambot_infinite_detection_fix( $translateable_information, $html, $no_translate_attribute, $global_TRP_LANGUAGE, $language_code, $instance_TRP_Translation_Render)
+    public function antispambot_infinite_detection_fix( $translateable_information, $html, $no_translate_attribute, $global_LRP_LANGUAGE, $language_code, $instance_LRP_Translation_Render)
     {
         if (!is_array($translateable_information['translateable_strings'])){
             return $translateable_information;

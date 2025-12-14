@@ -3,13 +3,13 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
+class LRP_MTAPI_Machine_Translator extends LRP_Machine_Translator {
 
     private $license_key = null;
     public function __construct( $settings ) {
         parent::__construct( $settings );
-        add_filter( 'trp_mtapi_source_language', array( $this, 'configure_api_source_language' ), 10, 3 );
-        add_filter( 'trp_mtapi_target_language', array( $this, 'configure_api_target_language' ), 10, 3 );
+        add_filter( 'lrp_mtapi_source_language', array( $this, 'configure_api_source_language' ), 10, 3 );
+        add_filter( 'lrp_mtapi_target_language', array( $this, 'configure_api_target_language' ), 10, 3 );
     }
 
     /**
@@ -25,7 +25,7 @@ class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
 	public function send_request( $source_language, $language_code, $strings_array, $formality = "default" ){
 		/* build our translation request */
         $translation_request = [];
-		$translation_request['key'] = get_option('trp_license_key', '');
+		$translation_request['key'] = get_option('lrp_license_key', '');
 		$translation_request['url'] = trailingslashit( $this->get_referer() );
 		$translation_request['source'] = $source_language;
 		$translation_request['target'] = $language_code;
@@ -50,7 +50,7 @@ class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
 	}
 
 	public function get_api_url(){
-		return (defined('MTAPI_URL')  ? MTAPI_URL : 'https://mtapi.translatepress.com' );
+		return (defined('MTAPI_URL')  ? MTAPI_URL : 'https://mtapi.linguapress.com' );
 	}
 
 	/**
@@ -73,23 +73,23 @@ class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
             return array();
         }
 
-        $source_language = apply_filters( 'trp_mtapi_source_language', $this->machine_translation_codes[$source_language_code], $source_language_code, $target_language_code );
-        $target_language = apply_filters( 'trp_mtapi_target_language', $this->machine_translation_codes[$target_language_code], $source_language_code, $target_language_code );
+        $source_language = apply_filters( 'lrp_mtapi_source_language', $this->machine_translation_codes[$source_language_code], $source_language_code, $target_language_code );
+        $target_language = apply_filters( 'lrp_mtapi_target_language', $this->machine_translation_codes[$target_language_code], $source_language_code, $target_language_code );
 
         $formality = $this->get_request_formality_for_language($target_language_code);
 
 		$translated_strings = array();
 
         /* apply filter to allow modification of chunk size, default is 50 */
-        $chunk_size = apply_filters( 'trp_mtapi_chunk_size', 50 );
+        $chunk_size = apply_filters( 'lrp_mtapi_chunk_size', 50 );
 
-        /* split our strings that need translation in chunks of maximum $chunk_size strings due to limit of TranslatePress AI*/
+        /* split our strings that need translation in chunks of maximum $chunk_size strings due to limit of LinguaPress AI*/
         $new_strings_chunks = array_chunk( $new_strings, $chunk_size, true );
 
         foreach( $new_strings_chunks as $new_strings_chunk ){
             // exist early if quota for this website is = 0 character
             // we exit here as well because we're doing the translation in chunks in a foreach.
-            $quota = get_transient('trp_mtapi_cached_quota');
+            $quota = get_transient('lrp_mtapi_cached_quota');
             if ( !$quota && is_numeric($quota) && $quota < 500) {
                 return array();
             }
@@ -108,10 +108,10 @@ class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
                     || $exception_message == 'Site is not active.'
                     || $exception_message == 'Out of valid license dates.')
                 {
-                    set_transient("trp_mtapi_cached_quota", 0, 5*60);
+                    set_transient("lrp_mtapi_cached_quota", 0, 5*60);
                 }
                 if (isset($translation_response->quota) && is_numeric($translation_response->quota)) {
-                    set_transient("trp_mtapi_cached_quota", $translation_response->quota, 5*60);
+                    set_transient("lrp_mtapi_cached_quota", $translation_response->quota, 5*60);
                     // Check if this is a free license and mark translation as permanently disabled
                     if ($translation_response->quota < 500 && $this->is_free_license()) {
                         $this->set_free_license_translation_disabled(true);
@@ -177,7 +177,7 @@ class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
 
 	public function get_api_key(){
         if ( $this->license_key === null ){
-            $this->license_key = get_option( 'trp_license_key' );
+            $this->license_key = get_option( 'lrp_license_key' );
             $this->license_key = ( empty( $this->license_key ) ) ? false : $this->license_key;
         }
         return $this->license_key;
@@ -202,7 +202,7 @@ class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
 			foreach( $data as $language ){
 				$supported_languages[] = $language->language;
 			}
-			return apply_filters( 'trp_add_translatepress_ai_supported_languages_to_the_array', $supported_languages );
+			return apply_filters( 'lrp_add_linguapress_ai_supported_languages_to_the_array', $supported_languages );
 		}
 
         return array();
@@ -211,37 +211,37 @@ class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
 
 
 	public function get_engine_specific_language_codes($languages){
-        $iso_translation_codes = $this->trp_languages->get_iso_codes($languages);
+        $iso_translation_codes = $this->lrp_languages->get_iso_codes($languages);
         $engine_specific_languages = array();
         foreach( $languages as $language ) {
             /* All combinations of source and target languages are supported.
             Target language code can be country specific. Source language code is not. So the source language code is used here.
             */
-            $engine_specific_languages[] = apply_filters( 'trp_mtapi_source_language', $iso_translation_codes[ $language ], $language, null );
+            $engine_specific_languages[] = apply_filters( 'lrp_mtapi_source_language', $iso_translation_codes[ $language ], $language, null );
         }
         return $engine_specific_languages;
 	}
 
     public function check_api_key_validity() {
 		$machine_translator = $this;
-		$translation_engine = $this->settings['trp_machine_translation_settings']['translation-engine'];
+		$translation_engine = $this->settings['lrp_machine_translation_settings']['translation-engine'];
 
 		$is_error       = false;
 		$return_message = '';
 
-		if ( 'mtapi' === $translation_engine && $this->settings['trp_machine_translation_settings']['machine-translation'] === 'yes') {
+		if ( 'mtapi' === $translation_engine && $this->settings['lrp_machine_translation_settings']['machine-translation'] === 'yes') {
 
 			if ( isset( $this->correct_api_key ) && $this->correct_api_key != null ) {
 				return $this->correct_api_key;
 			}
 
             $is_error       = true;
-            $return_message = __( 'Please check your TranslatePress license key.', 'translatepress-multilingual' );
+            $return_message = __( 'Please check your LinguaPress license key.', 'linguapress' );
             $license        = $this->get_api_key();
-            $status         = get_option( 'trp_license_status' );
+            $status         = get_option( 'lrp_license_status' );
             if ( $status === 'valid' ) {
                 require_once("class-mtapi-customer.php");
-                $mtapi_server = new TRP_MTAPI_Customer( $this->get_api_url() );
+                $mtapi_server = new LRP_MTAPI_Customer( $this->get_api_url() );
                 $site_status  = $mtapi_server->lookup_site( $license, home_url() );
                 if ( !empty( $site_status ) && !empty( $site_status['status'] ) && $site_status['status'] === "active" ) {
                     $is_error       = false;
@@ -268,7 +268,7 @@ class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
 	}
 
     /**
-     * Particularities for source language in TranslatePress API
+     * Particularities for source language in LinguaPress API
      *
      * PT_BR is not treated in the same way as for the target language
      *
@@ -293,7 +293,7 @@ class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
     }
 
     /**
-     * Particularities for target language in TranslatePress API
+     * Particularities for target language in LinguaPress API
      *
      * @param $target_language
      * @param $source_language_code
@@ -347,16 +347,16 @@ class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
 
         $formality_supported_languages = array();
 
-        $data = get_option('trp_db_stored_data', array() );
+        $data = get_option('lrp_db_stored_data', array() );
 
-        if (isset($data['trp_mt_supported_languages'][$this->settings['trp_machine_translation_settings']['translation-engine']]['formality-supported-languages'])){
+        if (isset($data['lrp_mt_supported_languages'][$this->settings['lrp_machine_translation_settings']['translation-engine']]['formality-supported-languages'])){
             foreach ($this->settings['translation-languages'] as $language){
-                if(array_key_exists($language, $data['trp_mt_supported_languages'][$this->settings['trp_machine_translation_settings']['translation-engine']]['formality-supported-languages'])){
-                    $formality_supported_languages[$language] = $data['trp_mt_supported_languages'][$this->settings['trp_machine_translation_settings']['translation-engine']]['formality-supported-languages'][$language];
+                if(array_key_exists($language, $data['lrp_mt_supported_languages'][$this->settings['lrp_machine_translation_settings']['translation-engine']]['formality-supported-languages'])){
+                    $formality_supported_languages[$language] = $data['lrp_mt_supported_languages'][$this->settings['lrp_machine_translation_settings']['translation-engine']]['formality-supported-languages'][$language];
                 }else{
                     $this->check_languages_availability($this->settings['translation-languages'], true);
-                    $data = get_option('trp_db_stored_data', array());
-                    $formality_supported_languages = $data['trp_mt_supported_languages'][$this->settings['trp_machine_translation_settings']['translation-engine']]['formality-supported-languages'];
+                    $data = get_option('lrp_db_stored_data', array());
+                    $formality_supported_languages = $data['lrp_mt_supported_languages'][$this->settings['lrp_machine_translation_settings']['translation-engine']]['formality-supported-languages'];
                     break;
                 }
             }
@@ -394,7 +394,7 @@ class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
 
         if ( is_array( $response ) && !is_wp_error( $response ) && isset( $response['response'] ) && isset( $response['response']['code'] ) && $response['response']['code'] == 200 ) {
             $response_data = json_decode( $response['body'] );
-            $all_languages = $this->trp_languages->get_wp_languages();
+            $all_languages = $this->lrp_languages->get_wp_languages();
             foreach ( $all_languages as $language ) {
                 $language_iso_codes[ $language['language'] ] = $this->configure_api_target_language( reset( $language['iso'] ), '', $language['language'] );
             }
@@ -409,7 +409,7 @@ class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
             }
         }
 
-        return apply_filters( 'trp_mtapi_formality_languages', $formality_supported_languages );
+        return apply_filters( 'lrp_mtapi_formality_languages', $formality_supported_languages );
     }
 
     /**
@@ -418,7 +418,7 @@ class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
      * @return bool
      */
     private function is_free_license_translation_disabled() {
-        $data = get_option('trp_db_stored_data', array());
+        $data = get_option('lrp_db_stored_data', array());
         return isset($data['mtapi_free_license_disabled']) && $data['mtapi_free_license_disabled'] === true;
     }
 
@@ -428,9 +428,9 @@ class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
      * @param bool $disabled
      */
     private function set_free_license_translation_disabled($disabled) {
-        $data = get_option('trp_db_stored_data', array());
+        $data = get_option('lrp_db_stored_data', array());
         $data['mtapi_free_license_disabled'] = $disabled;
-        update_option('trp_db_stored_data', $data);
+        update_option('lrp_db_stored_data', $data);
     }
 
     /**
@@ -439,9 +439,9 @@ class TRP_MTAPI_Machine_Translator extends TRP_Machine_Translator {
      * @return bool
      */
     private function is_free_license() {
-        $license_details = get_option('trp_license_details');
+        $license_details = get_option('lrp_license_details');
         if (isset($license_details['valid'][0]->item_name) &&
-            $license_details['valid'][0]->item_name === 'TranslatePress') {
+            $license_details['valid'][0]->item_name === 'LinguaPress') {
             return true;
         }
         return false;

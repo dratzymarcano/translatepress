@@ -5,7 +5,7 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-class TRP_IN_ALD_Settings {
+class LRP_IN_ALD_Settings {
 	
 	protected $ald_settings;
 
@@ -16,7 +16,7 @@ class TRP_IN_ALD_Settings {
 	 */
 	public function get_ald_settings(){
 		if ( $this->ald_settings == null ){
-			$this->ald_settings = $this->trp_ald_set_settings();
+			$this->ald_settings = $this->lrp_ald_set_settings();
 		}
 		return $this->ald_settings;
 	}
@@ -50,11 +50,11 @@ class TRP_IN_ALD_Settings {
 	 */
 
 	public function get_detection_methods_array(){
-		return apply_filters( 'trp_ald_detection_methods_array', array(
-			'browser-ip'    => __( 'First by browser language, then IP address (recommended)', 'translatepress-multilingual'),
-			'ip-browser'    => __( 'First by IP address, then by browser language', 'translatepress-multilingual'),
-			'browser'       => __( 'Only by browser language', 'translatepress-multilingual'),
-			'ip'            => __( 'Only by IP address', 'translatepress-multilingual'),
+		return apply_filters( 'lrp_ald_detection_methods_array', array(
+			'browser-ip'    => __( 'First by browser language, then IP address (recommended)', 'linguapress'),
+			'ip-browser'    => __( 'First by IP address, then by browser language', 'linguapress'),
+			'browser'       => __( 'Only by browser language', 'linguapress'),
+			'ip'            => __( 'Only by IP address', 'linguapress'),
 		) );
 	}
 
@@ -64,13 +64,13 @@ class TRP_IN_ALD_Settings {
 	 *
 	 * @return array
 	 */
-	protected function trp_ald_set_settings(){
-		$settings_option = get_option( 'trp_ald_settings', 'not_set' );
+	protected function lrp_ald_set_settings(){
+		$settings_option = get_option( 'lrp_ald_settings', 'not_set' );
 
 		// initialize default settings
 		$default_settings = $this->get_default_option();
 		if ( 'not_set' == $settings_option ){
-			update_option ( 'trp_ald_settings', $default_settings );
+			update_option ( 'lrp_ald_settings', $default_settings );
 			$settings_option = $default_settings;
 		}else{
 			foreach ( $default_settings as $key_default_setting => $value_default_setting ){
@@ -86,7 +86,7 @@ class TRP_IN_ALD_Settings {
 	 * Register ALD settings option.
 	 */
 	public function register_setting(){
-		register_setting( 'trp_advanced_settings', 'trp_ald_settings', array( $this, 'sanitize_settings' ) );
+		register_setting( 'lrp_advanced_settings', 'lrp_ald_settings', array( $this, 'sanitize_settings' ) );
 	}
 
 	/**
@@ -143,16 +143,16 @@ class TRP_IN_ALD_Settings {
     }
 
     public function get_popup_options_array(){
-        return apply_filters( 'trp_ald_popup_options_array', array(
-            'popup'    => esc_html__( 'A popup appears asking the user if they want to be redirected', 'translatepress-multilingual'),
-            'no_popup'    => esc_html__( 'Redirect directly (*not recommended)', 'translatepress-multilingual'),
+        return apply_filters( 'lrp_ald_popup_options_array', array(
+            'popup'    => esc_html__( 'A popup appears asking the user if they want to be redirected', 'linguapress'),
+            'no_popup'    => esc_html__( 'Redirect directly (*not recommended)', 'linguapress'),
             ) );
     }
 
     public function get_popup_type_array(){
-        return apply_filters('trp_ald_popup_type_array', array(
-           'normal_popup' => esc_html__('Pop-up window over the content', 'translatepress-multilingual'),
-           'hello_bar' => esc_html__('Hello bar before the content', 'translatepress-multilingual'),
+        return apply_filters('lrp_ald_popup_type_array', array(
+           'normal_popup' => esc_html__('Pop-up window over the content', 'linguapress'),
+           'hello_bar' => esc_html__('Hello bar before the content', 'linguapress'),
         ));
     }
 
@@ -166,7 +166,7 @@ class TRP_IN_ALD_Settings {
 	/**
 	 * Display ALD settings.
 	 *
-	 * Hooked to 'trp_extra_settings'
+	 * Hooked to 'lrp_extra_settings'
 	 *
 	 * @param $settings
 	 */
@@ -177,17 +177,17 @@ class TRP_IN_ALD_Settings {
         $popup_options = $this->get_popup_options_array();
         $popup_type = $this->get_popup_type_array();
 
-        $setting_option = $this->trp_ald_set_settings();
+        $setting_option = $this->lrp_ald_set_settings();
 
-		// Called in order to require the necessary files for TRP_IP_Language class
-		new TRP_IN_ALD_Determine_Language();
-		$trp_ip_language = new TRP_IN_IP_Language();
-		$ip = $trp_ip_language->get_current_ip();
+		// Called in order to require the necessary files for LRP_IP_Language class
+		new LRP_IN_ALD_Determine_Language();
+		$lrp_ip_language = new LRP_IN_IP_Language();
+		$ip = $lrp_ip_language->get_current_ip();
 		$ip_warning_message = '';
-		if ( ! $trp_ip_language->found_ip_in_database( $ip ) ){
-			$ip_warning_message = '<div class="warning">'. __( 'WARNING. Cannot determine your language preference based on your current IP.<br>This is most likely because the website is on a local environment.', 'translatepress-multilingual' ).'</div>';
+		if ( ! $lrp_ip_language->found_ip_in_database( $ip ) ){
+			$ip_warning_message = '<div class="warning">'. __( 'WARNING. Cannot determine your language preference based on your current IP.<br>This is most likely because the website is on a local environment.', 'linguapress' ).'</div>';
 		}
 
-		require_once ( TRP_IN_ALD_PLUGIN_DIR . 'partials/settings-option.php' );
+		require_once ( LRP_IN_ALD_PLUGIN_DIR . 'partials/settings-option.php' );
 	}
 }

@@ -6,11 +6,11 @@ if ( !defined('ABSPATH' ) )
 /**
  * Main Class For Translator Accounts
  *
- * @link       https://translatepress.com
+ * @link       https://linguapress.com
  * @since      1.0.0
  *
- * @package    TranslatePress - Translator Accounts Add-on
- * @subpackage TranslatePress - Translator Accounts Add-on/includes
+ * @package    LinguaPress - Translator Accounts Add-on
+ * @subpackage LinguaPress - Translator Accounts Add-on/includes
  */
 /**
  * Main functionality for the translator accounts addon.
@@ -18,11 +18,11 @@ if ( !defined('ABSPATH' ) )
  * This allows the administrator to create users with the translator role or assign the translator role to existing users, except those who can manage options.
  *
  * @since      1.0.0
- * @package    TranslatePress - Translator Accounts Add-on
- * @subpackage TranslatePress - Translator Accounts Add-on/includes
+ * @package    LinguaPress - Translator Accounts Add-on
+ * @subpackage LinguaPress - Translator Accounts Add-on/includes
  * @author     Cristian Antohe
  */
-class TRP_IN_Translator_Accounts{
+class LRP_IN_Translator_Accounts{
     protected $loader;
 
     /**
@@ -32,11 +32,11 @@ class TRP_IN_Translator_Accounts{
      */
     public function __construct() {
 
-        define( 'TRP_IN_TA_PLUGIN_DIR', plugin_dir_path( __DIR__ ) );
-        define( 'TRP_IN_TA_PLUGIN_URL', plugin_dir_url( __DIR__ ) );
+        define( 'LRP_IN_TA_PLUGIN_DIR', plugin_dir_path( __DIR__ ) );
+        define( 'LRP_IN_TA_PLUGIN_URL', plugin_dir_url( __DIR__ ) );
 
-        $trp = TRP_Translate_Press::get_trp_instance();
-        $this->loader = $trp->get_component( 'loader' );
+        $lrp = LRP_Lingua_Press::get_lrp_instance();
+        $this->loader = $lrp->get_component( 'loader' );
         $this->loader->add_action( 'show_admin_bar', $this, 'show_admin_bar', 80, 1 );
         $this->loader->add_action( 'admin_bar_menu', $this, 'remove_settings_link', 999, 1 );
         $this->loader->add_action( 'admin_menu', $this, 'output_translation_button' );
@@ -53,27 +53,27 @@ class TRP_IN_Translator_Accounts{
      * @since    1.0.0
      */
     public function show_admin_bar($show){
-        if (current_user_can('translate_strings') && apply_filters('trp_force_show_admin_bar_for_translator_accounts', true ) )
+        if (current_user_can('translate_strings') && apply_filters('lrp_force_show_admin_bar_for_translator_accounts', true ) )
             return true;
 
         return $show;
     }
 
     /**
-     * Anyone who can't manage_options should not see the TranslatePress Settings page link.
+     * Anyone who can't manage_options should not see the LinguaPress Settings page link.
      *
      * @since    1.0.0
      */
     public function remove_settings_link( $wp_admin_bar ){
         if ( !current_user_can('manage_options') )
-            $wp_admin_bar->remove_node( 'trp_settings_page' );
+            $wp_admin_bar->remove_node( 'lrp_settings_page' );
     }
 
 
     /**
      * Add a checkbox to user profile page to add the translator role to it.
      *
-     * If the user is an administrator the checkbox is always checked and disabled. We're also modifying the default WordPress role select to be named trp_role so WordPress does not overwrite our checkbox.
+     * If the user is an administrator the checkbox is always checked and disabled. We're also modifying the default WordPress role select to be named lrp_role so WordPress does not overwrite our checkbox.
      *
      * @since    1.0.0
      */
@@ -94,16 +94,16 @@ class TRP_IN_Translator_Accounts{
         // only show this setting to the administrator. Translators can not make themselves a translator.
         if (current_user_can('manage_options')) :
             ?>
-            <h3><?php esc_html_e(" TranslatePress Settings", "translatepress-multilingual"); ?></h3>
+            <h3><?php esc_html_e(" LinguaPress Settings", "linguapress"); ?></h3>
 
             <table class="form-table">
                 <tr class="">
-                    <th scope="row"><?php esc_html_e('Translator', 'translatepress-multilingual');?></th>
-                    <td><fieldset><legend class="screen-reader-text"><span><?php esc_html_e('Translator', 'translatepress-multilingual');?></span></legend>
-                            <label for="trp_translator">
-                                <input name="trp_translator" id="trp_translator_hidden" value="0" type="hidden">
-                                <input name="trp_translator" id="trp_translator" value="1" <?php echo $checked . $disabled; //phpcs:ignore ?> type="checkbox">
-                                <?php esc_html_e('Allow this user to translate the website.', 'translatepress-multilingual');?></label><br>
+                    <th scope="row"><?php esc_html_e('Translator', 'linguapress');?></th>
+                    <td><fieldset><legend class="screen-reader-text"><span><?php esc_html_e('Translator', 'linguapress');?></span></legend>
+                            <label for="lrp_translator">
+                                <input name="lrp_translator" id="lrp_translator_hidden" value="0" type="hidden">
+                                <input name="lrp_translator" id="lrp_translator" value="1" <?php echo $checked . $disabled; //phpcs:ignore ?> type="checkbox">
+                                <?php esc_html_e('Allow this user to translate the website.', 'linguapress');?></label><br>
                         </fieldset>
                     </td>
                 </tr>
@@ -140,19 +140,19 @@ class TRP_IN_Translator_Accounts{
             return;
         }
 
-        if( isset( $_POST['trp_translator'] ) && $_POST['trp_translator'] == '1' ) {
+        if( isset( $_POST['lrp_translator'] ) && $_POST['lrp_translator'] == '1' ) {
             $user ->add_role('translator');
-        } elseif( isset( $_POST['trp_translator'] ) && $_POST['trp_translator'] == '0'  && $this->is_user_translator($old_user_data) ) {
+        } elseif( isset( $_POST['lrp_translator'] ) && $_POST['lrp_translator'] == '0'  && $this->is_user_translator($old_user_data) ) {
             $user->remove_role( 'translator' );
         }
     }
 
     /**
-     * TRP Translator button is added as a top-level menu page due to wordpress.com not showing the admin bar
+     * LRP Translator button is added as a top-level menu page due to wordpress.com not showing the admin bar
      *
      * @return void
      */
     public function output_translation_button(){
-        add_menu_page( 'TRP Translator button', __( 'Translate Site', 'translatepress-multilingual' ), 'translate_strings', add_query_arg( 'trp-edit-translation', 'true', trailingslashit( home_url() ) ), '', 'dashicons-translation' );
+        add_menu_page( 'LRP Translator button', __( 'Translate Site', 'linguapress' ), 'translate_strings', add_query_arg( 'lrp-edit-translation', 'true', trailingslashit( home_url() ) ), '', 'dashicons-translation' );
     }
 }

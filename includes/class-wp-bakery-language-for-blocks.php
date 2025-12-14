@@ -5,14 +5,14 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-class TRP_WPBakery {
+class LRP_WPBakery {
     private static $_instance = null;
 
-    public $shortcode_param_type_dropdown_multi = 'trp_dropdown_multi';
-    public $param_name_show = 'trp_param_show';
-    public $param_name_show_language = 'trp_param_show_language';
-    public $param_name_exclude = 'trp_param_exclude';
-    public $param_name_exclude_languages = 'trp_param_exclude_languages';
+    public $shortcode_param_type_dropdown_multi = 'lrp_dropdown_multi';
+    public $param_name_show = 'lrp_param_show';
+    public $param_name_show_language = 'lrp_param_show_language';
+    public $param_name_exclude = 'lrp_param_exclude';
+    public $param_name_exclude_languages = 'lrp_param_exclude_languages';
 
     /**
      * Register plugin action hooks and filters
@@ -37,7 +37,7 @@ class TRP_WPBakery {
     }
 
     /**
-     * Modify the output of a given shortcode if TranslatePress is configured.
+     * Modify the output of a given shortcode if LinguaPress is configured.
      */
     public function do_shortcode_tag($output, $tag, $attr) {
         return $this->is_hidden($attr) ? '' : $output;
@@ -95,26 +95,26 @@ class TRP_WPBakery {
 
         $attributes_checkbox = [
             'type' => 'checkbox',
-            'heading' => __('Restrict element to language', 'translatepress-multilingual'),
+            'heading' => __('Restrict element to language', 'linguapress'),
             'param_name' => $this->param_name_show,
             'group' => $group,
-            'description' => __('Show this element only in one language.', 'translatepress-multilingual')
+            'description' => __('Show this element only in one language.', 'linguapress')
         ];
 
         $attributes_value = [
             'type' => 'dropdown',
-            'heading' => __('Select language', 'translatepress-multilingual'),
+            'heading' => __('Select language', 'linguapress'),
             'param_name' => $this->param_name_show_language,
             'group' => $group,
             'value' => array_flip($this->get_published_languages(true)),
-            'description' => __('Choose in which language to show this element.', 'translatepress-multilingual'),
+            'description' => __('Choose in which language to show this element.', 'linguapress'),
             'dependency' => [
                 'element' => $this->param_name_show,
                 'value' => 'true'
             ]
         ];
 
-        $skip_sc = apply_filters( 'trp_wpbakery_skip_shortcodes', $this->get_skip_sc_array());
+        $skip_sc = apply_filters( 'lrp_wpbakery_skip_shortcodes', $this->get_skip_sc_array());
         foreach ($shortcode_bases as $sh) {
             if ( !in_array( $sh, $skip_sc ) ) {
                 vc_add_param( $sh, $attributes_checkbox );
@@ -135,38 +135,38 @@ class TRP_WPBakery {
 
         $attributes_checkbox = [
             'type' => 'checkbox',
-            'heading' => __('Exclude from Language', 'translatepress-multilingual'),
+            'heading' => __('Exclude from Language', 'linguapress'),
             'param_name' => $this->param_name_exclude,
             'group' => $group,
-            'description' => __('Exclude this element from specific languages.', 'translatepress-multilingual')
+            'description' => __('Exclude this element from specific languages.', 'linguapress')
         ];
 
         $message =
             '<p>' .
             __(
                 'This element will still be visible when you are translating your website through the Translation Editor.',
-                'translatepress-multilingual'
+                'linguapress'
             ) .
             '</p>';
         $message .=
             '<p>' .
-            __('The content of this element should be written in the default language.', 'translatepress-multilingual') .
+            __('The content of this element should be written in the default language.', 'linguapress') .
             '</p>';
 
         $attributes_value = [
             'type' => $this->shortcode_param_type_dropdown_multi,
-            'heading' => __('Select languages', 'translatepress-multilingual'),
+            'heading' => __('Select languages', 'linguapress'),
             'param_name' => $this->param_name_exclude_languages,
             'group' => $group,
             'value' => array_flip($this->get_published_languages(true)),
-            'description' => __('Choose from which languages to exclude this element.', 'translatepress-multilingual') . $message,
+            'description' => __('Choose from which languages to exclude this element.', 'linguapress') . $message,
             'dependency' => [
                 'element' => $this->param_name_exclude,
                 'value' => 'true'
             ]
         ];
 
-        $skip_sc = apply_filters( 'trp_wpbakery_skip_shortcodes', $this->get_skip_sc_array());
+        $skip_sc = apply_filters( 'lrp_wpbakery_skip_shortcodes', $this->get_skip_sc_array());
         foreach ($shortcode_bases as $sh) {
             if ( !in_array( $sh, $skip_sc ) ) {
                 vc_add_param( $sh, $attributes_checkbox );
@@ -176,14 +176,14 @@ class TRP_WPBakery {
     }
 
     private function get_group() {
-        return __('TranslatePress', 'translatepress-multilingual');
+        return __('LinguaPress', 'linguapress');
     }
 
     private function get_published_languages($placeholder = false) {
-        $trp = TRP_Translate_Press::get_trp_instance();
-        $trp_languages = $trp->get_component('languages');
-        $trp_settings = $trp->get_component('settings');
-        $result = $trp_languages->get_language_names($trp_settings->get_settings()['publish-languages']);
+        $lrp = LRP_Lingua_Press::get_lrp_instance();
+        $lrp_languages = $lrp->get_component('languages');
+        $lrp_settings = $lrp->get_component('settings');
+        $result = $lrp_languages->get_language_names($lrp_settings->get_settings()['publish-languages']);
 
         if ($placeholder) {
             $result = array_merge(['' => ''], $result);
@@ -227,7 +227,7 @@ class TRP_WPBakery {
      *
      * Ensures only one instance of the class is loaded or can be loaded.
      *
-     * @return TRP_WPBakery An instance of the class.
+     * @return LRP_WPBakery An instance of the class.
      */
     public static function instance() {
         if (is_null(self::$_instance)) {
@@ -273,7 +273,7 @@ class TRP_WPBakery {
             }
         }
 
-        $invalid_params = apply_filters('trp_wp_bakery_invalid_params', $bool, $arr);
+        $invalid_params = apply_filters('lrp_wp_bakery_invalid_params', $bool, $arr);
         return $invalid_params;
     }
 
@@ -282,5 +282,5 @@ class TRP_WPBakery {
 
 
 // Instantiate Plugin Class
-TRP_WPBakery::instance();
+LRP_WPBakery::instance();
 

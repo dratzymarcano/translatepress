@@ -5,8 +5,8 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
-    class TRP_String_Translation_API_Term_Slug {
+if( !class_exists('LRP_String_Translation_API_Term_Slug') ) {
+    class LRP_String_Translation_API_Term_Slug {
         protected $type = 'term';
         protected $settings;
         protected $config;
@@ -18,17 +18,17 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
 
         public function __construct( $settings ) {
             $this->settings             = $settings;
-            $this->helper               = new TRP_String_Translation_Helper();
-            $this->meta_based_strings   = new TRP_IN_SP_Meta_Based_Strings();
-            $this->option_based_strings = new TRP_IN_SP_Option_Based_Strings();
-            $this->slug_query           = new TRP_Slug_Query();
-            $this->editor_actions       = new TRP_IN_SP_Editor_Actions( $this->slug_query, $settings );
+            $this->helper               = new LRP_String_Translation_Helper();
+            $this->meta_based_strings   = new LRP_IN_SP_Meta_Based_Strings();
+            $this->option_based_strings = new LRP_IN_SP_Option_Based_Strings();
+            $this->slug_query           = new LRP_Slug_Query();
+            $this->editor_actions       = new LRP_IN_SP_Editor_Actions( $this->slug_query, $settings );
         }
 
         public function get_strings() {
             $this->helper->check_ajax( $this->type, 'get' );
-            $trp                    = TRP_Translate_Press::get_trp_instance();
-            $string_translation     = $trp->get_component( 'string_translation' );
+            $lrp                    = LRP_Lingua_Press::get_lrp_instance();
+            $string_translation     = $lrp->get_component( 'string_translation' );
             $config                 = $string_translation->get_configuration_options();
             $sanitized_args         = $this->helper->get_sanitized_query_args( $this->type );
             $dictionary_by_original = array();
@@ -86,7 +86,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
                 $translated_terms = $this->slug_query->get_translated_slugs_from_original( $wp_term_names );
 
                 // construct dictionary by original
-                $translationsArrays = new TRP_String_Translation_Array( $wp_term_names, $translated_terms, $this->type );
+                $translationsArrays = new LRP_String_Translation_Array( $wp_term_names, $translated_terms, $this->type );
                 $translationsArrays = $translationsArrays->get_formatted_translations_array();
 
                 foreach ( $resulted_wp_query as $term ) {
@@ -95,7 +95,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
                     if ( !empty( $term->slug ) ) {
                         $dictionary_original = $term->slug;
                         if ( empty( $term->taxonomy ) ) {
-                            $dictionary_original .= esc_html__('(inactive)', 'translatepress-multilingual' );
+                            $dictionary_original .= esc_html__('(inactive)', 'linguapress' );
                         }
 
                         $dictionary = [
@@ -117,7 +117,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
                 }
             }
 
-            echo trp_safe_json_encode( array( //phpcs:ignore
+            echo lrp_safe_json_encode( array( //phpcs:ignore
                                               'dictionary' => $dictionary_by_original,
                                               'totalItems' => $found_items
             ) );
@@ -127,7 +127,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
         /**
          * Save translations of term slugs
          *
-         * Hooked to wp_ajax_trp_save_translations_term
+         * Hooked to wp_ajax_lrp_save_translations_term
          */
         public function save_strings() {
             $this->helper->check_ajax( $this->type, 'save' );
@@ -138,7 +138,7 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
                 $update_slugs = $this->editor_actions->save_slugs( $slugs, $this->type );
             }
 
-            echo trp_safe_json_encode( $update_slugs ); //phpcs:ignore
+            echo lrp_safe_json_encode( $update_slugs ); //phpcs:ignore
             wp_die();
         }
 
@@ -299,10 +299,10 @@ if( !class_exists('TRP_String_Translation_API_Term_Slug') ) {
         public function delete_strings() {
             $this->helper->check_ajax( $this->type, 'delete' );
             $original_ids  = $this->helper->get_original_ids_from_post_request();
-            $slug_query    = new TRP_Slug_Query();
+            $slug_query    = new LRP_Slug_Query();
             $items_deleted = $slug_query->delete_slugs_with_original_ids( $original_ids );
 
-            echo trp_safe_json_encode( $items_deleted );//phpcs:ignore
+            echo lrp_safe_json_encode( $items_deleted );//phpcs:ignore
             wp_die();
 
         }

@@ -4,7 +4,7 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-class TRP_Machine_Translator_Logger {
+class LRP_Machine_Translator_Logger {
     protected $settings;
     protected $query;
     protected $url_converter;
@@ -13,7 +13,7 @@ class TRP_Machine_Translator_Logger {
     protected $error_manager;
 
     /**
-     * TRP_Machine_Translator_Logger constructor.
+     * LRP_Machine_Translator_Logger constructor.
      *
      * @param array $settings       Settings option.
      */
@@ -24,7 +24,7 @@ class TRP_Machine_Translator_Logger {
         // if a new day has passed, update the counter and date
         $this->maybe_reset_counter_date();
 
-        add_action('trp_is_deepl_glossary_id_valid', array( $this, 'show_notice_if_glossary_id_invalid'), 10, 1 );
+        add_action('lrp_is_deepl_glossary_id_valid', array( $this, 'show_notice_if_glossary_id_invalid'), 10, 1 );
     }
 
     public function get_todays_character_count() {
@@ -38,13 +38,13 @@ class TRP_Machine_Translator_Logger {
 
     public function log( $args = array() ){
 
-        $trp = TRP_Translate_Press::get_trp_instance();
+        $lrp = LRP_Lingua_Press::get_lrp_instance();
 
         if ( ! $this->query )
-            $this->query = $trp->get_component('query');
+            $this->query = $lrp->get_component('query');
 
         if ( ! $this->url_converter )
-            $this->url_converter = $trp->get_component('url_converter');
+            $this->url_converter = $lrp->get_component('url_converter');
 
         if( empty($args) )
             return false;
@@ -66,7 +66,7 @@ class TRP_Machine_Translator_Logger {
             'timestamp'   => date ("Y-m-d H:i:s" )
         );
 
-        $table_name = $this->query->db->prefix . 'trp_machine_translation_log';
+        $table_name = $this->query->db->prefix . 'lrp_machine_translation_log';
 
         $query = "INSERT INTO `$table_name` ( `url`, `strings`, `characters`, `response`, `lang_source`, `lang_target`, `timestamp` ) VALUES (%s, %s, %s, %s, %s, %s, %s)";
 
@@ -123,7 +123,7 @@ class TRP_Machine_Translator_Logger {
         $select_query               = "
             SELECT option_value
             FROM {$wpdb->options}
-            WHERE option_name = 'trp_machine_translation_counter'
+            WHERE option_name = 'lrp_machine_translation_counter'
             LIMIT 1
             FOR UPDATE;
         ";
@@ -136,7 +136,7 @@ class TRP_Machine_Translator_Logger {
                 INSERT
                 INTO {$wpdb->options}
                 (option_name, option_value)
-                VALUES ('trp_machine_translation_counter', %d );
+                VALUES ('lrp_machine_translation_counter', %d );
             ", $number_of_characters );
             $wpdb->query( $insert_query );
             $pre_update_character_count = 0;
@@ -147,7 +147,7 @@ class TRP_Machine_Translator_Logger {
             $update_query = $wpdb->prepare( "
                 UPDATE {$wpdb->options}
                 SET option_value = %d
-                WHERE option_name = 'trp_machine_translation_counter';
+                WHERE option_name = 'lrp_machine_translation_counter';
             ", $pre_update_character_count + $number_of_characters );
             $wpdb->query( $update_query );
         }
@@ -155,20 +155,20 @@ class TRP_Machine_Translator_Logger {
         $wpdb->query( 'COMMIT;' );
 
         if ( $set_transient === true ){
-            $transient = get_transient('trp_machine_translation_counter_safety_reset');
+            $transient = get_transient('lrp_machine_translation_counter_safety_reset');
             if ( $transient ){
-                $wpdb->last_error = 'Machine translation counter was reset twice in a day. Unless an intentional action was performed on the DB that would affect trp_machine_translation_counter option from wp_options, please check for automatic translation character counting issues.';
+                $wpdb->last_error = 'Machine translation counter was reset twice in a day. Unless an intentional action was performed on the DB that would affect lrp_machine_translation_counter option from wp_options, please check for automatic translation character counting issues.';
             }else{
-                set_transient('trp_machine_translation_counter_safety_reset', true, 12 * HOUR_IN_SECONDS);
+                set_transient('lrp_machine_translation_counter_safety_reset', true, 12 * HOUR_IN_SECONDS);
             }
         }
         if ( !empty( $wpdb->last_error ) ) {
             if ( !$this->error_manager ) {
-                $trp                 = TRP_Translate_Press::get_trp_instance();
-                $this->error_manager = $trp->get_component( 'error_manager' );
+                $lrp                 = LRP_Lingua_Press::get_lrp_instance();
+                $this->error_manager = $lrp->get_component( 'error_manager' );
             }
             $this->error_manager->record_error( array( 'last_error_updating_character_count' => $wpdb->last_error, 'disable_automatic_translations' => true ) );
-            delete_transient('trp_machine_translation_counter_safety_reset');
+            delete_transient('lrp_machine_translation_counter_safety_reset');
             if ( !is_numeric( $pre_update_character_count ) ) {
                 $pre_update_character_count = 0;
             }
@@ -189,7 +189,7 @@ class TRP_Machine_Translator_Logger {
         $select_query    = "
             SELECT option_value
             FROM {$wpdb->options}
-            WHERE option_name = 'trp_machine_translation_counter' 
+            WHERE option_name = 'lrp_machine_translation_counter' 
             LIMIT 1
         ";
         $character_count = $wpdb->get_var( $select_query );
@@ -201,8 +201,8 @@ class TRP_Machine_Translator_Logger {
 
         if ( !empty( $wpdb->last_error ) ) {
             if ( !$this->error_manager ) {
-                $trp                 = TRP_Translate_Press::get_trp_instance();
-                $this->error_manager = $trp->get_component( 'error_manager' );
+                $lrp                 = LRP_Lingua_Press::get_lrp_instance();
+                $this->error_manager = $lrp->get_component( 'error_manager' );
             }
             $this->error_manager->record_error( array( 'last_error_selecting_character_count' => $wpdb->last_error, 'disable_automatic_translations' => true ) );
             $character_count = null;
@@ -252,7 +252,7 @@ class TRP_Machine_Translator_Logger {
         $this->update_options( $options );
 
         // clear the counter
-        update_option('trp_machine_translation_counter', 0);
+        update_option('lrp_machine_translation_counter', 0);
 
         return true;
 
@@ -260,24 +260,24 @@ class TRP_Machine_Translator_Logger {
 
     private function get_mt_option($option_name, $default){
 
-        return isset( $this->settings['trp_machine_translation_settings'][$option_name] ) ? $this->settings['trp_machine_translation_settings'][$option_name] : $default;
+        return isset( $this->settings['lrp_machine_translation_settings'][$option_name] ) ? $this->settings['lrp_machine_translation_settings'][$option_name] : $default;
 
     }
 
     private function update_options( $options ){
 
-        $machine_translation_settings = $this->settings['trp_machine_translation_settings'];
+        $machine_translation_settings = $this->settings['lrp_machine_translation_settings'];
 
         foreach( $options as $option ){
-            $this->settings['trp_machine_translation_settings'][$option['name']] = $option['value'];
+            $this->settings['lrp_machine_translation_settings'][$option['name']] = $option['value'];
             $machine_translation_settings[$option['name']] = $option['value'];
         }
 
-        update_option( 'trp_machine_translation_settings', $machine_translation_settings );
+        update_option( 'lrp_machine_translation_settings', $machine_translation_settings );
     }
 
     public function sanitize_settings($mt_settings ){
-        $machine_translation_settings = $this->settings['trp_machine_translation_settings'];
+        $machine_translation_settings = $this->settings['lrp_machine_translation_settings'];
 
         if( isset( $machine_translation_settings['machine_translation_counter_date'] ) )
             $mt_settings['machine_translation_counter_date'] = $machine_translation_settings['machine_translation_counter_date'];
@@ -293,7 +293,7 @@ class TRP_Machine_Translator_Logger {
 
     public function count_machine_translated_characters( $count ){
 
-        $machine_translated_characters = get_option( 'trp_machine_translated_characters', array() );
+        $machine_translated_characters = get_option( 'lrp_machine_translated_characters', array() );
 
         $current_month = date( 'm-Y' );
 
@@ -302,7 +302,7 @@ class TRP_Machine_Translator_Logger {
         else
             $machine_translated_characters[ $current_month ] = $count;
 
-        update_option( 'trp_machine_translated_characters', $machine_translated_characters, false );
+        update_option( 'lrp_machine_translated_characters', $machine_translated_characters, false );
 
     }
 
@@ -318,8 +318,8 @@ class TRP_Machine_Translator_Logger {
             if ( isset( $response_body->message ) ) {
 
                 if ( !$this->error_manager ) {
-                    $trp                 = TRP_Translate_Press::get_trp_instance();
-                    $this->error_manager = $trp->get_component( 'error_manager' );
+                    $lrp                 = LRP_Lingua_Press::get_lrp_instance();
+                    $this->error_manager = $lrp->get_component( 'error_manager' );
                 }
 
                 if ( strpos( strtolower( $response_body->message), 'glossary' ) !== false ) {

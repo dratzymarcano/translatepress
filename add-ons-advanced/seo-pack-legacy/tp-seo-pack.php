@@ -1,6 +1,6 @@
 <?php
 /*
-TranslatePress - SEO Pack Add-on
+LinguaPress - SEO Pack Add-on
 
 License: GPL2
 
@@ -27,14 +27,14 @@ if ( !defined('ABSPATH' ) )
 
 
 
-function trp_in_sp_run(){
+function lrp_in_sp_run(){
 
 	
     require_once plugin_dir_path( __FILE__ ) . 'class-seo-pack.php';
-    if ( class_exists( 'TRP_Translate_Press' ) ) {
-        new TRP_IN_Seo_Pack();
+    if ( class_exists( 'LRP_Lingua_Press' ) ) {
+        new LRP_IN_Seo_Pack();
     }
 
 }
-add_action( 'plugins_loaded', 'trp_in_sp_run', 0 );
+add_action( 'plugins_loaded', 'lrp_in_sp_run', 0 );
 

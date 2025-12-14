@@ -1,6 +1,6 @@
 <?php
 
-class TRP_IN_ALD_Determine_Language {
+class LRP_IN_ALD_Determine_Language {
 
 	public function __construct() {
 		// using relative path because this function is also called outside WP
@@ -13,7 +13,7 @@ class TRP_IN_ALD_Determine_Language {
 	 *
 	 * Returns null if there are no matches between available languages and desired languages.
 	 *
-	 * @param $published_languages array       TranslatePress settings['publish-languages']
+	 * @param $published_languages array       LinguaPress settings['publish-languages']
 	 * @param $iso_codes array                 Iso codes of the published languages
 	 * @param $detection_method string         ald_settings['detection-method']
 	 *
@@ -22,11 +22,11 @@ class TRP_IN_ALD_Determine_Language {
 	public function get_needed_language( $published_languages, $iso_codes, $detection_method  ){
 		$needed_language = null;
 
-		$trp_browser_language = new TRP_IN_Browser_Language();
-		$browser_language_code = $trp_browser_language->get_browser_language( $published_languages, $iso_codes );
+		$lrp_browser_language = new LRP_IN_Browser_Language();
+		$browser_language_code = $lrp_browser_language->get_browser_language( $published_languages, $iso_codes );
 
-		$trp_ip_language = new TRP_IN_IP_Language();
-		$ip_language_code = $trp_ip_language->get_ip_language( $published_languages, $iso_codes );
+		$lrp_ip_language = new LRP_IN_IP_Language();
+		$ip_language_code = $lrp_ip_language->get_ip_language( $published_languages, $iso_codes );
 
 		switch ( $detection_method ) {
 			case 'browser-ip': {

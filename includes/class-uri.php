@@ -1,5 +1,5 @@
 <?php
-namespace TranslatePress;
+namespace LinguaPress;
 
 if ( !defined('ABSPATH' ) )
     exit();

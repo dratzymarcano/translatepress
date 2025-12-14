@@ -3,7 +3,7 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-class TRP_OpenRouter_Machine_Translator extends TRP_Machine_Translator {
+class LRP_OpenRouter_Machine_Translator extends LRP_Machine_Translator {
     /**
      * Send request to OpenRouter API
      *

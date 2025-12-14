@@ -1,6 +1,6 @@
 ﻿=== LinguaPress - AI Translation ===
 Contributors: linguapress
-Donate link: https://github.com/dratzymarcano/translatepress
+Donate link: https://github.com/dratzymarcano/linguapress
 Tags: translate, translation, multilingual, automatic translation, ai translation, openrouter, chatgpt, openai
 Requires at least: 5.0
 Tested up to: 6.8.1

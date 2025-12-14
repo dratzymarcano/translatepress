@@ -5,12 +5,12 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 /**
- * Class TRP_Query
+ * Class LRP_Query
  *
- * Queries for translations in custom trp tables.
+ * Queries for translations in custom lrp tables.
  *
  */
-class TRP_Query{
+class LRP_Query{
 
     protected $table_name;
     public $db;
@@ -37,7 +37,7 @@ class TRP_Query{
     const BLOCK_TYPE_DEPRECATED = 2;
 
     /**
-     * TRP_Query constructor.
+     * LRP_Query constructor.
      * @param $settings
      */
     public function __construct( $settings ){
@@ -45,9 +45,9 @@ class TRP_Query{
         $this->db = $wpdb;
         $this->settings = $settings;
 
-        $this->gettext_normalization = new TRP_Gettext_Normalization($settings);
-        $this->gettext_table_creation = new TRP_Gettext_Table_Creation($settings);
-        $this->gettext_insert_update = new TRP_Gettext_Insert_Update($settings);
+        $this->gettext_normalization = new LRP_Gettext_Normalization($settings);
+        $this->gettext_table_creation = new LRP_Gettext_Table_Creation($settings);
+        $this->gettext_insert_update = new LRP_Gettext_Insert_Update($settings);
     }
 
     public function get_query_component( $component ){
@@ -63,14 +63,14 @@ class TRP_Query{
 	 * @return array|null|object
 	 */
     public function get_all_translation_blocks( $language_code ){
-        if ( apply_filters( 'trp_enable_translation_blocks_querying', true ) ) {
+        if ( apply_filters( 'lrp_enable_translation_blocks_querying', true ) ) {
             $cache_key = 'get_all_translation_blocks_' . md5( $language_code );
-            $dictionary = wp_cache_get( $cache_key, 'trp' );
+            $dictionary = wp_cache_get( $cache_key, 'lrp' );
 
             if ( false === $dictionary ) {
                 $query      = "SELECT original, id, block_type, status FROM `" . sanitize_text_field( $this->get_table_name( $language_code ) ) . "` WHERE block_type = " . self::BLOCK_TYPE_ACTIVE . " OR block_type = " . self::BLOCK_TYPE_DEPRECATED;
                 $dictionary = $this->db->get_results( $query, OBJECT_K );
-                wp_cache_set( $cache_key, $dictionary, 'trp' );
+                wp_cache_set( $cache_key, $dictionary, 'lrp' );
             }
         }else{
             $dictionary = array();
@@ -112,8 +112,8 @@ class TRP_Query{
 
 
         if( !$this->check_invalid_text ){
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $this->check_invalid_text = $trp->get_component( 'check_invalid_text' );
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $this->check_invalid_text = $lrp->get_component( 'check_invalid_text' );
         }
         $dictionary = $this->check_invalid_text->get_existing_translations_without_invalid_text($dictionary, $prepared_query, $strings_array, $language_code, $block_type );
 
@@ -122,10 +122,10 @@ class TRP_Query{
         if ($this->db->last_error !== '' && !$this->check_invalid_text->is_invalid_data_error())
             $dictionary = false;
 
-        $dictionary = apply_filters( 'trp_get_existing_translations', $dictionary, $prepared_query, $strings_array, $language_code, $block_type );
+        $dictionary = apply_filters( 'lrp_get_existing_translations', $dictionary, $prepared_query, $strings_array, $language_code, $block_type );
         if ( is_array( $dictionary ) && count( $dictionary ) === 0 && !$this->table_exists($this->get_table_name( $language_code )) && !$this->check_invalid_text->is_invalid_data_error()){
             // if table is missing then last_error is empty for the select query
-            $this->maybe_record_automatic_translation_error(array( 'details' => 'Missing table ' . $this->get_table_name( $language_code ) . ' . To regenerate tables, try going to Settings->TranslatePress->General tab and Save Settings.'), true );
+            $this->maybe_record_automatic_translation_error(array( 'details' => 'Missing table ' . $this->get_table_name( $language_code ) . ' . To regenerate tables, try going to Settings->LinguaPress->General tab and Save Settings.'), true );
         }
 
         return $dictionary;
@@ -254,7 +254,7 @@ class TRP_Query{
      * @param string $language_code
      */
     public function check_machine_translation_log_table(){
-        $table_name = $this->db->prefix . 'trp_machine_translation_log';
+        $table_name = $this->db->prefix . 'lrp_machine_translation_log';
         if ( $this->db->get_var( "SHOW TABLES LIKE '$table_name'" ) != $table_name )
         {
             // table not in database. Create new table
@@ -295,7 +295,7 @@ class TRP_Query{
 		    $source_table_name = $all_table_names[0];
 
 		    // copy translation blocks from table name of this language
-		    $source_language = apply_filters( 'trp_source_language_translation_blocks', '', $default_language, $language_code );
+		    $source_language = apply_filters( 'lrp_source_language_translation_blocks', '', $default_language, $language_code );
 		    if ( $source_language != '' ){
 			    $source_table_name = $this->get_table_name( $source_language, $default_language );
 		    }
@@ -344,8 +344,8 @@ class TRP_Query{
             return 0;
 
         if( !$this->error_manager ){
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $this->error_manager = $trp->get_component( 'error_manager' );
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $this->error_manager = $lrp->get_component( 'error_manager' );
         }
 
         $originals_table = $this->get_table_name_for_original_strings();
@@ -370,8 +370,8 @@ class TRP_Query{
      */
     public function original_ids_cleanup(){
         if( !$this->error_manager ){
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $this->error_manager = $trp->get_component( 'error_manager' );
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $this->error_manager = $lrp->get_component( 'error_manager' );
         }
 
         $originals_table = $this->get_table_name_for_original_strings();
@@ -398,8 +398,8 @@ class TRP_Query{
             return 0;
 
         if( !$this->error_manager ){
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $this->error_manager = $trp->get_component( 'error_manager' );
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $this->error_manager = $lrp->get_component( 'error_manager' );
         }
 
         $originals_table = $this->get_table_name_for_original_strings();
@@ -695,8 +695,8 @@ class TRP_Query{
 		$prepared_query = $this->db->prepare($query . ' ', $values);
 		$this->db->query( $prepared_query );
         if( !$this->check_invalid_text ){
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $this->check_invalid_text = $trp->get_component( 'check_invalid_text' );
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $this->check_invalid_text = $lrp->get_component( 'check_invalid_text' );
         }
         $this->check_invalid_text->update_translations_without_invalid_text( $update_strings, $language_code, $columns_to_update );
         $this->maybe_record_automatic_translation_error(array( 'details' => 'Error running update_strings()' ) );
@@ -736,8 +736,8 @@ class TRP_Query{
         // but by using prepare you cannot insert NULL values.
         $this->db->query( $this->db->prepare($query . ' ', $values) );
         if( !$this->check_invalid_text ){
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $this->check_invalid_text = $trp->get_component( 'check_invalid_text' );
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $this->check_invalid_text = $lrp->get_component( 'check_invalid_text' );
         }
         $this->check_invalid_text->insert_translations_without_invalid_text($new_strings, $language_code, $block_type);
         $this->maybe_record_automatic_translation_error(array( 'details' => 'Error running insert_strings()' ) );
@@ -837,7 +837,7 @@ class TRP_Query{
 	    if ( $default_language == null ) {
 		    $default_language = $this->settings['default-language'];
 	    }
-	    $language_code = str_replace($this->db->prefix . 'trp_dictionary_' . strtolower( $default_language ) . '_', '', $table_name );
+	    $language_code = str_replace($this->db->prefix . 'lrp_dictionary_' . strtolower( $default_language ) . '_', '', $table_name );
 	    return $language_code;
     }
 
@@ -847,7 +847,7 @@ class TRP_Query{
      * @return string                       Table name.
      */
     public function get_table_name_for_original_strings(){
-        return apply_filters( 'trp_table_name_original_strings', sanitize_text_field( $this->db->prefix . 'trp_original_strings' ), $this->db->prefix );
+        return apply_filters( 'lrp_table_name_original_strings', sanitize_text_field( $this->db->prefix . 'lrp_original_strings' ), $this->db->prefix );
     }
 
     /**
@@ -856,7 +856,7 @@ class TRP_Query{
      * @return string                       Table name.
      */
     public function get_table_name_for_original_meta(){
-        return apply_filters( 'trp_table_name_original_meta', sanitize_text_field( $this->db->prefix . 'trp_original_meta' ), $this->db->prefix );
+        return apply_filters( 'lrp_table_name_original_meta', sanitize_text_field( $this->db->prefix . 'lrp_original_meta' ), $this->db->prefix );
     }
 
     /**
@@ -865,7 +865,7 @@ class TRP_Query{
      * @return string                       Table name.
      */
     public function get_table_name_for_gettext_original_strings(){
-        return sanitize_text_field( $this->db->prefix . 'trp_gettext_original_strings' );
+        return sanitize_text_field( $this->db->prefix . 'lrp_gettext_original_strings' );
     }
 
     /**
@@ -874,7 +874,7 @@ class TRP_Query{
      * @return string                       Table name.
      */
     public function get_table_name_for_gettext_original_meta(){
-        return sanitize_text_field( $this->db->prefix . 'trp_gettext_original_meta' );
+        return sanitize_text_field( $this->db->prefix . 'lrp_gettext_original_meta' );
     }
 
     /**
@@ -895,7 +895,7 @@ class TRP_Query{
         $this->maybe_record_automatic_translation_error(array( 'details' => 'Error running get_all_gettext_strings()' ) );
         if ( is_array( $dictionary ) && count( $dictionary ) === 0 && !$this->table_exists($this->get_gettext_table_name( $language_code )) ){
             // if table is missing then last_error is empty
-            $this->maybe_record_automatic_translation_error(array( 'details' => 'Missing table ' . $this->get_gettext_table_name( $language_code ). ' . To regenerate tables, try going to Settings->TranslatePress->General tab and Save Settings.'), true );
+            $this->maybe_record_automatic_translation_error(array( 'details' => 'Missing table ' . $this->get_gettext_table_name( $language_code ). ' . To regenerate tables, try going to Settings->LinguaPress->General tab and Save Settings.'), true );
         }
         return $dictionary;
     }
@@ -917,20 +917,20 @@ class TRP_Query{
         if ( $default_language == null ) {
             $default_language = $this->settings['default-language'];
         }
-        if ( (!trp_is_valid_language_code($language_code) && $only_prefix === false) || !trp_is_valid_language_code($default_language) ){
+        if ( (!lrp_is_valid_language_code($language_code) && $only_prefix === false) || !lrp_is_valid_language_code($default_language) ){
             /* there's are other checks that display an admin notice for this kind of errors */
-            return 'trp_language_code_is_invalid_error';
+            return 'lrp_language_code_is_invalid_error';
         }
 
-        return apply_filters( 'trp_table_name_dictionary', $this->db->prefix . 'trp_dictionary_' . strtolower( $default_language ) . '_'. strtolower( $language_code ), $this->db->prefix, $language_code, $default_language );
+        return apply_filters( 'lrp_table_name_dictionary', $this->db->prefix . 'lrp_dictionary_' . strtolower( $default_language ) . '_'. strtolower( $language_code ), $this->db->prefix, $language_code, $default_language );
     }
 
     public function get_gettext_table_name( $language_code ){
-        if ( !trp_is_valid_language_code($language_code) ){
+        if ( !lrp_is_valid_language_code($language_code) ){
             /* there's are other checks that display an admin notice for this kind of errors */
-            return 'trp_language_code_is_invalid_error';
+            return 'lrp_language_code_is_invalid_error';
         }
-        return apply_filters( 'trp_table_name_gettext', $this->db->prefix . 'trp_gettext_' . strtolower( $language_code ), $this->db->prefix, $language_code );
+        return apply_filters( 'lrp_table_name_gettext', $this->db->prefix . 'lrp_gettext_' . strtolower( $language_code ), $this->db->prefix, $language_code );
     }
 
     /**
@@ -1069,14 +1069,14 @@ class TRP_Query{
 
     public function get_all_gettext_table_names(){
         global $wpdb;
-        $table_name = $wpdb->get_blog_prefix() . 'trp_gettext_';
+        $table_name = $wpdb->get_blog_prefix() . 'lrp_gettext_';
         $return_tables = array();
 
         $table_names = $this->db->get_results( "SHOW TABLES LIKE '$table_name%'", ARRAY_N );
         foreach ( $table_names as $table_name ){
             if ( isset( $table_name[0]) &&
-                strpos($table_name[0], 'trp_gettext_original_meta') === false &&
-                strpos($table_name[0], 'trp_gettext_original_strings') === false ) {
+                strpos($table_name[0], 'lrp_gettext_original_meta') === false &&
+                strpos($table_name[0], 'lrp_gettext_original_strings') === false ) {
                 $return_tables[] = $table_name[0];
             }
         }
@@ -1090,7 +1090,7 @@ class TRP_Query{
 			$placeholders = array();
 			foreach( $original_array as $string ){
 				$placeholders[] = '%s';
-				$values[] = trp_full_trim( $string );
+				$values[] = lrp_full_trim( $string );
 			}
 		}
 
@@ -1116,8 +1116,8 @@ class TRP_Query{
         $table_name = $this->get_table_name( $language_code );
 
         // encoding the original so we don't brake it with sanitize_text_field() inside class-upgrade.php
-        $trp_last_original   = isset($extra_params['trp_last_original']) ? $extra_params['trp_last_original'] : '';
-        $trp_last_id         = isset($extra_params['trp_last_id']) ? $extra_params['trp_last_id'] : 0;
+        $lrp_last_original   = isset($extra_params['lrp_last_original']) ? $extra_params['lrp_last_original'] : '';
+        $lrp_last_id         = isset($extra_params['lrp_last_id']) ? $extra_params['lrp_last_id'] : 0;
 
         if ($this->table_exists($table_name)) {
             $query = $this->db->prepare(
@@ -1125,9 +1125,9 @@ class TRP_Query{
                         WHERE (original > %s OR (original = %s AND id > %d)) 
                         ORDER BY original, id 
                         LIMIT %d",
-                $trp_last_original,
-                $trp_last_original,
-                $trp_last_id,
+                $lrp_last_original,
+                $lrp_last_original,
+                $lrp_last_id,
                 $batch_size
             );
 
@@ -1135,8 +1135,8 @@ class TRP_Query{
 
             if (!empty($results)){
                 $last_row = end($results);
-                $trp_last_original = $last_row['original'];
-                $trp_last_id = $last_row['id'];
+                $lrp_last_original = $last_row['original'];
+                $lrp_last_id = $last_row['id'];
 
                 // Step 2: Use PHP to group IDs by 'original' + 'domain'
                 $duplicates = [];
@@ -1176,8 +1176,8 @@ class TRP_Query{
             }
 
             $extra_params = array(
-                'trp_last_original' => $trp_last_original,
-                'trp_last_id' => $trp_last_id
+                'lrp_last_original' => $lrp_last_original,
+                'lrp_last_id' => $lrp_last_id
             );
 
             if ( empty($results) ) {
@@ -1211,8 +1211,8 @@ class TRP_Query{
         $table_name = $this->get_gettext_table_name( $language_code );
 
         // encoding the original so we don't brake it with sanitize_text_field() inside class-upgrade.php
-        $trp_last_original   = isset($extra_params['trp_last_original']) ? $extra_params['trp_last_original'] : '';
-        $trp_last_id         = isset($extra_params['trp_last_id']) ? $extra_params['trp_last_id'] : 0;
+        $lrp_last_original   = isset($extra_params['lrp_last_original']) ? $extra_params['lrp_last_original'] : '';
+        $lrp_last_id         = isset($extra_params['lrp_last_id']) ? $extra_params['lrp_last_id'] : 0;
 
         if ($this->table_exists($table_name)) {
             $query = $this->db->prepare(
@@ -1220,9 +1220,9 @@ class TRP_Query{
                         WHERE (original > %s OR (original = %s AND id > %d)) 
                         ORDER BY original, id 
                         LIMIT %d",
-                $trp_last_original,
-                $trp_last_original,
-                $trp_last_id,
+                $lrp_last_original,
+                $lrp_last_original,
+                $lrp_last_id,
                 $batch_size
             );
 
@@ -1230,8 +1230,8 @@ class TRP_Query{
 
             if (!empty($results)){
                 $last_row = end($results);
-                $trp_last_original = $last_row['original'];
-                $trp_last_id = $last_row['id'];
+                $lrp_last_original = $last_row['original'];
+                $lrp_last_id = $last_row['id'];
 
                 // Step 2: Use PHP to group IDs by 'original' + 'domain'
                 $duplicates = [];
@@ -1271,8 +1271,8 @@ class TRP_Query{
             }
 
             $extra_params = array(
-                'trp_last_original' => $trp_last_original,
-                'trp_last_id' => $trp_last_id
+                'lrp_last_original' => $lrp_last_original,
+                'lrp_last_id' => $lrp_last_id
             );
 
             if ( empty($results) ) {
@@ -1419,17 +1419,17 @@ class TRP_Query{
 
 	public function maybe_record_automatic_translation_error($error_details = array(), $ignore_last_error = false ){
         if( !$this->check_invalid_text ){
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $this->check_invalid_text = $trp->get_component( 'check_invalid_text' );
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $this->check_invalid_text = $lrp->get_component( 'check_invalid_text' );
         }
 
         if ( ( !empty( $this->db->last_error) && !$this->check_invalid_text->is_invalid_data_error() ) || $ignore_last_error ){
-            $trp = TRP_Translate_Press::get_trp_instance();
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
             if( !$this->error_manager ){
-                $this->error_manager = $trp->get_component( 'error_manager' );
+                $this->error_manager = $lrp->get_component( 'error_manager' );
             }
             if( !$this->url_converter ) {
-                $this->url_converter = $trp->get_component( 'url_converter' );
+                $this->url_converter = $lrp->get_component( 'url_converter' );
             }
 
             $default_error_details = array(
@@ -1503,33 +1503,33 @@ class TRP_Query{
         $new_table_name = sanitize_text_field( $this->get_table_name_for_original_strings() . time() );
         $this->db->query( "ALTER TABLE " . $this->get_table_name_for_original_strings() . " RENAME TO " . $new_table_name );
 
-        $table_to_use_for_recovery = get_option('trp_original_strings_table_for_recovery', '');
+        $table_to_use_for_recovery = get_option('lrp_original_strings_table_for_recovery', '');
         if ( $table_to_use_for_recovery == '' ) {
             // if a previous run of removing original strings duplicates failed, use the old table, not the one created during that failed time
-            update_option( 'trp_original_strings_table_for_recovery', $new_table_name );
+            update_option( 'lrp_original_strings_table_for_recovery', $new_table_name );
         }
     }
 
     public function regenerate_original_meta_table($inferior_limit, $batch_size){
 
         if( !$this->error_manager ){
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $this->error_manager = $trp->get_component( 'error_manager' );
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $this->error_manager = $lrp->get_component( 'error_manager' );
         }
 
         $originals_table = $this->get_table_name_for_original_strings();
-        $recovery_originals_table = sanitize_text_field( get_option( 'trp_original_strings_table_for_recovery' ) );
+        $recovery_originals_table = sanitize_text_field( get_option( 'lrp_original_strings_table_for_recovery' ) );
         $originals_meta_table = $this->get_table_name_for_original_meta();
         if ( empty( $recovery_originals_table ) ){
-            $this->error_manager->record_error(array('regenerate_original_meta_table' => 'Empty option trp_original_strings_table_for_recovery'));
+            $this->error_manager->record_error(array('regenerate_original_meta_table' => 'Empty option lrp_original_strings_table_for_recovery'));
             return;
         }
 
-        $this->db->query( $this->db->prepare("UPDATE `$originals_meta_table` trp_meta INNER JOIN `$recovery_originals_table` trp_old ON trp_meta.original_id = trp_old.id LEFT JOIN `$originals_table` trp_new ON trp_new.original = trp_old.original set trp_meta.original_id = IF(trp_new.id IS NULL, 0, trp_new.id) WHERE trp_meta.meta_id > %d AND trp_meta.meta_id <= %d AND trp_new.id != trp_old.id", $inferior_limit, ($inferior_limit + $batch_size) ) );
+        $this->db->query( $this->db->prepare("UPDATE `$originals_meta_table` lrp_meta INNER JOIN `$recovery_originals_table` lrp_old ON lrp_meta.original_id = lrp_old.id LEFT JOIN `$originals_table` lrp_new ON lrp_new.original = lrp_old.original set lrp_meta.original_id = IF(lrp_new.id IS NULL, 0, lrp_new.id) WHERE lrp_meta.meta_id > %d AND lrp_meta.meta_id <= %d AND lrp_new.id != lrp_old.id", $inferior_limit, ($inferior_limit + $batch_size) ) );
 
-        /* UPDATE `wp_trp_original_meta` trp_meta INNER JOIN `wp_trp_original_strings1608214654` as trp_old ON trp_meta.original_id = trp_old.id
-         * LEFT JOIN `wp_trp_original_strings` as trp_new on trp_new.original = trp_old.original  set trp_meta.original_id = IF(trp_new.id IS NULL, 0, trp_new.id)
-         * WHERE trp_meta.meta_id > 10 AND trp_meta.meta_id <= 33 AND trp_new.id != trp_old.id*/
+        /* UPDATE `wp_lrp_original_meta` lrp_meta INNER JOIN `wp_lrp_original_strings1608214654` as lrp_old ON lrp_meta.original_id = lrp_old.id
+         * LEFT JOIN `wp_lrp_original_strings` as lrp_new on lrp_new.original = lrp_old.original  set lrp_meta.original_id = IF(lrp_new.id IS NULL, 0, lrp_new.id)
+         * WHERE lrp_meta.meta_id > 10 AND lrp_meta.meta_id <= 33 AND lrp_new.id != lrp_old.id*/
 
         if (!empty($this->db->last_error)) {
             $this->error_manager->record_error(array('last_error_regenerate_original_meta_table' => $this->db->last_error));
@@ -1588,7 +1588,7 @@ class TRP_Query{
                 $return = false;
             }
         }
-        return apply_filters('trp_is_sql_values_accepted', $return );
+        return apply_filters('lrp_is_sql_values_accepted', $return );
     }
 
     /**
@@ -1610,7 +1610,7 @@ class TRP_Query{
 
     public function is_gettext_normalized(){
         if( $this->gettext_normalized === null ){
-            $this->gettext_normalized = !( get_option( 'trp_gettext_normalized', '' ) == 'no' );
+            $this->gettext_normalized = !( get_option( 'lrp_gettext_normalized', '' ) == 'no' );
         }
         return $this->gettext_normalized;
     }

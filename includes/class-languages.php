@@ -5,11 +5,11 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 /**
- * Class TRP_Languages
+ * Class LRP_Languages
  *
  * Provides available languages, with name and code.
  */
-class TRP_Languages{
+class LRP_Languages{
 
   	protected $languages = array();
 	protected $wp_languages;
@@ -32,10 +32,10 @@ class TRP_Languages{
 			}
 		}
 
-        return apply_filters( 'trp_languages', $this->languages[$english_or_native_name], $english_or_native_name );
+        return apply_filters( 'lrp_languages', $this->languages[$english_or_native_name], $english_or_native_name );
     }
 
-    /** Set proper locale when changing languages with translatepress
+    /** Set proper locale when changing languages with linguapress
      *
      * @param $locale
      * @return mixed
@@ -43,37 +43,37 @@ class TRP_Languages{
     public function change_locale( $locale ){
 
         if ( $this->is_string_translation_request_for_different_language() ){
-            $trp_ajax_language = (isset($_POST['trp_ajax_language']) ) ? sanitize_text_field( $_POST['trp_ajax_language'] ) : '';
+            $lrp_ajax_language = (isset($_POST['lrp_ajax_language']) ) ? sanitize_text_field( $_POST['lrp_ajax_language'] ) : '';
             if ( !$this->settings ){
-                $trp = TRP_Translate_Press::get_trp_instance();
-                $trp_settings = $trp->get_component( 'settings' );
-                $this->settings = $trp_settings->get_settings();
+                $lrp = LRP_Lingua_Press::get_lrp_instance();
+                $lrp_settings = $lrp->get_component( 'settings' );
+                $this->settings = $lrp_settings->get_settings();
             }
-            if ( $trp_ajax_language && in_array( $trp_ajax_language, $this->settings['translation-languages'] ) ){
-                return $trp_ajax_language;
+            if ( $lrp_ajax_language && in_array( $lrp_ajax_language, $this->settings['translation-languages'] ) ){
+                return $lrp_ajax_language;
             }
         }
 
         if ( $this->is_admin_request === null ){
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $trp_is_admin_request = $trp->get_component( 'url_converter' );
-            $this->is_admin_request= $trp_is_admin_request->is_admin_request();
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $lrp_is_admin_request = $lrp->get_component( 'url_converter' );
+            $this->is_admin_request= $lrp_is_admin_request->is_admin_request();
         }
 
         if ( $this->is_admin_request ){
             return $locale;
         }
 
-        global $TRP_LANGUAGE;
-        if( !empty($TRP_LANGUAGE) ){
-            $locale = $TRP_LANGUAGE;
+        global $LRP_LANGUAGE;
+        if( !empty($LRP_LANGUAGE) ){
+            $locale = $LRP_LANGUAGE;
         }
         return $locale;
     }
 
 	public function is_string_translation_request_for_different_language(){
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			$action = 'trp_string_translation_get_missing_gettext_strings';
+			$action = 'lrp_string_translation_get_missing_gettext_strings';
 			if ( isset( $_POST['action'] ) && $_POST['action'] === $action ) {
 				return true;
 			}
@@ -97,7 +97,7 @@ class TRP_Languages{
 			}
 		}
 		$default = array( 'en_US' => array( 'language'	=> 'en_US', 'english_name'=> 'English (United States)', 'native_name' => 'English', 'iso' => array( 'en' ) ) );
-		return apply_filters( 'trp_wp_languages', $default + $this->wp_languages );
+		return apply_filters( 'lrp_wp_languages', $default + $this->wp_languages );
 	}
 
     /**
@@ -116,7 +116,7 @@ class TRP_Languages{
         }
 		$iso_codes = array();
 		$wp_languages = $this->get_wp_languages();
-		$map_wp_codes_to_google = apply_filters( 'trp_map_wp_codes_to_google', array(
+		$map_wp_codes_to_google = apply_filters( 'lrp_map_wp_codes_to_google', array(
 			'zh_HK' => 'zh-TW',
 			'zh_TW'	=> 'zh-TW',
 			'zh_CN'	=> 'zh-CN',
@@ -158,9 +158,9 @@ class TRP_Languages{
 	public function get_language_names( $language_codes, $english_or_native_name = null ){
 		if ( !$english_or_native_name ){
 			if ( !$this->settings ){
-				$trp = TRP_Translate_Press::get_trp_instance();
-				$trp_settings = $trp->get_component( 'settings' );
-				$this->settings = $trp_settings->get_settings();
+				$lrp = LRP_Lingua_Press::get_lrp_instance();
+				$lrp_settings = $lrp->get_component( 'settings' );
+				$this->settings = $lrp_settings->get_settings();
 			}
 			$english_or_native_name = $this->settings['native_or_english_name'];
 		}
@@ -168,7 +168,7 @@ class TRP_Languages{
         $languages = $this->get_languages( $english_or_native_name );
 		foreach ( $language_codes as $language_code ){
 			if( isset( $languages[$language_code] ) ) {
-				$return[$language_code] = apply_filters( 'trp_language_name', $languages[$language_code], $language_code, $english_or_native_name, $language_codes );
+				$return[$language_code] = apply_filters( 'lrp_language_name', $languages[$language_code], $language_code, $english_or_native_name, $language_codes );
 			}
 		}
 
@@ -230,7 +230,7 @@ class TRP_Languages{
 				$name = $this->string_trim_after_character( $name, " (" );
 			}
 		}
-		return apply_filters( 'trp_beautify_language_name', $name, $code, $english_or_native, $language_codes );
+		return apply_filters( 'lrp_beautify_language_name', $name, $code, $english_or_native, $language_codes );
 	}
 
 	/**

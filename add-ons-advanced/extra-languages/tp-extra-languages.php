@@ -1,6 +1,6 @@
 <?php
 /*
-TranslatePress - Extra Languages Add-on
+LinguaPress - Extra Languages Add-on
 License: GPL2
 
 == Copyright ==
@@ -25,10 +25,10 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 
-function trp_in_el_run(){
+function lrp_in_el_run(){
     require_once plugin_dir_path( __FILE__ ) . 'class-extra-languages.php';
-    if ( class_exists( 'TRP_Translate_Press' ) ) {
-        new TRP_IN_Extra_Languages();
+    if ( class_exists( 'LRP_Lingua_Press' ) ) {
+        new LRP_IN_Extra_Languages();
     }
 }
-add_action( 'plugins_loaded', 'trp_in_el_run', 0 );
+add_action( 'plugins_loaded', 'lrp_in_el_run', 0 );

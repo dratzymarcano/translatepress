@@ -5,32 +5,32 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-class TRP_IN_DeepL {
+class LRP_IN_DeepL {
 
     protected $loader;
 
     public function __construct() {
-        $trp                 = TRP_Translate_Press::get_trp_instance();
-        $this->loader        = $trp->get_component( 'loader' );
+        $lrp                 = LRP_Lingua_Press::get_lrp_instance();
+        $this->loader        = $lrp->get_component( 'loader' );
 
-        $this->loader->add_action( 'trp_machine_translation_engines', $this, 'add_engine', 10, 1 );
-        $this->loader->add_action( 'trp_machine_translation_extra_settings_middle', $this, 'add_settings', 10, 1 );
-        $this->loader->add_action( 'trp_machine_translation_sanitize_settings', $this, 'sanitize_settings', 10, 1 );
+        $this->loader->add_action( 'lrp_machine_translation_engines', $this, 'add_engine', 10, 1 );
+        $this->loader->add_action( 'lrp_machine_translation_extra_settings_middle', $this, 'add_settings', 10, 1 );
+        $this->loader->add_action( 'lrp_machine_translation_sanitize_settings', $this, 'sanitize_settings', 10, 1 );
         $this->loader->add_action( 'admin_enqueue_scripts', $this, 'add_scripts', 99, 1 );
-        $this->loader->add_filter( 'trp_deepl_target_language', $this, 'configure_api_target_language', 10, 3 );
-        $this->loader->add_filter( 'trp_deepl_source_language', $this, 'configure_api_source_language', 10, 3 );
-        $this->loader->add_filter( 'trp_deepl_supported_languages', $this, 'add_missing_supported_languages', 10, 1 );
+        $this->loader->add_filter( 'lrp_deepl_target_language', $this, 'configure_api_target_language', 10, 3 );
+        $this->loader->add_filter( 'lrp_deepl_source_language', $this, 'configure_api_source_language', 10, 3 );
+        $this->loader->add_filter( 'lrp_deepl_supported_languages', $this, 'add_missing_supported_languages', 10, 1 );
 
-        require_once TRP_IN_DL_PLUGIN_DIR . 'includes/class-deepl-machine-translator.php';
+        require_once LRP_IN_DL_PLUGIN_DIR . 'includes/class-deepl-machine-translator.php';
     }
 
     public function add_scripts( $hook ){
-        if( $hook == 'admin_page_trp_machine_translation' )
-            wp_enqueue_script( 'trp-deepl-settings', TRP_IN_DL_PLUGIN_URL . 'assets/js/trp-deepl-back-end.js', [ 'jquery' ], TRP_IN_DL_PLUGIN_VERSION );
+        if( $hook == 'admin_page_lrp_machine_translation' )
+            wp_enqueue_script( 'lrp-deepl-settings', LRP_IN_DL_PLUGIN_URL . 'assets/js/lrp-deepl-back-end.js', [ 'jquery' ], LRP_IN_DL_PLUGIN_VERSION );
     }
 
     public function add_engine( $engines ){
-        $engines[] = [ 'value' => 'deepl', 'label' => __( 'DeepL', 'translatepress-multilingual' ) ];
+        $engines[] = [ 'value' => 'deepl', 'label' => __( 'DeepL', 'linguapress' ) ];
 
         return $engines;
     }
@@ -59,31 +59,31 @@ class TRP_IN_DeepL {
         if ( true === $is_error ) {
             switch ( $code ) {
                 case 400:
-                    $return_message = esc_html__( 'Bad request. There was an error accessing the DeepL API.', 'translatepress-multilingual' );
+                    $return_message = esc_html__( 'Bad request. There was an error accessing the DeepL API.', 'linguapress' );
                     break;
                 case 403:
-                    $return_message = esc_html__( 'The API key entered is invalid.', 'translatepress-multilingual' );
+                    $return_message = esc_html__( 'The API key entered is invalid.', 'linguapress' );
                     break;
                 case 404:
-                    $return_message = esc_html__( 'The API resource could not be found.', 'translatepress-multilingual' );
+                    $return_message = esc_html__( 'The API resource could not be found.', 'linguapress' );
                     break;
                 case 413:
-                    $return_message = esc_html__( 'The request size is too large.', 'translatepress-multilingual' );
+                    $return_message = esc_html__( 'The request size is too large.', 'linguapress' );
                     break;
                 case 414:
-                    $return_message = esc_html__( 'The request is too long.', 'translatepress-multilingual' );
+                    $return_message = esc_html__( 'The request is too long.', 'linguapress' );
                     break;
                 case 429:
-                    $return_message = esc_html__( 'Too many requests. Please try again later.', 'translatepress-multilingual' );
+                    $return_message = esc_html__( 'Too many requests. Please try again later.', 'linguapress' );
                     break;
                 case 456:
-                    $return_message = esc_html__( 'Your translation quota has been reached.', 'translatepress-multilingual' );
+                    $return_message = esc_html__( 'Your translation quota has been reached.', 'linguapress' );
                     break;
                 case 503:
-                    $return_message = esc_html__( 'We could not process your request. Please try again later.', 'translatepress-multilingual' );
+                    $return_message = esc_html__( 'We could not process your request. Please try again later.', 'linguapress' );
                     break;
                 default:
-                    $return_message = esc_html__( 'There is an error on the DeepL service and your request could not be processed.', 'translatepress-multilingual' );
+                    $return_message = esc_html__( 'There is an error on the DeepL service and your request could not be processed.', 'linguapress' );
                     break;
             }
         }
@@ -94,8 +94,8 @@ class TRP_IN_DeepL {
     }
 
     public function add_settings( $settings ){
-        $trp                = TRP_Translate_Press::get_trp_instance();
-        $machine_translator = $trp->get_component( 'machine_translator' );
+        $lrp                = LRP_Lingua_Press::get_lrp_instance();
+        $machine_translator = $lrp->get_component( 'machine_translator' );
 
         // Error messages.
         $show_errors   = false;
@@ -105,8 +105,8 @@ class TRP_IN_DeepL {
 
         // Check for API errors.
         if ( 'deepl' === $translation_engine ) {
-            $trp = TRP_Translate_Press::get_trp_instance();
-            $machine_translator = $trp->get_component( 'machine_translator' );
+            $lrp = LRP_Lingua_Press::get_lrp_instance();
+            $machine_translator = $lrp->get_component( 'machine_translator' );
             $api_check = $machine_translator->check_api_key_validity();
         }
 
@@ -116,44 +116,44 @@ class TRP_IN_DeepL {
         }
 
         $text_input_classes = array(
-            'trp-text-input',
+            'lrp-text-input',
         );
         if ( $show_errors && 'deepl' === $translation_engine ) {
-            $text_input_classes[] = 'trp-text-input-error';
+            $text_input_classes[] = 'lrp-text-input-error';
         }
 
         if( !isset( $settings['deepl-api-type'] ) )
             $settings['deepl-api-type'] = 'pro';
         ?>
 
-        <div class="trp-engine trp-automatic-translation-engine__container" id="deepl">
+        <div class="lrp-engine lrp-automatic-translation-engine__container" id="deepl">
 
-            <div class="trp-deepl-settings__container">
-                <span class="trp-primary-text-bold"><?php esc_html_e( 'DeepL API Type', 'translatepress-multilingual' ); ?> </span>
+            <div class="lrp-deepl-settings__container">
+                <span class="lrp-primary-text-bold"><?php esc_html_e( 'DeepL API Type', 'linguapress' ); ?> </span>
 
-                <div class="trp-select-wrapper">
-                    <select id="trp-deepl-api-type" class="trp-select" name="trp_machine_translation_settings[deepl-api-type]">
+                <div class="lrp-select-wrapper">
+                    <select id="lrp-deepl-api-type" class="lrp-select" name="lrp_machine_translation_settings[deepl-api-type]">
                         <option value="pro" <?php selected( $settings['deepl-api-type'], 'pro' ); ?>>
-                            <?php esc_html_e( 'Pro', 'translatepress-multilingual' ); ?>
+                            <?php esc_html_e( 'Pro', 'linguapress' ); ?>
                         </option>
                         <option value="free" <?php selected( $settings['deepl-api-type'], 'free' ); ?>>
-                            <?php esc_html_e( 'Free', 'translatepress-multilingual' ); ?>
+                            <?php esc_html_e( 'Free', 'linguapress' ); ?>
                         </option>
                     </select>
                 </div>
 
-                <span class="trp-description-text">
-                    <?php esc_html_e( 'Select the type of DeepL API you want to use.', 'translatepress-multilingual' ); ?>
+                <span class="lrp-description-text">
+                    <?php esc_html_e( 'Select the type of DeepL API you want to use.', 'linguapress' ); ?>
                 </span>
             </div>
 
-            <div class="trp-deepl-settings__container">
-                <span class="trp-primary-text-bold"><?php esc_html_e( 'DeepL API Key', 'translatepress-multilingual' ); ?></span>
+            <div class="lrp-deepl-settings__container">
+                <span class="lrp-primary-text-bold"><?php esc_html_e( 'DeepL API Key', 'linguapress' ); ?></span>
 
-                <div class="trp-automatic-translation-api-key-container">
-                    <input type="text" id="trp-deepl-key"
+                <div class="lrp-automatic-translation-api-key-container">
+                    <input type="text" id="lrp-deepl-key"
                            class="<?php echo esc_attr( implode( ' ', $text_input_classes ) ); ?>"
-                           name="trp_machine_translation_settings[deepl-api-key]"
+                           name="lrp_machine_translation_settings[deepl-api-key]"
                            value="<?php echo !empty( $settings['deepl-api-key'] ) ? esc_attr( $settings['deepl-api-key'] ) : ''; ?>" />
 
                     <?php
@@ -165,17 +165,17 @@ class TRP_IN_DeepL {
                 </div>
 
                 <?php if ( $show_errors && 'deepl' === $translation_engine ) : ?>
-                    <span class="trp-error-inline trp-settings-error-text">
+                    <span class="lrp-error-inline lrp-settings-error-text">
                         <?php echo wp_kses_post( $error_message ); ?>
                     </span>
                 <?php endif; ?>
 
-                <span class="trp-description-text">
+                <span class="lrp-description-text">
                     <?php
                     echo wp_kses(
                         sprintf(
-                            __( 'Visit <a href="%s" target="_blank">this link</a> to see how you can set up an API key and control API costs.', 'translatepress-multilingual' ),
-                            'https://translatepress.com/docs/addons/deepl-automatic-translation/?utm_source=wpbackend&utm_medium=clientsite&utm_campaign=TRP&utm_content=deepl-api-key#generate-key'
+                            __( 'Visit <a href="%s" target="_blank">this link</a> to see how you can set up an API key and control API costs.', 'linguapress' ),
+                            'https://linguapress.com/docs/addons/deepl-automatic-translation/?utm_source=wpbackend&utm_medium=clientsite&utm_campaign=LRP&utm_content=deepl-api-key#generate-key'
                         ),
                         [ 'a' => [ 'href' => [], 'target' => [] ] ]
                     );

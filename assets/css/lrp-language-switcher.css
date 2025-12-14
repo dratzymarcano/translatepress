@@ -1,0 +1,143 @@
+/*
+ *  Menu Language Switcher
+ */
+
+.menu-item-object-language_switcher .lrp-flag-image {
+    display: inline-block;
+    margin: -1px 5px;
+    vertical-align: baseline;
+    padding: 0;
+    border: 0;
+    border-radius:0;
+}
+
+/*
+ *  Shortcode Language Switcher
+ */
+.lrp-language-switcher{
+    height: 42px;
+    position: relative;
+    box-sizing: border-box;
+    width: 200px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.lrp-language-switcher > div {
+    box-sizing: border-box;
+    padding:4px 20px 3px 13px;
+    border: 1.5px solid #949494;
+    border-radius: 2px;
+    background-image: url(../../assets/images/arrow-down-3101.svg);
+    background-repeat: no-repeat;
+
+    background-position:
+            calc(100% - 20px) calc(1em + 2px),
+            calc(100% - 3px) calc(1em + 0px);
+
+    background-size:
+            8px 8px,
+            8px 8px;
+
+    background-repeat: no-repeat;
+
+    background-color: #fff;
+}
+
+.lrp-language-switcher > div:hover {
+    background-image: none;
+}
+
+
+.lrp-language-switcher > div > a {
+    display: block;
+    padding: 7px 12px;
+    border-radius: 3px;
+    text-decoration: none;
+    color: #1E1E1E;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+}
+
+.lrp-language-switcher > div > a:hover {
+    background: #F0F0F0;
+    border-radius: 2px;
+}
+.lrp-language-switcher > div > a.lrp-ls-shortcode-disabled-language {
+    cursor: default;
+}
+.lrp-language-switcher > div > a.lrp-ls-shortcode-disabled-language:hover {
+    background: none;
+}
+
+.lrp-language-switcher > div > a > img{
+    display: inline;
+    margin: 0 3px;
+    width: 18px;
+    height: 12px;
+    border-radius: 0;
+}
+
+.lrp-language-switcher .lrp-ls-shortcode-current-language{
+    display: inline-block;
+}
+.lrp-language-switcher:focus .lrp-ls-shortcode-current-language,
+.lrp-language-switcher:hover .lrp-ls-shortcode-current-language{
+    visibility: hidden;
+}
+
+.lrp-language-switcher .lrp-ls-shortcode-language{
+    display: inline-block;
+    height: 1px;
+    overflow: hidden;
+    visibility: hidden;
+    z-index: 1;
+
+    max-height: 250px;
+    overflow-y: auto;
+    left: 0;
+    top: 0;
+    min-height: auto;
+}
+
+.lrp-language-switcher:focus .lrp-ls-shortcode-language,
+.lrp-language-switcher:hover .lrp-ls-shortcode-language{
+    visibility: visible;
+    max-height: 250px;
+    padding: 4px 13px;
+    height: auto;
+    overflow-y: auto;
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: inline-block !important;
+    min-height: auto;
+}
+
+/*
+ *  Front-end Admin Bar Icon
+ */
+#wpadminbar #wp-admin-bar-lrp_edit_translation .ab-icon:before {
+    content: '\f326';
+    top: 3px;
+}
+
+@media screen and ( max-width: 782px ) {
+    #wpadminbar #wp-admin-bar-lrp_edit_translation > .ab-item {
+        text-indent: 0;
+    }
+
+    #wpadminbar li#wp-admin-bar-lrp_edit_translation {
+        display: block;
+    }
+}
+
+/*
+ * Fix Language Switcher Shortcode in Elementor Popup
+ */
+.elementor-shortcode .lrp-ls-shortcode-current-language,
+.elementor-shortcode .lrp-ls-shortcode-language {
+    width: 300px !important;
+}

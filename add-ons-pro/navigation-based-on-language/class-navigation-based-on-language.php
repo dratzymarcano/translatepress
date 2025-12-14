@@ -5,28 +5,28 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-class TRP_IN_Navigation_Based_on_Language{
+class LRP_IN_Navigation_Based_on_Language{
 
     protected $loader;
     protected $slug_manager;
     protected $settings;
-    protected $trp_languages;
+    protected $lrp_languages;
 
     public function __construct() {
 
-        define( 'TRP_IN_NBL_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-        define( 'TRP_IN_NBL_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+        define( 'LRP_IN_NBL_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+        define( 'LRP_IN_NBL_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
-        $trp = TRP_Translate_Press::get_trp_instance();
-        $this->loader = $trp->get_component( 'loader' );
-        $trp_settings = $trp->get_component( 'settings' );
-        $this->settings = $trp_settings->get_settings();
-        $this->trp_languages = $trp->get_component( 'languages' );
+        $lrp = LRP_Lingua_Press::get_lrp_instance();
+        $this->loader = $lrp->get_component( 'loader' );
+        $lrp_settings = $lrp->get_component( 'settings' );
+        $this->settings = $lrp_settings->get_settings();
+        $this->lrp_languages = $lrp->get_component( 'languages' );
 
-        require_once(  TRP_IN_NBL_PLUGIN_DIR . 'includes/class-tp-nbl-walker-nav-menu.php' );
+        require_once(  LRP_IN_NBL_PLUGIN_DIR . 'includes/class-tp-nbl-walker-nav-menu.php' );
 
 
-        //$this->loader->add_filter( 'trp_view_as_values', $this, 'trp_bor_view_as_values' );
+        //$this->loader->add_filter( 'lrp_view_as_values', $this, 'lrp_bor_view_as_values' );
         // switch the admin walker
         $this->loader->add_filter('wp_edit_nav_menu_walker', $this, 'change_nav_menu_walker' );
         // add extra fields in menu items on the hook we define in the walker class
@@ -51,7 +51,7 @@ class TRP_IN_Navigation_Based_on_Language{
     function change_nav_menu_walker( $walker ){
         global $wp_version;
         if ( version_compare( $wp_version, "5.4", "<" ) ) {
-            $walker = 'TRP_IN_NBL_Walker_Nav_Menu';
+            $walker = 'LRP_IN_NBL_Walker_Nav_Menu';
         }
 
         return $walker;
@@ -62,42 +62,42 @@ class TRP_IN_Navigation_Based_on_Language{
      *
      */
     function extra_fields( $item_id, $item, $depth, $args ) {
-        $languages = get_post_meta( $item->ID, '_trp_menu_languages', true );
+        $languages = get_post_meta( $item->ID, '_lrp_menu_languages', true );
         if( empty( $languages ) )
             $languages = array();
         else
             $languages = explode( ',', $languages );
         ?>
 
-        <input type="hidden" name="trp-menu-filtering" value="<?php echo esc_attr( wp_create_nonce('trp-menu-filtering') ); ?>"/>
+        <input type="hidden" name="lrp-menu-filtering" value="<?php echo esc_attr( wp_create_nonce('lrp-menu-filtering') ); ?>"/>
 
         <?php
-        $all_languages = $this->trp_languages->get_languages( 'english_name' );
+        $all_languages = $this->lrp_languages->get_languages( 'english_name' );
         $our_languages = $this->settings['translation-languages'];
         if( !empty( $all_languages ) && !empty( $our_languages ) ){
             ?>
-            <div class="trp-languages">
-                <p class="description"><?php esc_html_e("Limit this menu item to the following languages", 'translatepress-multilingual'); ?></p>
+            <div class="lrp-languages">
+                <p class="description"><?php esc_html_e("Limit this menu item to the following languages", 'linguapress'); ?></p>
 
-                <label class="trp-language-checkbox-label">
+                <label class="lrp-language-checkbox-label">
                     <input type="checkbox"
-                           value="trp_nbol_all_languages" <?php if (in_array('trp_nbol_all_languages', $languages) || empty($languages)) echo 'checked="checked"'; ?>
-                           name="trp-languages_<?php echo esc_attr($item->ID); ?>[]"/>
-                    <?php esc_html_e( 'All Languages', 'translatepress-multilingual' ); ?>
+                           value="lrp_nbol_all_languages" <?php if (in_array('lrp_nbol_all_languages', $languages) || empty($languages)) echo 'checked="checked"'; ?>
+                           name="lrp-languages_<?php echo esc_attr($item->ID); ?>[]"/>
+                    <?php esc_html_e( 'All Languages', 'linguapress' ); ?>
                 </label>
 
                 <?php
                 $readonly = '';
-                if (in_array('trp_nbol_all_languages', $languages) || empty($languages)) $readonly = 'readonly="readonly"';
+                if (in_array('lrp_nbol_all_languages', $languages) || empty($languages)) $readonly = 'readonly="readonly"';
                 ?>
 
                 <?php foreach( $all_languages as $language_code => $all_language ) {
                     if ( in_array($language_code, $our_languages) ) {
                         ?>
-                        <label class="trp-language-checkbox-label">
+                        <label class="lrp-language-checkbox-label">
                             <input type="checkbox"
                                    value="<?php echo esc_attr($language_code); ?>" <?php if (in_array($language_code, $languages) ) echo 'checked="checked"'; ?>
-                                   name="trp-languages_<?php echo esc_attr($item->ID); ?>[]" <?php echo $readonly; //phpcs:ignore ?> class="trp-nbol-lang-input"/>
+                                   name="lrp-languages_<?php echo esc_attr($item->ID); ?>[]" <?php echo $readonly; //phpcs:ignore ?> class="lrp-nbol-lang-input"/>
                             <?php echo esc_html($all_language); ?>
                         </label>
                     <?php }
@@ -115,14 +115,14 @@ class TRP_IN_Navigation_Based_on_Language{
     function update_menu($menu_id, $menu_item_db_id){
 
         // verify this came from our screen and with proper authorization.
-        if (!isset($_POST['trp-menu-filtering']) || !wp_verify_nonce( sanitize_text_field( $_POST['trp-menu-filtering'] ), 'trp-menu-filtering'))
+        if (!isset($_POST['lrp-menu-filtering']) || !wp_verify_nonce( sanitize_text_field( $_POST['lrp-menu-filtering'] ), 'lrp-menu-filtering'))
             return;
 
-        if( !empty( $_REQUEST['trp-languages_'.$menu_item_db_id] ) && is_array( $_REQUEST['trp-languages_'.$menu_item_db_id] ) ) {
-            $languages = array_map( 'sanitize_text_field', $_REQUEST['trp-languages_'.$menu_item_db_id] );
-            update_post_meta( $menu_item_db_id, '_trp_menu_languages', implode( ',', $languages ) );
+        if( !empty( $_REQUEST['lrp-languages_'.$menu_item_db_id] ) && is_array( $_REQUEST['lrp-languages_'.$menu_item_db_id] ) ) {
+            $languages = array_map( 'sanitize_text_field', $_REQUEST['lrp-languages_'.$menu_item_db_id] );
+            update_post_meta( $menu_item_db_id, '_lrp_menu_languages', implode( ',', $languages ) );
         } else
-            delete_post_meta( $menu_item_db_id, '_trp_menu_languages' );
+            delete_post_meta( $menu_item_db_id, '_lrp_menu_languages' );
     }
 
     /**
@@ -146,15 +146,15 @@ class TRP_IN_Navigation_Based_on_Language{
             // check any item that has NMR roles set
             if( $visible ){
 
-                $languages = get_post_meta( $item->ID, '_trp_menu_languages', true );
+                $languages = get_post_meta( $item->ID, '_lrp_menu_languages', true );
                 if( empty( $languages ) )
                     $languages = array();
                 else
                     $languages = explode( ',', $languages );
 
-                if( !empty( $languages ) && !in_array( 'trp_nbol_all_languages',$languages ) ){
-                    global $TRP_LANGUAGE;
-                    if( !in_array( $TRP_LANGUAGE, $languages ) )
+                if( !empty( $languages ) && !in_array( 'lrp_nbol_all_languages',$languages ) ){
+                    global $LRP_LANGUAGE;
+                    if( !in_array( $LRP_LANGUAGE, $languages ) )
                         $visible = false;
                 }
 
@@ -178,7 +178,7 @@ class TRP_IN_Navigation_Based_on_Language{
     public function enqueue_navigation_script( ){
         global $pagenow;
         if( $pagenow === 'nav-menus.php' ) {
-            wp_enqueue_script('trp-sortable-languages', TRP_IN_NBL_PLUGIN_URL . 'assets/js/trp-navigation.js', array('jquery'), TRP_PLUGIN_VERSION);
+            wp_enqueue_script('lrp-sortable-languages', LRP_IN_NBL_PLUGIN_URL . 'assets/js/lrp-navigation.js', array('jquery'), LRP_PLUGIN_VERSION);
         }
     }
 

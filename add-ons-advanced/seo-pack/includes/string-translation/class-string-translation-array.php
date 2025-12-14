@@ -6,7 +6,7 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 
-class TRP_String_Translation_Array{
+class LRP_String_Translation_Array{
     protected $settings;
     protected $array_of_original_slugs;
     protected $translations_arrays;
@@ -25,14 +25,14 @@ class TRP_String_Translation_Array{
     }
 
     protected function init( $sql_results, $slug_type ){
-        $trp                = TRP_Translate_Press::get_trp_instance();
-        $trp_settings       = $trp->get_component( 'settings' );
+        $lrp                = LRP_Lingua_Press::get_lrp_instance();
+        $lrp_settings       = $lrp->get_component( 'settings' );
 
         $this->translations_arrays          = $sql_results;
         $this->formatted_translations_array = [];
         $this->slug_type                    = $slug_type;
-        $this->settings                     = $trp_settings->get_settings();
-        $this->slug_query                   = new TRP_Slug_Query();
+        $this->settings                     = $lrp_settings->get_settings();
+        $this->slug_query                   = new LRP_Slug_Query();
     }
 
     protected function prepare_original_slugs_array( $array_of_original_slugs ){

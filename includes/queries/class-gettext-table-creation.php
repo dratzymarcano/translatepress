@@ -5,23 +5,23 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 /**
- * Class TRP_Gettext_Table_Creation
+ * Class LRP_Gettext_Table_Creation
  *
  * Queries for creating gettext tables.
  *
  * To access this component use:
- * 		$trp = TRP_Translate_Press::get_trp_instance();
- *      $trp_query = $trp->get_component( 'query' );
- *      $gettext_table_creation = $trp_query->get_query_component('gettext_table_creation');
+ * 		$lrp = LRP_Lingua_Press::get_lrp_instance();
+ *      $lrp_query = $lrp->get_component( 'query' );
+ *      $gettext_table_creation = $lrp_query->get_query_component('gettext_table_creation');
  *
  */
-class TRP_Gettext_Table_Creation extends TRP_Query{
+class LRP_Gettext_Table_Creation extends LRP_Query{
 
     public $db;
     protected $settings;
 
     /**
-     * TRP_Gettext_Table_Creation constructor.
+     * LRP_Gettext_Table_Creation constructor.
      * @param $settings
      */
     public function __construct( $settings ){

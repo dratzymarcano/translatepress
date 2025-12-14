@@ -5,8 +5,8 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-class TRP_IN_SP_Editor_Actions{
-    protected $slug_query; /** @var TRP_Slug_Query */
+class LRP_IN_SP_Editor_Actions{
+    protected $slug_query; /** @var LRP_Slug_Query */
     protected $settings;
 
     public function __construct( $slug_query, $settings ){
@@ -95,7 +95,7 @@ class TRP_IN_SP_Editor_Actions{
                     if ( $new_slug !== $sanitized_slug ) $update_slugs[ $language ][ $slug_key ]['translated'] = $new_slug;
                 }
 
-                if ( isset( $type ) ) do_action( "trp_update_{$type}_slug", $slug, $language, $update_slugs );
+                if ( isset( $type ) ) do_action( "lrp_update_{$type}_slug", $slug, $language, $update_slugs );
             }
         }
 

@@ -6,21 +6,21 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 /** Functions useful for cpt slugs and taxonomy slugs */
-class TRP_IN_SP_Option_Based_Strings {
-    private $trp_slug_query;
+class LRP_IN_SP_Option_Based_Strings {
+    private $lrp_slug_query;
     private $editor_actions;
 
     public function __construct(){
-        $trp          = TRP_Translate_Press::get_trp_instance();
-        $trp_settings = $trp->get_component( 'settings' );
-        $settings     = $trp_settings->get_settings();
+        $lrp          = LRP_Lingua_Press::get_lrp_instance();
+        $lrp_settings = $lrp->get_component( 'settings' );
+        $settings     = $lrp_settings->get_settings();
 
-        $this->trp_slug_query = new TRP_Slug_Query();
-        $this->editor_actions = new TRP_IN_SP_Editor_Actions( $this->trp_slug_query, $settings );
+        $this->lrp_slug_query = new LRP_Slug_Query();
+        $this->editor_actions = new LRP_IN_SP_Editor_Actions( $this->lrp_slug_query, $settings );
     }
 
     public function get_public_slugs( $type, $include_labels = false, $include_items = array(), $only_with_slugs = true ) {
-        $exclude_array = apply_filters( 'trp_exclude_' . $type . '_from_translation', array() );
+        $exclude_array = apply_filters( 'lrp_exclude_' . $type . '_from_translation', array() );
         $slugs         = call_user_func( 'get_' . $type, array(), 'objects' );
         $return        = array();
         foreach ( $slugs as $item ) {
@@ -36,17 +36,17 @@ class TRP_IN_SP_Option_Based_Strings {
             }
         }
 
-        return apply_filters( 'trp_to_translate_' . $type . '_slugs_array', $return, $type, $include_labels );
+        return apply_filters( 'lrp_to_translate_' . $type . '_slugs_array', $return, $type, $include_labels );
     }
 
     public function get_strings_for_option_based_slug( $type, $option_name, $all_slugs ) {
-        $trp                = TRP_Translate_Press::get_trp_instance();
-        $string_translation = $trp->get_component( 'string_translation' );
-        $trp_query          = $trp->get_component( 'query' );
+        $lrp                = LRP_Lingua_Press::get_lrp_instance();
+        $string_translation = $lrp->get_component( 'string_translation' );
+        $lrp_query          = $lrp->get_component( 'query' );
         $config             = $string_translation->get_configuration_options();
-        $trp_settings       = $trp->get_component( 'settings' );
-        $settings           = $trp_settings->get_settings();
-        $helper             = new TRP_String_Translation_Helper();
+        $lrp_settings       = $lrp->get_component( 'settings' );
+        $settings           = $lrp_settings->get_settings();
+        $helper             = new LRP_String_Translation_Helper();
 
         $dictionary_by_original = [];
         $found_inactive_slug    = false;
@@ -60,16 +60,16 @@ class TRP_IN_SP_Option_Based_Strings {
         }
 
         $slugs_from_tp_table = [];
-        if ( apply_filters( 'trp_show_inactive_slugs_in_editor', true, $type ) ) {
-            $slugs_from_tp_table_assoc = $this->trp_slug_query->get_original_slugs( [ 'slug_type' => $type ] );
+        if ( apply_filters( 'lrp_show_inactive_slugs_in_editor', true, $type ) ) {
+            $slugs_from_tp_table_assoc = $this->lrp_slug_query->get_original_slugs( [ 'slug_type' => $type ] );
             foreach ( $slugs_from_tp_table_assoc as $slug_from_tp_table_assoc ) {
                 $slugs_from_tp_table[ $slug_from_tp_table_assoc['original'] ] = $slug_from_tp_table_assoc['original'];
             }
         }
         $all_slugs = array_unique( $associative_all_public_slugs + $slugs_from_tp_table );
-        $translated_slugs = $this->trp_slug_query->get_translated_slugs_from_original( array_values( $all_slugs ) );
+        $translated_slugs = $this->lrp_slug_query->get_translated_slugs_from_original( array_values( $all_slugs ) );
 
-        $translationsArray = new TRP_String_Translation_Array( array_values( $all_slugs ), $translated_slugs, $type );
+        $translationsArray = new LRP_String_Translation_Array( array_values( $all_slugs ), $translated_slugs, $type );
         $translationsArray = $translationsArray->get_formatted_translations_array();
 
         foreach ( $translationsArray as $key => $array ){
@@ -90,7 +90,7 @@ class TRP_IN_SP_Option_Based_Strings {
             if ( !isset( $associative_all_public_slugs[$dictionary_by_original[$key]['original']] ) ) {
                 // found a previously detected slug that no longer exists
                 $dictionary_by_original[$key]['inactive'] = true;
-                $dictionary_by_original[$key]['original'] .= esc_html__('(inactive)', 'translatepress-multilingual' );
+                $dictionary_by_original[$key]['original'] .= esc_html__('(inactive)', 'linguapress' );
             }
 
             // make sure all languages have arrays, even those added later
@@ -103,7 +103,7 @@ class TRP_IN_SP_Option_Based_Strings {
                     $dictionary_by_original[$key]['translationsArray'][ $language ] = array(
                         'editedTranslation' => '',
                         'translated'        => '',
-                        'status'            => $trp_query->get_constant_not_translated(),
+                        'status'            => $lrp_query->get_constant_not_translated(),
                         'original_id'       => $dictionary_by_original[$key]['original'],
                     );
                 }
@@ -126,7 +126,7 @@ class TRP_IN_SP_Option_Based_Strings {
                     $translationsArray[ $language ] = array(
                         'editedTranslation' => '',
                         'translated'        => '',
-                        'status'            => $trp_query->get_constant_not_translated(),
+                        'status'            => $lrp_query->get_constant_not_translated(),
                         'id'                => $slug,
                     );
                 }
@@ -205,9 +205,9 @@ class TRP_IN_SP_Option_Based_Strings {
             $update_slugs = $this->editor_actions->save_slugs( $all_strings, $type );
         }
 
-        do_action( 'trp_before_based_slug_save', $type, $all_strings );
+        do_action( 'lrp_before_based_slug_save', $type, $all_strings );
 
-        echo trp_safe_json_encode( $update_slugs );//phpcs:ignore
+        echo lrp_safe_json_encode( $update_slugs );//phpcs:ignore
         wp_die();
     }
 

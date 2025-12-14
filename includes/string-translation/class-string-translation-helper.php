@@ -4,10 +4,10 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-class TRP_String_Translation_Helper {
-	/* @var TRP_Query */
-	protected $trp_query;
-	/* @var TRP_String_Translation */
+class LRP_String_Translation_Helper {
+	/* @var LRP_Query */
+	protected $lrp_query;
+	/* @var LRP_String_Translation */
 	protected $string_translation;
 	protected $settings;
 
@@ -18,7 +18,7 @@ class TRP_String_Translation_Helper {
             $handle_suffix = ( $action !== 'delete' ) ? '_' . $type : '';
 			check_ajax_referer( 'string_translation_' . $action . '_strings' . $handle_suffix, 'security' );
 
-            $map = [ 'save' => 'trp_save_translations_', 'get' => 'trp_string_translation_get_strings_', 'delete' => 'trp_string_translation_delete_' ];
+            $map = [ 'save' => 'lrp_save_translations_', 'get' => 'lrp_string_translation_get_strings_', 'delete' => 'lrp_string_translation_delete_' ];
 			if ( isset( $_POST['action'] ) && $_POST['action'] === $map[ $action ] . $type ) {
 				return true;
 			}
@@ -27,16 +27,16 @@ class TRP_String_Translation_Helper {
 	}
 
 	public function get_sanitized_query_args( $string_type ) {
-		$trp = TRP_Translate_Press::get_trp_instance();
+		$lrp = LRP_Lingua_Press::get_lrp_instance();
 		if ( ! $this->string_translation ) {
-			$this->string_translation = $trp->get_component( 'string_translation' );
+			$this->string_translation = $lrp->get_component( 'string_translation' );
 		}
-		if ( ! $this->trp_query ) {
-			$this->trp_query = $trp->get_component( 'query' );
+		if ( ! $this->lrp_query ) {
+			$this->lrp_query = $lrp->get_component( 'query' );
 		}
 		if ( ! $this->settings ) {
-			$trp_settings   = $trp->get_component( 'settings' );
-			$this->settings = $trp_settings->get_settings();
+			$lrp_settings   = $lrp->get_component( 'settings' );
+			$this->settings = $lrp_settings->get_settings();
 		}
 		$query_args   = array();
 		$posted_query = ( empty( $_POST['query'] ) ) ? array() : json_decode( stripslashes( $_POST['query'] ), true ); /* phpcs:ignore */ /* sanitized below */
@@ -47,7 +47,7 @@ class TRP_String_Translation_Helper {
 		foreach ( $translation_status_filters['translation_status'] as $translation_status_key => $value ) {
 			if ( ! empty( $posted_query[ $translation_status_key ] ) && ( $posted_query[ $translation_status_key ] === true || $posted_query[ $translation_status_key ] === 'true' ) ) {
 				$constant_func_name     = 'get_constant_' . $translation_status_key;
-				$query_args['status'][] = $this->trp_query->$constant_func_name();
+				$query_args['status'][] = $this->lrp_query->$constant_func_name();
 			}
 		}
 		if ( count( $query_args['status'] ) === 3 ) {
@@ -87,7 +87,7 @@ class TRP_String_Translation_Helper {
 		}
 
 
-		return apply_filters( 'trp_sanitized_query_args', $query_args, $string_type, $string_types );
+		return apply_filters( 'lrp_sanitized_query_args', $query_args, $string_type, $string_types );
 	}
 
 
@@ -160,11 +160,11 @@ class TRP_String_Translation_Helper {
 
         global $wpdb;
 
-        $trp                = TRP_Translate_Press::get_trp_instance();
-		$string_translation = $trp->get_component( 'string_translation' );
-		$trp_query          = $trp->get_component( 'query' );
-		$trp_settings       = $trp->get_component( 'settings' );
-		$settings           = $trp_settings->get_settings();
+        $lrp                = LRP_Lingua_Press::get_lrp_instance();
+		$string_translation = $lrp->get_component( 'string_translation' );
+		$lrp_query          = $lrp->get_component( 'query' );
+		$lrp_settings       = $lrp->get_component( 'settings' );
+		$settings           = $lrp_settings->get_settings();
 		$config             = $string_translation->get_configuration_options();
 		$sanitized_args     = $this->get_sanitized_query_args( $type );
 		$where_clauses      = array();
@@ -203,7 +203,7 @@ class TRP_String_Translation_Helper {
 
 			// joining translation tables is needed only when we have filter for translation status or for translation block type
 			foreach ( $translation_languages as $language ) {
-				$query .= $this->get_join_language_table_sql( sanitize_text_field( $trp_query->$get_table_name_func( $language ) ), esc_sql( sanitize_text_field( $language ) ) );
+				$query .= $this->get_join_language_table_sql( sanitize_text_field( $lrp_query->$get_table_name_func( $language ) ), esc_sql( sanitize_text_field( $language ) ) );
 			}
 
 			// translation status and block type
@@ -212,12 +212,12 @@ class TRP_String_Translation_Helper {
 		}
 
 		// original_meta table only needed when filter by type is set
-		if ( ! empty( $sanitized_args['type'] ) && $sanitized_args['type'] !== 'trp_default' ) {
+		if ( ! empty( $sanitized_args['type'] ) && $sanitized_args['type'] !== 'lrp_default' ) {
 			$query .= $this->get_join_meta_table_sql( $original_meta_table );
 		}
 
 		// Filter by type ( email )
-		if ( ! empty( $sanitized_args['type'] ) && $sanitized_args['type'] !== 'trp_default' ) {
+		if ( ! empty( $sanitized_args['type'] ) && $sanitized_args['type'] !== 'lrp_default' ) {
 			if ( $sanitized_args['type'] === 'email' ) {
 				$where_clauses[] = "original_meta.meta_key='in_email' and original_meta.meta_value = 'yes' ";
 			}
@@ -233,7 +233,7 @@ class TRP_String_Translation_Helper {
             ];
 
             foreach ( $translation_languages as $language ){
-                $table = $trp_query->$get_table_name_func( $language );
+                $table = $lrp_query->$get_table_name_func( $language );
 
                 $search['queries'][$language] = $results_query . "FROM `" . sanitize_text_field( $original_table ) . "` AS original_strings " .
                                                                  "LEFT JOIN $table AS $language ON $language.original_id = original_strings.id ";
@@ -314,10 +314,10 @@ class TRP_String_Translation_Helper {
 	}
 
     public function get_original_ids_from_post_request() {
-        $trp = TRP_Translate_Press::get_trp_instance();
+        $lrp = LRP_Lingua_Press::get_lrp_instance();
         if ( !$this->settings ) {
-            $trp_settings   = $trp->get_component( 'settings' );
-            $this->settings = $trp_settings->get_settings();
+            $lrp_settings   = $lrp->get_component( 'settings' );
+            $this->settings = $lrp_settings->get_settings();
         }
 
         $all_strings = json_decode( stripslashes( $_POST['strings'] ), true ); //phpcs:ignore

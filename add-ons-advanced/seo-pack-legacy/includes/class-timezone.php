@@ -3,10 +3,10 @@
  * Date format class
  *
  * @since      1.1.3
- * @author     TranslatePress
+ * @author     LinguaPress
  */
 
-namespace TranslatePress\IN_Seo;
+namespace LinguaPress\IN_Seo;
 
 use DateTime;
 use Exception;

@@ -1,19 +1,19 @@
 jQuery( function(){
 
     //disable enter on search input
-    jQuery('#trp-add-ons-search-input').on('keypress', function(event) {
+    jQuery('#lrp-add-ons-search-input').on('keypress', function(event) {
         if (event.keyCode == 13) {
             event.preventDefault();
         }
     });
 
-    jQuery('#trp-add-ons-search-input').on( 'keyup', function(e){
+    jQuery('#lrp-add-ons-search-input').on( 'keyup', function(e){
 
         var search = jQuery(this).val().toUpperCase();
 
         //hide individual add-ons
         jQuery('tbody tr').each( function(){
-            addonName = jQuery( '.trp-add-ons-name', jQuery(this) ).text();
+            addonName = jQuery( '.lrp-add-ons-name', jQuery(this) ).text();
             if (addonName.toUpperCase().indexOf(search) > -1) {
                 jQuery(this).show();
             } else {
@@ -32,20 +32,20 @@ jQuery( function(){
             });
 
             if( hideTable )
-                jQuery( this ).closest( '.trp-add-ons-section' ).hide();
+                jQuery( this ).closest( '.lrp-add-ons-section' ).hide();
             else
-                jQuery( this ).closest( '.trp-add-ons-section' ).show();
+                jQuery( this ).closest( '.lrp-add-ons-section' ).show();
 
         })
     } );
 
     //disabled buttons prevent click
-    jQuery( '.trp-add-ons-section .button[disabled]' ).on( 'click', function(e){
+    jQuery( '.lrp-add-ons-section .button[disabled]' ).on( 'click', function(e){
         e.preventDefault();
 
         //add a tooltip
-        pointer_content = '<h3>'+ trp_add_ons_pointer.tooltip_header +'</h3>';
-        pointer_content += '<p>'+ trp_add_ons_pointer.tooltip_content +'</p>';
+        pointer_content = '<h3>'+ lrp_add_ons_pointer.tooltip_header +'</h3>';
+        pointer_content += '<p>'+ lrp_add_ons_pointer.tooltip_content +'</p>';
 
         jQuery( this ).pointer({
             content: pointer_content,

@@ -5,11 +5,11 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-if( !class_exists('TRP_String_Translation_API_Post_Type_Base_Slug') ) {
-    class TRP_String_Translation_API_Post_Type_Base_Slug
+if( !class_exists('LRP_String_Translation_API_Post_Type_Base_Slug') ) {
+    class LRP_String_Translation_API_Post_Type_Base_Slug
     {
         protected $type = 'post-type-base';
-        protected $option_name = 'trp_post_type_base_slug_translation';
+        protected $option_name = 'lrp_post_type_base_slug_translation';
         protected $config;
         protected $helper;
         protected $option_based_strings;
@@ -18,8 +18,8 @@ if( !class_exists('TRP_String_Translation_API_Post_Type_Base_Slug') ) {
         public function __construct($settings)
         {
             $this->settings = $settings;
-            $this->helper = new TRP_String_Translation_Helper();
-            $this->option_based_strings = new TRP_IN_SP_Option_Based_Strings();
+            $this->helper = new LRP_String_Translation_Helper();
+            $this->option_based_strings = new LRP_IN_SP_Option_Based_Strings();
         }
 
         public function get_strings()
@@ -30,7 +30,7 @@ if( !class_exists('TRP_String_Translation_API_Post_Type_Base_Slug') ) {
 
             $return = $this->option_based_strings->get_strings_for_option_based_slug($this->type, $this->option_name, $all_slugs);
 
-            echo trp_safe_json_encode($return);//phpcs:ignore
+            echo lrp_safe_json_encode($return);//phpcs:ignore
             wp_die();
         }
 
@@ -63,10 +63,10 @@ if( !class_exists('TRP_String_Translation_API_Post_Type_Base_Slug') ) {
         public function delete_strings() {
             $this->helper->check_ajax( $this->type, 'delete' );
             $original_ids  = $this->helper->get_original_ids_from_post_request();
-            $slug_query    = new TRP_Slug_Query();
+            $slug_query    = new LRP_Slug_Query();
             $items_deleted = $slug_query->delete_slugs_with_original_ids( $original_ids );
 
-            echo trp_safe_json_encode( $items_deleted );//phpcs:ignore
+            echo lrp_safe_json_encode( $items_deleted );//phpcs:ignore
             wp_die();
 
         }

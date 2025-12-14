@@ -5,23 +5,23 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 /**
- * Class TRP_Gettext_Manager
+ * Class LRP_Gettext_Manager
  *
  * Handles 'gettext' hook, replaces default with translation
  */
-class TRP_Process_Gettext {
+class LRP_Process_Gettext {
     protected $settings;
-    /** @var TRP_Query */
-    protected $trp_query;
+    /** @var LRP_Query */
+    protected $lrp_query;
     protected $machine_translator;
-    protected $trp_languages;
+    protected $lrp_languages;
     protected $gettext_manager;
     protected $plural_forms;
     protected $machine_translation_codes;
     protected $skip_gettext_querying;
 
     /**
-     * TRP_Gettext_Manager constructor.
+     * LRP_Gettext_Manager constructor.
      *
      * @param array $settings Settings option.
      */
@@ -39,15 +39,15 @@ class TRP_Process_Gettext {
      * @param $domain
      * @return string
      */
-    public function process_gettext_strings( $translation, $text, $domain, $context = 'trp_context', $number_of_items = null, $original_plural = null ) {
-        global $trp_wpdb_prefix, $wpdb;
-        if ( $trp_wpdb_prefix != $wpdb->get_blog_prefix() ){
+    public function process_gettext_strings( $translation, $text, $domain, $context = 'lrp_context', $number_of_items = null, $original_plural = null ) {
+        global $lrp_wpdb_prefix, $wpdb;
+        if ( $lrp_wpdb_prefix != $wpdb->get_blog_prefix() ){
             return $translation;
         }
 
         // if we have nested gettexts strip previous ones, and consider only the outermost
-        $text        = TRP_Gettext_Manager::strip_gettext_tags( $text );
-        $translation = TRP_Gettext_Manager::strip_gettext_tags( $translation );
+        $text        = LRP_Gettext_Manager::strip_gettext_tags( $text );
+        $translation = LRP_Gettext_Manager::strip_gettext_tags( $translation );
 
         //try here to exclude some strings that do not require translation
         $excluded_gettext_strings = array( '', ' ', '&hellip;', '&nbsp;', '&raquo;' );
@@ -56,24 +56,24 @@ class TRP_Process_Gettext {
         if ( in_array( trim( $text, $trim_filter ), $excluded_gettext_strings ) || empty( $text ) )
             return $translation;
 
-        global $TRP_LANGUAGE;
+        global $LRP_LANGUAGE;
 
-        if ( ( isset( $_REQUEST['trp-edit-translation'] ) && $_REQUEST['trp-edit-translation'] == 'true' ) || $domain == 'translatepress-multilingual' )
+        if ( ( isset( $_REQUEST['lrp-edit-translation'] ) && $_REQUEST['lrp-edit-translation'] == 'true' ) || $domain == 'linguapress' )
             return $translation;
 
         /* for our own actions don't do nothing */
-        if (isset($_REQUEST['action']) && strpos( sanitize_text_field( $_REQUEST['action'] ), 'trp_') === 0)
+        if (isset($_REQUEST['action']) && strpos( sanitize_text_field( $_REQUEST['action'] ), 'lrp_') === 0)
             return $translation;
 
         if( $this->skip_gettext_querying === null ) {
             // apply filters takes time. Only do this once. Parameters $translation, $text, $domain are irrelevant but can't be removed due to backwards compatibility
-            // Use trp_skip_gettext_processing hook for not adding wrappings.
-            $this->skip_gettext_querying = apply_filters( 'trp_skip_gettext_querying', false, $translation, $text, $domain );
+            // Use lrp_skip_gettext_processing hook for not adding wrappings.
+            $this->skip_gettext_querying = apply_filters( 'lrp_skip_gettext_querying', false, $translation, $text, $domain );
         }
         /* get_locale() returns WP Settings Language (WPLANG). It might not be a language in TP so it may not have a TP table. */
         $current_locale = get_locale();
-        global $trp_translated_gettext_texts_language;
-        if ( !$this->skip_gettext_querying && ( !in_array( $current_locale, $this->settings['translation-languages'] ) || empty( $trp_translated_gettext_texts_language ) || $trp_translated_gettext_texts_language !== $current_locale ) ) {
+        global $lrp_translated_gettext_texts_language;
+        if ( !$this->skip_gettext_querying && ( !in_array( $current_locale, $this->settings['translation-languages'] ) || empty( $lrp_translated_gettext_texts_language ) || $lrp_translated_gettext_texts_language !== $current_locale ) ) {
             return $translation;
         }
 
@@ -84,18 +84,18 @@ class TRP_Process_Gettext {
         if ( isset( $tp_last_gettext_processed[ $context . '::' . $plural_form . '::' . $text . '::' . $domain ] ) )
             return $tp_last_gettext_processed[ $context . '::' . $plural_form . '::' . $text . '::' . $domain ];
 
-        if ( apply_filters( 'trp_skip_gettext_processing', false, $translation, $text, $domain ) )
+        if ( apply_filters( 'lrp_skip_gettext_processing', false, $translation, $text, $domain ) )
             return $translation;
 
         //use a global for is_ajax_on_frontend() so we don't execute it multiple times
         global $tp_gettext_is_ajax_on_frontend;
         if ( !isset( $tp_gettext_is_ajax_on_frontend ) )
-            $tp_gettext_is_ajax_on_frontend = TRP_Gettext_Manager::is_ajax_on_frontend();
+            $tp_gettext_is_ajax_on_frontend = LRP_Gettext_Manager::is_ajax_on_frontend();
 
         if ( !defined( 'DOING_AJAX' ) || $tp_gettext_is_ajax_on_frontend ) {
-            $trp             = TRP_Translate_Press::get_trp_instance();
+            $lrp             = LRP_Lingua_Press::get_lrp_instance();
             if ( !$this->gettext_manager ) {
-                $this->gettext_manager = $trp->get_component( 'gettext_manager' );
+                $this->gettext_manager = $lrp->get_component( 'gettext_manager' );
             }
             if ( !$this->gettext_manager->is_domain_loaded_in_locale( $domain, $current_locale ) ) {
                 $translation = $text;
@@ -103,37 +103,37 @@ class TRP_Process_Gettext {
 
             $db_id                 = '';
             if ( !$this->skip_gettext_querying ) {
-                global $trp_translated_gettext_texts, $trp_all_gettext_texts;
+                global $lrp_translated_gettext_texts, $lrp_all_gettext_texts;
 
                 $found_in_db = false;
 
-                /* initiate trp query object */
-                if (!$this->trp_query) {
-                    $trp = TRP_Translate_Press::get_trp_instance();
-                    $this->trp_query = $trp->get_component('query');
+                /* initiate lrp query object */
+                if (!$this->lrp_query) {
+                    $lrp = LRP_Lingua_Press::get_lrp_instance();
+                    $this->lrp_query = $lrp->get_component('query');
                 }
 
-                if ( !isset( $trp_all_gettext_texts ) ) {
-                    $trp_all_gettext_texts = array();
+                if ( !isset( $lrp_all_gettext_texts ) ) {
+                    $lrp_all_gettext_texts = array();
                 }
 
-                if ( !empty( $trp_translated_gettext_texts ) ) {
-                    if ( isset( $trp_translated_gettext_texts[ $context . '::' . $plural_form . '::' . $domain . '::' . $text ] ) ) {
-                        $trp_translated_gettext_text = $trp_translated_gettext_texts[ $context . '::' . $plural_form  . '::' . $domain . '::' . $text ];
+                if ( !empty( $lrp_translated_gettext_texts ) ) {
+                    if ( isset( $lrp_translated_gettext_texts[ $context . '::' . $plural_form . '::' . $domain . '::' . $text ] ) ) {
+                        $lrp_translated_gettext_text = $lrp_translated_gettext_texts[ $context . '::' . $plural_form  . '::' . $domain . '::' . $text ];
 
-                        if (!empty($trp_translated_gettext_text['translated']) && $translation != $trp_translated_gettext_text['translated'] && $this->is_sprintf_compatible( $trp_translated_gettext_text['translated'] ) ) {
-                            $translation = str_replace(trim($text), trp_sanitize_string($trp_translated_gettext_text['translated']), $text);
+                        if (!empty($lrp_translated_gettext_text['translated']) && $translation != $lrp_translated_gettext_text['translated'] && $this->is_sprintf_compatible( $lrp_translated_gettext_text['translated'] ) ) {
+                            $translation = str_replace(trim($text), lrp_sanitize_string($lrp_translated_gettext_text['translated']), $text);
                         }
-                        $db_id       = $trp_translated_gettext_text['id'];
+                        $db_id       = $lrp_translated_gettext_text['id'];
                         $found_in_db = true;
                         // update the db if a translation appeared in the po file later
-                        if ( empty( $trp_translated_gettext_text['translated'] ) && $translation != $text && $translation != $original_plural ) {
-                            $gettext_insert_update = $this->trp_query->get_query_component('gettext_insert_update');
+                        if ( empty( $lrp_translated_gettext_text['translated'] ) && $translation != $text && $translation != $original_plural ) {
+                            $gettext_insert_update = $this->lrp_query->get_query_component('gettext_insert_update');
                             $gettext_insert_update->update_gettext_strings( array(
                                 array(
                                     'id'          => $db_id,
                                     'translated'  => $translation,
-                                    'status'      => $this->trp_query->get_constant_human_reviewed(),
+                                    'status'      => $this->lrp_query->get_constant_human_reviewed(),
                                 )
                             ), $current_locale, array('id', 'translated', 'status') );
                         }
@@ -148,18 +148,18 @@ class TRP_Process_Gettext {
                         'context'     => $context,
                         'plural_form' => $plural_form
 
-                    ), $trp_all_gettext_texts )
+                    ), $lrp_all_gettext_texts )
                     ) {
                         $translation = $this->maybe_get_older_version_translation($translation, $text, $domain, $context , $original_plural, $plural_form );
 
-                        $trp_all_gettext_texts[] = array(
+                        $lrp_all_gettext_texts[] = array(
                             'original'    => $text,
                             'translated'  => $translation,
                             'domain'      => $domain,
                             'context'     => $context,
                             'plural_form' => $plural_form
                         );
-                        $gettext_insert_update = $this->trp_query->get_query_component('gettext_insert_update');
+                        $gettext_insert_update = $this->lrp_query->get_query_component('gettext_insert_update');
                         $db_id = $gettext_insert_update->insert_gettext_strings( array(
                             array(
 	                            'original'        => $text,
@@ -171,7 +171,7 @@ class TRP_Process_Gettext {
                             )
                         ), $current_locale );
                         /* insert it in the global of translated because now it is in the database */
-                        $trp_translated_gettext_texts[ $context . '::' . $plural_form . '::' . $domain . '::' . $text ] = array(
+                        $lrp_translated_gettext_texts[ $context . '::' . $plural_form . '::' . $domain . '::' . $text ] = array(
                             'id'          => $db_id,
                             'original'    => $text,
                             'translated'  => ( $translation != $text && $translation != $original_plural ) ? $translation : '',
@@ -182,29 +182,29 @@ class TRP_Process_Gettext {
                     }
                 }
 
-                $trp = TRP_Translate_Press::get_trp_instance();
+                $lrp = LRP_Lingua_Press::get_lrp_instance();
                 if ( !$this->machine_translator ) {
-                    $this->machine_translator = $trp->get_component( 'machine_translator' );
+                    $this->machine_translator = $lrp->get_component( 'machine_translator' );
                 }
-                if ( !$this->trp_languages ) {
-                    $this->trp_languages = $trp->get_component( 'languages' );
+                if ( !$this->lrp_languages ) {
+                    $this->lrp_languages = $lrp->get_component( 'languages' );
                 }
                 if ( !$this->machine_translation_codes ) {
-                    $this->machine_translation_codes = $this->trp_languages->get_iso_codes( $this->settings['translation-languages'] );
+                    $this->machine_translation_codes = $this->lrp_languages->get_iso_codes( $this->settings['translation-languages'] );
                 }
                 /* We assume Gettext strings are in English so don't automatically translate into English */
-                if ( $this->machine_translation_codes[ $TRP_LANGUAGE ] != 'en' && $this->machine_translator->is_available( array( $TRP_LANGUAGE ) ) ) {
-                    global $trp_gettext_strings_for_machine_translation;
+                if ( $this->machine_translation_codes[ $LRP_LANGUAGE ] != 'en' && $this->machine_translator->is_available( array( $LRP_LANGUAGE ) ) ) {
+                    global $lrp_gettext_strings_for_machine_translation;
                     if ( $text == $translation || $original_plural == $translation ) {
-                        foreach ( $trp_translated_gettext_texts as $trp_translated_gettext_text ) {
-                            if ( $trp_translated_gettext_text['id'] == $db_id ) {
-                                if ( $trp_translated_gettext_text['translated'] == '' && !isset( $trp_gettext_strings_for_machine_translation[ $db_id ] ) ) {
-                                    $trp_gettext_strings_for_machine_translation[ $db_id ] = array(
+                        foreach ( $lrp_translated_gettext_texts as $lrp_translated_gettext_text ) {
+                            if ( $lrp_translated_gettext_text['id'] == $db_id ) {
+                                if ( $lrp_translated_gettext_text['translated'] == '' && !isset( $lrp_gettext_strings_for_machine_translation[ $db_id ] ) ) {
+                                    $lrp_gettext_strings_for_machine_translation[ $db_id ] = array(
                                         'id'         => $db_id,
                                         'original'   => $text,
                                         'translated' => '',
                                         'domain'     => $domain,
-                                        'status'     => $this->trp_query->get_constant_machine_translated(),
+                                        'status'     => $this->lrp_query->get_constant_machine_translated(),
                                         'context'     => $context,
                                         'plural_form' => $plural_form,
                                         'original_plural' => $original_plural
@@ -217,7 +217,7 @@ class TRP_Process_Gettext {
                 }
             }
 
-            $blacklist_functions = apply_filters( 'trp_gettext_blacklist_functions', array(
+            $blacklist_functions = apply_filters( 'lrp_gettext_blacklist_functions', array(
                 'wp_enqueue_script',
                 'wp_enqueue_scripts',
                 'wp_editor',
@@ -257,9 +257,9 @@ class TRP_Process_Gettext {
                 }
             }
             unset( $callstack_functions );//maybe free up some memory
-            global $trp_output_buffer_started;
-            if ( did_action( 'init' ) && isset( $trp_output_buffer_started ) && $trp_output_buffer_started ) {//check here for our global $trp_output_buffer_started, don't wrap the gettexts if they are not processed by our cleanup callbacks for the buffers
-                if ( ( !empty( $TRP_LANGUAGE ) && $this->settings["default-language"] != $TRP_LANGUAGE ) || ( isset( $_REQUEST['trp-edit-translation'] ) && $_REQUEST['trp-edit-translation'] == 'preview' ) ) {
+            global $lrp_output_buffer_started;
+            if ( did_action( 'init' ) && isset( $lrp_output_buffer_started ) && $lrp_output_buffer_started ) {//check here for our global $lrp_output_buffer_started, don't wrap the gettexts if they are not processed by our cleanup callbacks for the buffers
+                if ( ( !empty( $LRP_LANGUAGE ) && $this->settings["default-language"] != $LRP_LANGUAGE ) || ( isset( $_REQUEST['lrp-edit-translation'] ) && $_REQUEST['lrp-edit-translation'] == 'preview' ) ) {
                     //add special start and end tags so that it does not influence html in any way. we will replace them with < and > at the start of the translate function
 	                /**
 	                 * Compatibility with Woocomerce Payments
@@ -270,7 +270,7 @@ class TRP_Process_Gettext {
 	                 */
 
 	                if ( ($text != 'Name: %1$s, Username: %2$s' && $text != 'Name: %1$s, Guest' && $domain == 'woocommerce-payments') || $domain != 'woocommerce-payments') {
-		                $translation = apply_filters( 'trp_process_gettext_tags', '#!trpst#trp-gettext data-trpgettextoriginal=' . $db_id . '#!trpen#' . $translation . '#!trpst#/trp-gettext#!trpen#', $translation, $this->skip_gettext_querying, $text, $domain );
+		                $translation = apply_filters( 'lrp_process_gettext_tags', '#!lrpst#lrp-gettext data-lrpgettextoriginal=' . $db_id . '#!lrpen#' . $translation . '#!lrpst#/lrp-gettext#!lrpen#', $translation, $this->skip_gettext_querying, $text, $domain );
 	                }
                 }
             }
@@ -326,7 +326,7 @@ class TRP_Process_Gettext {
      * @return string
      */
     public function process_ngettext_strings( $translation, $single, $plural, $number, $domain ) {
-        $translation = $this->process_gettext_strings( $translation, $single, $domain, 'trp_context', $number, $plural );
+        $translation = $this->process_gettext_strings( $translation, $single, $domain, 'lrp_context', $number, $plural );
         return $translation;
     }
 
@@ -405,19 +405,19 @@ class TRP_Process_Gettext {
 	 */
     public function maybe_get_older_version_translation($translation, $text, $domain, $context , $original_plural, $plural_form){
 
-        global $trp_translated_gettext_texts;
-        if ( $context == 'trp_context' && $original_plural === null ){
+        global $lrp_translated_gettext_texts;
+        if ( $context == 'lrp_context' && $original_plural === null ){
             return $translation;
         }
         if ( $original_plural !== null && $plural_form != 0 ){
             $text = $original_plural;
         }
 
-        if ( isset( $trp_translated_gettext_texts[ 'trp_context' . '::' . 0 . '::' . $domain . '::' . $text ] ) &&
-            !empty($trp_translated_gettext_texts[ 'trp_context' . '::' . 0 . '::' . $domain . '::' . $text ]['translated']) &&
-            $this->is_sprintf_compatible( $trp_translated_gettext_texts[ 'trp_context' . '::' . 0 . '::' . $domain . '::' . $text ]['translated'] )
+        if ( isset( $lrp_translated_gettext_texts[ 'lrp_context' . '::' . 0 . '::' . $domain . '::' . $text ] ) &&
+            !empty($lrp_translated_gettext_texts[ 'lrp_context' . '::' . 0 . '::' . $domain . '::' . $text ]['translated']) &&
+            $this->is_sprintf_compatible( $lrp_translated_gettext_texts[ 'lrp_context' . '::' . 0 . '::' . $domain . '::' . $text ]['translated'] )
         ){
-            $translation = str_replace(trim($text), trp_sanitize_string($trp_translated_gettext_texts[ 'trp_context' . '::' . 0 . '::' . $domain . '::' . $text ]['translated']), $text);
+            $translation = str_replace(trim($text), lrp_sanitize_string($lrp_translated_gettext_texts[ 'lrp_context' . '::' . 0 . '::' . $domain . '::' . $text ]['translated']), $text);
         }
 
         return $translation;
@@ -425,7 +425,7 @@ class TRP_Process_Gettext {
 
     public function is_sprintf_compatible($string){
 
-        if (! apply_filters('trp_check_sprintf_compatibility', true ) ){
+        if (! apply_filters('lrp_check_sprintf_compatibility', true ) ){
             return true;
         }
         // 200 arguments should be enough. If a string has more than 200 placeholders then it might cause "Warning: sprintf(): Too few arguments" on certain php versions

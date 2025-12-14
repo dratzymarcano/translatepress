@@ -1,6 +1,6 @@
 <?php
 /*
-TranslatePress - Browse as other role Add-on
+LinguaPress - Browse as other role Add-on
 License: GPL2
 
 == Copyright ==
@@ -25,13 +25,13 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 
-function trp_in_bor_run(){
+function lrp_in_bor_run(){
 
 	
     require_once plugin_dir_path( __FILE__ ) . 'class-browse-as-other-role.php';
-    if ( class_exists( 'TRP_Translate_Press' ) ) {
-        new TRP_IN_Browse_as_other_Role();
+    if ( class_exists( 'LRP_Lingua_Press' ) ) {
+        new LRP_IN_Browse_as_other_Role();
     }
 	
 }
-add_action( 'plugins_loaded', 'trp_in_bor_run', 0 );
+add_action( 'plugins_loaded', 'lrp_in_bor_run', 0 );

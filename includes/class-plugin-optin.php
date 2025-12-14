@@ -4,23 +4,23 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-class TRP_Plugin_Optin {
+class LRP_Plugin_Optin {
 
     public static $user_name = '';
-    public static $api_url   = 'https://translatepress.com/wp-json/trp-api/';
+    public static $api_url   = 'https://linguapress.com/wp-json/lrp-api/';
     public static $stats_url = 'https://usagetracker.cozmoslabs.com/update';
     public static $plugin_optin_status = '';
     public static $plugin_optin_email  = '';
 
-    public static $plugin_option_key       = 'trp_plugin_optin';
-    public static $plugin_option_email_key = 'trp_plugin_optin_email';
+    public static $plugin_option_key       = 'lrp_plugin_optin';
+    public static $plugin_option_email_key = 'lrp_plugin_optin_email';
 
     public function __construct(){
 
-        if ( !wp_next_scheduled( 'trp_plugin_optin_sync' ) )
-            wp_schedule_event( time(), 'weekly', 'trp_plugin_optin_sync' );
+        if ( !wp_next_scheduled( 'lrp_plugin_optin_sync' ) )
+            wp_schedule_event( time(), 'weekly', 'lrp_plugin_optin_sync' );
 
-        add_action( 'trp_plugin_optin_sync', array( 'TRP_Plugin_Optin', 'sync_data' ) );
+        add_action( 'lrp_plugin_optin_sync', array( 'LRP_Plugin_Optin', 'sync_data' ) );
         
         self::$plugin_optin_status = get_option( self::$plugin_option_key, false );
         self::$plugin_optin_email  = get_option( self::$plugin_option_email_key, false );
@@ -36,47 +36,47 @@ class TRP_Plugin_Optin {
             return;
         
         // Default/in-plugin tabs will be hardcoded, but anything that is added through hooks will be automatically filled
-        $trp_settings_pages = apply_filters( 'trp_settings_tabs', array() );
+        $lrp_settings_pages = apply_filters( 'lrp_settings_tabs', array() );
 
-        if( !empty( $trp_settings_pages ) ){
+        if( !empty( $lrp_settings_pages ) ){
             $pages = array();
 
-            foreach( $trp_settings_pages as $page ) {
+            foreach( $lrp_settings_pages as $page ) {
                 $pages[] = $page['page'];
             }
 
-            $trp_settings_pages = $pages;
+            $lrp_settings_pages = $pages;
         }
 
-        $trp_settings_pages[] = 'translate-press';
-        $trp_settings_pages[] = 'trp_addons_page';
-        $trp_settings_pages[] = 'trp_license_key';
+        $lrp_settings_pages[] = 'lingua-press';
+        $lrp_settings_pages[] = 'lrp_addons_page';
+        $lrp_settings_pages[] = 'lrp_license_key';
 
-        if( !in_array( $_GET['page'], $trp_settings_pages ) )
+        if( !in_array( $_GET['page'], $lrp_settings_pages ) )
             return;
 
-        wp_safe_redirect( admin_url( 'admin.php?page=trp_optin_page' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=lrp_optin_page' ) );
         exit();
 
     }
 
     public function add_submenu_page_optin() {
-        add_submenu_page( 'TRPHidden', 'TranslatePress Optin', 'TRPHidden', apply_filters( 'trp_settings_capability', 'manage_options' ), 'trp_optin_page', array(
+        add_submenu_page( 'LRPHidden', 'LinguaPress Optin', 'LRPHidden', apply_filters( 'lrp_settings_capability', 'manage_options' ), 'lrp_optin_page', array(
             $this,
             'optin_page_content'
         ) );
 	}
 
     public function optin_page_content(){
-        require_once TRP_PLUGIN_DIR . 'partials/plugin-optin-page.php';
+        require_once LRP_PLUGIN_DIR . 'partials/plugin-optin-page.php';
     }
 
     public function process_optin_actions(){
 
-        if( !isset( $_GET['page'] ) || $_GET['page'] != 'trp_optin_page' || !isset( $_GET['_wpnonce'] ) )
+        if( !isset( $_GET['page'] ) || $_GET['page'] != 'lrp_optin_page' || !isset( $_GET['_wpnonce'] ) )
             return;
 
-        if( wp_verify_nonce( sanitize_text_field( $_GET['_wpnonce'] ), 'trp_enable_plugin_optin' ) ){
+        if( wp_verify_nonce( sanitize_text_field( $_GET['_wpnonce'] ), 'lrp_enable_plugin_optin' ) ){
 
             $args = array(
                 'method' => 'POST',
@@ -87,17 +87,17 @@ class TRP_Plugin_Optin {
                 ),
             );
 
-            $trp_settings = get_option( 'trp_settings', false );
+            $lrp_settings = get_option( 'lrp_settings', false );
 
-            if( !empty( $trp_settings ) && count( $trp_settings['translation-languages'] ) > 1 ){
+            if( !empty( $lrp_settings ) && count( $lrp_settings['translation-languages'] ) > 1 ){
                     
-                $multiple_languages = isset( $trp_settings['translation-languages'] ) && ( $trp_settings['translation-languages'] ) > 1 ? true : false;
+                $multiple_languages = isset( $lrp_settings['translation-languages'] ) && ( $lrp_settings['translation-languages'] ) > 1 ? true : false;
                 
                 // also check if custom translation tables are present
                 $translation_tables = false;
 
                 global $wpdb;
-                $dictionary_table_name = $wpdb->prefix . 'trp_dictionary_' . strtolower( $trp_settings['default-language'] ) . '_'. strtolower( $trp_settings['translation-languages'][1] );
+                $dictionary_table_name = $wpdb->prefix . 'lrp_dictionary_' . strtolower( $lrp_settings['default-language'] ) . '_'. strtolower( $lrp_settings['translation-languages'][1] );
 
                 if( $wpdb->get_var( "SHOW TABLES LIKE '$dictionary_table_name'" ) == $dictionary_table_name || (int)$wpdb->get_var( "SELECT COUNT(id) FROM $dictionary_table_name WHERE translated != ''" ) > 25 )
                     $translation_tables = true;
@@ -111,34 +111,34 @@ class TRP_Plugin_Optin {
             update_option( self::$plugin_option_key, 'yes' );
             update_option( self::$plugin_option_email_key, get_option( 'admin_email' ) );
 
-            $settings = get_option( 'trp_advanced_settings', array() );
+            $settings = get_option( 'lrp_advanced_settings', array() );
 
             if( empty( $settings ) )
                 $settings = array( 'plugin_optin_setting' => 'yes' );
             else
                 $settings['plugin_optin_setting'] = 'yes';
 
-            update_option( 'trp_advanced_settings', $settings );
+            update_option( 'lrp_advanced_settings', $settings );
 
-            wp_safe_redirect( admin_url( 'options-general.php?page=translate-press' ) );
+            wp_safe_redirect( admin_url( 'options-general.php?page=lingua-press' ) );
             exit;
 
         }
 
-        if( wp_verify_nonce( sanitize_text_field( $_GET['_wpnonce'] ), 'trp_disable_plugin_optin' ) ){
+        if( wp_verify_nonce( sanitize_text_field( $_GET['_wpnonce'] ), 'lrp_disable_plugin_optin' ) ){
 
             update_option( self::$plugin_option_key, 'no' );
 
-            $settings = get_option( 'trp_advanced_settings', array() );
+            $settings = get_option( 'lrp_advanced_settings', array() );
 
             if( empty( $settings ) )
                 $settings = array( 'plugin_optin_setting' => 'no' );
             else
                 $settings['plugin_optin_setting'] = 'no';
 
-            update_option( 'trp_advanced_settings', $settings );
+            update_option( 'lrp_advanced_settings', $settings );
 
-            wp_safe_redirect( admin_url( 'options-general.php?page=translate-press' ) );
+            wp_safe_redirect( admin_url( 'options-general.php?page=lingua-press' ) );
             exit;
 
         }
@@ -151,13 +151,13 @@ class TRP_Plugin_Optin {
         if( self::$plugin_optin_status !== 'yes' || self::$plugin_optin_email === false )
             return;
 
-        $target_plugins = [ 'translatepress-personal/index.php', 'translatepress-developer/index.php', 'translatepress-business/index.php' ];
+        $target_plugins = [ 'linguapress-personal/index.php', 'linguapress-developer/index.php', 'linguapress-business/index.php' ];
 
         if( !in_array( $plugin, $target_plugins ) )
             return;
 
         $version = explode( '/', $plugin );
-        $version = str_replace( 'translatepress-', '', $version[0] );
+        $version = str_replace( 'linguapress-', '', $version[0] );
 
         // Update user version tag
         $args = array(
@@ -178,7 +178,7 @@ class TRP_Plugin_Optin {
         if( self::$plugin_optin_status !== 'yes' || self::$plugin_optin_email === false )
             return;
 
-        $target_plugins = [ 'translatepress-personal/index.php', 'translatepress-developer/index.php', 'translatepress-business/index.php' ];
+        $target_plugins = [ 'linguapress-personal/index.php', 'linguapress-developer/index.php', 'linguapress-business/index.php' ];
 
         if( !in_array( $plugin, $target_plugins ) )
             return;
@@ -202,8 +202,8 @@ class TRP_Plugin_Optin {
         $settings_array[] = array(
             'name'          => 'plugin_optin_setting',
             'type'          => 'checkbox',
-            'label'         => esc_html__( 'Marketing optin', 'translatepress-multilingual' ),
-            'description'   => esc_html__( 'Opt in to our security and feature updates notifications, and non-sensitive diagnostic tracking.', 'translatepress-multilingual' ),
+            'label'         => esc_html__( 'Marketing optin', 'linguapress' ),
+            'description'   => esc_html__( 'Opt in to our security and feature updates notifications, and non-sensitive diagnostic tracking.', 'linguapress' ),
             'id'            => 'miscellaneous_options',
             'container'     => 'miscellaneous_options'
         );
@@ -291,11 +291,11 @@ class TRP_Plugin_Optin {
         if( !function_exists( 'is_plugin_active' ) )
             include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 
-        if( is_plugin_active( 'translatepress-developer/index.php' ) )
+        if( is_plugin_active( 'linguapress-developer/index.php' ) )
             return 'developer';
-        elseif( is_plugin_active( 'translatepress-business/index.php' ) )
+        elseif( is_plugin_active( 'linguapress-business/index.php' ) )
             return 'business';
-        elseif( is_plugin_active( 'translatepress-personal/index.php' ) )
+        elseif( is_plugin_active( 'linguapress-personal/index.php' ) )
             return 'personal';
 
         return 'free';
@@ -307,21 +307,21 @@ class TRP_Plugin_Optin {
         if( self::$plugin_optin_status !== 'yes' )
             return;
 
-        $trp_settings = get_option( 'trp_settings', 'not_set' );
+        $lrp_settings = get_option( 'lrp_settings', 'not_set' );
 
         $args = array(
             'method' => 'POST',
             'body'   => array(
                 'home_url'              => home_url(),
-                'product'               => 'trp',
+                'product'               => 'lrp',
                 'email'                 => self::$plugin_optin_email,
                 'name'                  => self::get_user_name(),
                 'version'               => self::get_current_active_version(),
-                'license'               => get_option('trp_license_key'),
+                'license'               => get_option('lrp_license_key'),
                 'active_plugins'        => json_encode( get_option( 'active_plugins', array() ) ),
                 'wp_version'            => get_bloginfo('version'),
                 'wp_locale'             => get_locale(),
-                'plugin_version'        => defined( 'TRP_PLUGIN_VERSION' ) ? TRP_PLUGIN_VERSION : '',
+                'plugin_version'        => defined( 'LRP_PLUGIN_VERSION' ) ? LRP_PLUGIN_VERSION : '',
                 'php_version'           => defined( 'PHP_VERSION' ) ? PHP_VERSION : '',
             ),
         );
@@ -337,7 +337,7 @@ class TRP_Plugin_Optin {
                 $args['body'][$key] = $version_number[0] . '.' . $version_number[1];
         }
 
-        $args = apply_filters( 'cozmoslabs_plugin_optin_trp_metadata', $args );
+        $args = apply_filters( 'cozmoslabs_plugin_optin_lrp_metadata', $args );
 
         $request = wp_remote_post( self::$stats_url, $args );
 
@@ -459,34 +459,34 @@ if( !class_exists( 'Cozmoslabs_Plugin_Optin_Metadata_Builder' ) ) {
     }
 }
 
-class Cozmoslabs_Plugin_Optin_Metadata_Builder_TRP extends Cozmoslabs_Plugin_Optin_Metadata_Builder {
+class Cozmoslabs_Plugin_Optin_Metadata_Builder_LRP extends Cozmoslabs_Plugin_Optin_Metadata_Builder {
 
     public function __construct(){
-        $this->option_prefix = 'trp_';
+        $this->option_prefix = 'lrp_';
 
         parent::__construct();
 
         $this->blacklisted_option_slugs = [
-            'trp_ald_plugin_version',
-            'trp_db_errors',
-            'trp_db_stored_data',
-            'trp_in_sp_add_gettext_slugs',
-            'trp_license_details',
-            'trp_license_key',
-            'trp_machine_translated_characters',
-            'trp_plugin_optin',
-            'trp_plugin_optin_email',
-            'trp_plugin_version',
-            'trp_post_type_base_slug_translation',
-            'trp_seopack_version',
-            'trp_show_error_db_message',
-            'trp_show_notice_about_old_slugs_being_deleted',
-            'trp_taxonomy_slug_translation',
-            'trp_updated_database_gettext_original_id_cleanup',
-            'trp_updated_database_gettext_original_id_insert',
-            'trp_updated_database_gettext_original_id_update',
-            'trp_were_old_slug_tables_found',
-            'trp_add_ons_settings',
+            'lrp_ald_plugin_version',
+            'lrp_db_errors',
+            'lrp_db_stored_data',
+            'lrp_in_sp_add_gettext_slugs',
+            'lrp_license_details',
+            'lrp_license_key',
+            'lrp_machine_translated_characters',
+            'lrp_plugin_optin',
+            'lrp_plugin_optin_email',
+            'lrp_plugin_version',
+            'lrp_post_type_base_slug_translation',
+            'lrp_seopack_version',
+            'lrp_show_error_db_message',
+            'lrp_show_notice_about_old_slugs_being_deleted',
+            'lrp_taxonomy_slug_translation',
+            'lrp_updated_database_gettext_original_id_cleanup',
+            'lrp_updated_database_gettext_original_id_insert',
+            'lrp_updated_database_gettext_original_id_update',
+            'lrp_were_old_slug_tables_found',
+            'lrp_add_ons_settings',
         ];
 
         $this->blacklisted_option_names = [
@@ -495,8 +495,8 @@ class Cozmoslabs_Plugin_Optin_Metadata_Builder_TRP extends Cozmoslabs_Plugin_Opt
         ];
 
         $this->blacklisted_option_patterns = [
-            'trp_migrate_old_slug_to_new_parent_and_translate_slug_table',
-            'trp_woo_',
+            'lrp_migrate_old_slug_to_new_parent_and_translate_slug_table',
+            'lrp_woo_',
         ];
 
         add_action( 'cozmoslabs_plugin_optin_'. $this->option_prefix .'metadata_builder_metadata', array( $this, 'build_custom_plugin_metadata' ) );
@@ -514,7 +514,7 @@ class Cozmoslabs_Plugin_Optin_Metadata_Builder_TRP extends Cozmoslabs_Plugin_Opt
 
     public function generate_addon_settings(){
         $add_on_option_slugs = [
-            'trp_add_ons_settings',
+            'lrp_add_ons_settings',
         ];
 
         $add_ons = [];
@@ -552,27 +552,27 @@ class Cozmoslabs_Plugin_Optin_Metadata_Builder_TRP extends Cozmoslabs_Plugin_Opt
 
     public function process_settings_metadata( $settings ){
 
-        $trp                    = TRP_Translate_Press::get_trp_instance();
-        $trp_settings_component = $trp->get_component( 'settings' );
-        $trp_settings           = $trp_settings_component->get_settings();
+        $lrp                    = LRP_Lingua_Press::get_lrp_instance();
+        $lrp_settings_component = $lrp->get_component( 'settings' );
+        $lrp_settings           = $lrp_settings_component->get_settings();
 
-        if( !empty( $settings['trp_settings']['translation-languages'] ) ){
-            $settings['trp_settings']['translation-languages'] = implode( ',', $settings['trp_settings']['translation-languages'] );
+        if( !empty( $settings['lrp_settings']['translation-languages'] ) ){
+            $settings['lrp_settings']['translation-languages'] = implode( ',', $settings['lrp_settings']['translation-languages'] );
         }
 
-        if( !empty( $settings['trp_settings']['publish-languages'] ) ){
-            $settings['trp_settings']['publish-languages'] = implode( ',', $settings['trp_settings']['publish-languages'] );
+        if( !empty( $settings['lrp_settings']['publish-languages'] ) ){
+            $settings['lrp_settings']['publish-languages'] = implode( ',', $settings['lrp_settings']['publish-languages'] );
         }
 
         // In addition to Machine Translation being enabled, for the selected translation engine, verify if a license key is set. 
         // If no license key is set, consider machine translation as disabled.
-        if( !empty( $settings['trp_machine_translation_settings']['machine-translation'] ) && $settings['trp_machine_translation_settings']['machine-translation'] == 'yes' && !empty( $settings['trp_machine_translation_settings']['translation-engine'] ) ){
-            if( $settings['trp_machine_translation_settings']['translation-engine'] == 'mtapi' && empty( $trp_settings['trp_license_key'] ) ){
-                $settings['trp_machine_translation_settings']['machine-translation'] = 'no';
-            } else if( $settings['trp_machine_translation_settings']['translation-engine'] == 'google_translate_v2' && empty( $trp_settings['trp_machine_translation_settings']['google-translate-key'] ) ){
-                $settings['trp_machine_translation_settings']['machine-translation'] = 'no';
-            } else if( $settings['trp_machine_translation_settings']['translation-engine'] == 'deepl' && empty( $trp_settings['trp_machine_translation_settings']['deepl-api-key'] ) ){
-                $settings['trp_machine_translation_settings']['machine-translation'] = 'no';
+        if( !empty( $settings['lrp_machine_translation_settings']['machine-translation'] ) && $settings['lrp_machine_translation_settings']['machine-translation'] == 'yes' && !empty( $settings['lrp_machine_translation_settings']['translation-engine'] ) ){
+            if( $settings['lrp_machine_translation_settings']['translation-engine'] == 'mtapi' && empty( $lrp_settings['lrp_license_key'] ) ){
+                $settings['lrp_machine_translation_settings']['machine-translation'] = 'no';
+            } else if( $settings['lrp_machine_translation_settings']['translation-engine'] == 'google_translate_v2' && empty( $lrp_settings['lrp_machine_translation_settings']['google-translate-key'] ) ){
+                $settings['lrp_machine_translation_settings']['machine-translation'] = 'no';
+            } else if( $settings['lrp_machine_translation_settings']['translation-engine'] == 'deepl' && empty( $lrp_settings['lrp_machine_translation_settings']['deepl-api-key'] ) ){
+                $settings['lrp_machine_translation_settings']['machine-translation'] = 'no';
             }
         }
 
@@ -581,4 +581,4 @@ class Cozmoslabs_Plugin_Optin_Metadata_Builder_TRP extends Cozmoslabs_Plugin_Opt
     }
 }
 
-new Cozmoslabs_Plugin_Optin_Metadata_Builder_TRP();
+new Cozmoslabs_Plugin_Optin_Metadata_Builder_LRP();

@@ -5,12 +5,12 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 /**
- * Class TRP_Rewrite_Rules
+ * Class LRP_Rewrite_Rules
  *
  * Filters the .htaccess file to prevent language slug in URL
  *
  */
-class TRP_Rewrite_Rules{
+class LRP_Rewrite_Rules{
 
     protected $settings;
 
@@ -27,7 +27,7 @@ class TRP_Rewrite_Rules{
      *
      * @return string
      */
-    public function trp_remove_language_param( $htaccess_string ) {
+    public function lrp_remove_language_param( $htaccess_string ) {
 
         $url_slugs = $this->settings['url-slugs'];
 

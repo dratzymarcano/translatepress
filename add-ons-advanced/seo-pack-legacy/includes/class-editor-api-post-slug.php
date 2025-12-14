@@ -5,20 +5,20 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-class TRP_IN_Editor_Api_Post_Slug {
+class LRP_IN_Editor_Api_Post_Slug {
 
-	/* @var TRP_Query */
-	protected $trp_query;
-	/* @var TRP_IN_SP_Slug_Manager */
+	/* @var LRP_Query */
+	protected $lrp_query;
+	/* @var LRP_IN_SP_Slug_Manager */
 	protected $slug_manager;
-	/* @var TRP_Translation_Manager */
+	/* @var LRP_Translation_Manager */
 	protected $translation_manager;
-	/* @var TRP_Url_Converter */
+	/* @var LRP_Url_Converter */
 	protected $url_converter;
     protected $settings;
 
 	/**
-	 * TRP_Translation_Manager constructor.
+	 * LRP_Translation_Manager constructor.
 	 *
 	 * @param array $settings Settings option.
 	 */
@@ -30,17 +30,17 @@ class TRP_IN_Editor_Api_Post_Slug {
 	/**
 	 * Returns translations of slugs
 	 *
-	 * Hooked to wp_ajax_trp_get_translations_postslug
+	 * Hooked to wp_ajax_lrp_get_translations_postslug
 	 */
 	public function postslug_get_translations() {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 			check_ajax_referer( 'postslug_get_translations', 'security' );
-			if ( isset( $_POST['action'] ) && $_POST['action'] === 'trp_get_translations_postslug' && ! empty( $_POST['language'] ) && in_array( $_POST['language'], $this->settings['translation-languages'] ) ) {
+			if ( isset( $_POST['action'] ) && $_POST['action'] === 'lrp_get_translations_postslug' && ! empty( $_POST['language'] ) && in_array( $_POST['language'], $this->settings['translation-languages'] ) ) {
 				$ids = (empty($_POST['string_ids']) )? array() : json_decode(stripslashes($_POST['string_ids']));/* phpcs:ignore */ /* sanitized downstream */
 				if ( is_array( $ids )){
-					$trp = TRP_Translate_Press::get_trp_instance();
+					$lrp = LRP_Lingua_Press::get_lrp_instance();
 					if (!$this->translation_manager) {
-						$this->translation_manager = $trp->get_component('translation_manager');
+						$this->translation_manager = $lrp->get_component('translation_manager');
 					}
 					$localized_text = $this->translation_manager->string_groups();
 					$id_array = array();
@@ -72,7 +72,7 @@ class TRP_IN_Editor_Api_Post_Slug {
 						}
 						$dictionaries[] = $entry;
 					}
-					echo trp_safe_json_encode( $dictionaries );//phpcs:ignore
+					echo lrp_safe_json_encode( $dictionaries );//phpcs:ignore
 				}
 			}
 		}
@@ -82,12 +82,12 @@ class TRP_IN_Editor_Api_Post_Slug {
 	/**
 	 * Save translations of slugs
 	 *
-	 * Hooked to wp_ajax_trp_save_translations_postslug
+	 * Hooked to wp_ajax_lrp_save_translations_postslug
 	 */
 	public function postslug_save_translations() {
-		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && apply_filters( 'trp_translating_capability', 'manage_options' ) ) {
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && apply_filters( 'lrp_translating_capability', 'manage_options' ) ) {
 			check_ajax_referer( 'postslug_save_translations', 'security' );
-			if ( isset( $_POST['action'] ) && $_POST['action'] === 'trp_save_translations_postslug' && !empty( $_POST['strings'] ) ) {
+			if ( isset( $_POST['action'] ) && $_POST['action'] === 'lrp_save_translations_postslug' && !empty( $_POST['strings'] ) ) {
 				$slugs = json_decode(stripslashes($_POST['strings'])); /* phpcs:ignore */ /* sanitized downstream */
 				$update_slugs = array();
 				foreach ( $slugs as $language => $language_slugs ) {
@@ -107,7 +107,7 @@ class TRP_IN_Editor_Api_Post_Slug {
 					}
 				}
 
-                $meta_based_strings   = new TRP_IN_SP_Meta_Based_Strings();
+                $meta_based_strings   = new LRP_IN_SP_Meta_Based_Strings();
                 $translated_slug_meta = array(
                     1 => $meta_based_strings->get_automatic_translated_slug_meta(),
                     2 => $meta_based_strings->get_human_translated_slug_meta()
@@ -132,14 +132,14 @@ class TRP_IN_Editor_Api_Post_Slug {
                                     $update_slugs[$language][$slug_key]['translated'] = $unique_slug;
                                     update_post_meta( $slug['id'], $translated_slug_meta[ $slug['status'] ] . $language, $unique_slug );
                                 }
-                                do_action( 'trp_update_post_slug', $slug,  $post, $language, $update_slugs );
+                                do_action( 'lrp_update_post_slug', $slug,  $post, $language, $update_slugs );
                             }
 						}
 					}
 				}
 			}
 		}
-		echo trp_safe_json_encode( $update_slugs );//phpcs:ignore
+		echo lrp_safe_json_encode( $update_slugs );//phpcs:ignore
 		wp_die();
 	}
 

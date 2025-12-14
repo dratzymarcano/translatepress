@@ -4,21 +4,21 @@ if ( !defined('ABSPATH' ) )
     exit();
 
 // add conditional language shortcode
-add_shortcode( 'trp_language', 'trp_language_content');
+add_shortcode( 'lrp_language', 'lrp_language_content');
 
 /* ---------------------------------------------------------------------------
- * Shortcode [trp_language language="en_EN"] [/trp_language]
+ * Shortcode [lrp_language language="en_EN"] [/lrp_language]
  * --------------------------------------------------------------------------- */
 
 
-function trp_language_content( $attr, $content = null ){
+function lrp_language_content( $attr, $content = null ){
 
-    global $TRP_LANGUAGE_SHORTCODE;
-    if (!isset($TRP_LANGUAGE_SHORTCODE)){
-        $TRP_LANGUAGE_SHORTCODE = array();
+    global $LRP_LANGUAGE_SHORTCODE;
+    if (!isset($LRP_LANGUAGE_SHORTCODE)){
+        $LRP_LANGUAGE_SHORTCODE = array();
     }
 
-    $TRP_LANGUAGE_SHORTCODE[] = $content;
+    $LRP_LANGUAGE_SHORTCODE[] = $content;
 
     extract(shortcode_atts(array(
         'language' => '',
@@ -35,16 +35,16 @@ function trp_language_content( $attr, $content = null ){
     return $output;
 }
 
-add_filter('trp_exclude_words_from_automatic_translation', 'trp_add_shortcode_content_to_excluded_words_from_auto_translation');
+add_filter('lrp_exclude_words_from_automatic_translation', 'lrp_add_shortcode_content_to_excluded_words_from_auto_translation');
 
-function trp_add_shortcode_content_to_excluded_words_from_auto_translation($excluded_words){
+function lrp_add_shortcode_content_to_excluded_words_from_auto_translation($excluded_words){
 
-    global $TRP_LANGUAGE_SHORTCODE;
-    if (!isset($TRP_LANGUAGE_SHORTCODE)){
-        $TRP_LANGUAGE_SHORTCODE = array();
+    global $LRP_LANGUAGE_SHORTCODE;
+    if (!isset($LRP_LANGUAGE_SHORTCODE)){
+        $LRP_LANGUAGE_SHORTCODE = array();
     }
 
-    $excluded_words = array_merge($excluded_words, $TRP_LANGUAGE_SHORTCODE);
+    $excluded_words = array_merge($excluded_words, $LRP_LANGUAGE_SHORTCODE);
 
     return $excluded_words;
 

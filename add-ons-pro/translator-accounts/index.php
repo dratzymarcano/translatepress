@@ -1,6 +1,6 @@
 <?php
 /*
-TranslatePress - Translator Accounts Add-on
+LinguaPress - Translator Accounts Add-on
 
 License: GPL2
 
@@ -32,26 +32,26 @@ if ( ! defined( 'WPINC' ) ) {
  * The code that instantiates our plugin
  * This action is documented in includes/class-plugin-name-activator.php
  */
-function trp_in_run_translator_accounts(){
+function lrp_in_run_translator_accounts(){
 
     require_once plugin_dir_path( __FILE__ ) . 'includes/class-translator-accounts.php';
-    if ( class_exists( 'TRP_Translate_Press' ) ) {
-        new TRP_IN_Translator_Accounts();
+    if ( class_exists( 'LRP_Lingua_Press' ) ) {
+        new LRP_IN_Translator_Accounts();
     }
 }
-add_action( 'plugins_loaded', 'trp_in_run_translator_accounts', 0 );
+add_action( 'plugins_loaded', 'lrp_in_run_translator_accounts', 0 );
 
 /**
  * Allow users with the translate_strings to translate the website, besides those with manage_options.
  *
  * Needs to be outside everything because of early call of get_lang_from_url_string when determining language.
- * Determining language happens when instantiating TRP_Translate_Press, this is why this function
+ * Determining language happens when instantiating LRP_Lingua_Press, this is why this function
  * needs to be before plugins_loaded.
  *
  * @since    1.0.5
  */
-add_filter( 'trp_translating_capability', 'trp_in_ta_translator_account_permissions' );
-function trp_in_ta_translator_account_permissions(){
+add_filter( 'lrp_translating_capability', 'lrp_in_ta_translator_account_permissions' );
+function lrp_in_ta_translator_account_permissions(){
     // Return manage_options for admins
     if (current_user_can('manage_options'))
         return 'manage_options';

@@ -4,7 +4,7 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-class TRP_Install_Plugins {
+class LRP_Install_Plugins {
     public function get_plugin_slugs() {
         $slugs = array(
             'pb'  => array(
@@ -30,22 +30,22 @@ class TRP_Install_Plugins {
             )
         );
 
-        return apply_filters( 'trp_plugin_install_slugs', $slugs );
+        return apply_filters( 'lrp_plugin_install_slugs', $slugs );
     }
 
     public function install_plugins_request(){
         if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-            check_ajax_referer( 'trp_install_plugins', 'security' );
-            if ( isset( $_POST['action'] ) && $_POST['action'] === 'trp_install_plugins' && !empty( $_POST['plugin_slug'] ) ) {
+            check_ajax_referer( 'lrp_install_plugins', 'security' );
+            if ( isset( $_POST['action'] ) && $_POST['action'] === 'lrp_install_plugins' && !empty( $_POST['plugin_slug'] ) ) {
                 $plugin_slug = sanitize_text_field($_POST['plugin_slug']);
                 $short_slugs = $this->get_plugin_slugs();
                 if ( isset( $short_slugs[$plugin_slug]) ){
                     if ( $this->install_upgrade_activate($plugin_slug) ){
-                        $message = esc_html__('Active', 'translatepress-multilingual');
+                        $message = esc_html__('Active', 'linguapress');
                     }else{
-                        $message = wp_kses( sprintf( __('Could not install. Try again from <a href="%s" >Plugins Dashboard.</a>', 'translatepress-multilingual'), admin_url('plugins.php') ), array('a' => array( 'href' => array() ) ) );
+                        $message = wp_kses( sprintf( __('Could not install. Try again from <a href="%s" >Plugins Dashboard.</a>', 'linguapress'), admin_url('plugins.php') ), array('a' => array( 'href' => array() ) ) );
                     }
-                    wp_die( trp_safe_json_encode( $message ));//phpcs:ignore
+                    wp_die( lrp_safe_json_encode( $message ));//phpcs:ignore
                 }
             }
         }

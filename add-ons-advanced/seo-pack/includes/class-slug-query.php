@@ -5,7 +5,7 @@
 if ( !defined('ABSPATH' ) )
     exit();
 
-class TRP_Slug_Query{
+class LRP_Slug_Query{
     private $db, $error_manager;
     private $original_table_name, $translation_table_name;
     private $collation;
@@ -16,13 +16,13 @@ class TRP_Slug_Query{
     private function init_dependencies(){
         global $wpdb;
 
-        $trp = TRP_Translate_Press::get_trp_instance();
+        $lrp = LRP_Lingua_Press::get_lrp_instance();
 
         $this->db            = $wpdb;
-        $this->error_manager = $trp->get_component( 'error_manager' );
+        $this->error_manager = $lrp->get_component( 'error_manager' );
 
-        $this->original_table_name    = $this->db->prefix . 'trp_slug_originals';
-        $this->translation_table_name = $this->db->prefix . 'trp_slug_translations';
+        $this->original_table_name    = $this->db->prefix . 'lrp_slug_originals';
+        $this->translation_table_name = $this->db->prefix . 'lrp_slug_translations';
 
         $this->collation = 'utf8mb4_general_ci';
     }
@@ -65,7 +65,7 @@ class TRP_Slug_Query{
     }
 
     /**
-     * Inserts original slugs into the trp_slug_original table
+     * Inserts original slugs into the lrp_slug_original table
      *
      * @param array $array_of_slugs  [ [ 'original' => 'slug_name', 'type' (optional) => 'type_of_slug' ], [...] ]
      * @return array | false         $array_of_slugs with original ids or false in case of an error
@@ -102,7 +102,7 @@ class TRP_Slug_Query{
     }
 
     /**
-     * Inserts translated slugs into the trp_slug_translation table
+     * Inserts translated slugs into the lrp_slug_translation table
      *
      * The array is expected to be under the form
      *
@@ -269,7 +269,7 @@ class TRP_Slug_Query{
     }
 
     /**
-     * Updates translated slugs in the trp_slug_translation table for the specified language.
+     * Updates translated slugs in the lrp_slug_translation table for the specified language.
      *
      * @param array  $array_of_slugs [ [ 'id' => id, 'translated' => 'updated_slug' ], [...] ]
      * @param string $language       Language code.
@@ -701,7 +701,7 @@ class TRP_Slug_Query{
         if ( !isset( $array_of_original_slugs ) ) return false;
 
         //look for translation in taxonomy option
-        $data_tax = get_option( 'trp_taxonomy_slug_translation', array() );
+        $data_tax = get_option( 'lrp_taxonomy_slug_translation', array() );
 
         foreach ( $data_tax as $values_array ) {
             if ( isset( $values_array["original"] ) && isset($values_array["translationsArray"][ $language ]["translated"] )){
@@ -727,7 +727,7 @@ class TRP_Slug_Query{
             return $slug_pairs;
         }else {
             //look for translation in post_type_base_slug option
-            $data_post_type_base = get_option( 'trp_post_type_base_slug_translation', array() );
+            $data_post_type_base = get_option( 'lrp_post_type_base_slug_translation', array() );
 
             foreach ( $data_post_type_base as $values_array ) {
                 if ( isset( $values_array["original"] ) && isset( $values_array["translationsArray"][ $language ]["translated"] ) ) {
@@ -771,7 +771,7 @@ class TRP_Slug_Query{
                 $sql .= "WHERE p.post_name IN (" . implode( ',', $select_values ) . ")";
                 $sql .= "AND ( pm.meta_key = %s OR pm.meta_key = %s ) ";
 
-                $prepared_query = $this->db->prepare( $sql, '_trp_automatically_translated_slug_' . $language, '_trp_translated_slug_' . $language );
+                $prepared_query = $this->db->prepare( $sql, '_lrp_automatically_translated_slug_' . $language, '_lrp_translated_slug_' . $language );
 
                 $sql_result = $this->db->get_results( $prepared_query, 'ARRAY_A' );
 
@@ -817,7 +817,7 @@ class TRP_Slug_Query{
                     $sql .= "WHERE t.name IN (" . implode( ',', $select_values ) . ")";
                     $sql .= "AND ( tm.meta_key = %s OR tm.meta_key = %s ) ";
 
-                    $prepared_query = $this->db->prepare( $sql, '_trp_automatically_translated_slug_' . $language, '_trp_translated_slug_' . $language );
+                    $prepared_query = $this->db->prepare( $sql, '_lrp_automatically_translated_slug_' . $language, '_lrp_translated_slug_' . $language );
 
                     $sql_result = $this->db->get_results( $prepared_query, 'ARRAY_A' );
 
@@ -862,7 +862,7 @@ class TRP_Slug_Query{
 
         if ( !isset( $array_of_translated_slugs ) ) return false;
 
-        $data_tax = get_option( 'trp_taxonomy_slug_translation', array() );
+        $data_tax = get_option( 'lrp_taxonomy_slug_translation', array() );
 
         foreach ( $data_tax as $values_array ) {
             if ( isset( $values_array["translationsArray"][$language]["translated"] )) {
@@ -885,7 +885,7 @@ class TRP_Slug_Query{
             return $slug_pairs;
         }else {
             //look for original in post_type_base_slug option
-            $data_post_type_base = get_option( 'trp_post_type_base_slug_translation', array() );
+            $data_post_type_base = get_option( 'lrp_post_type_base_slug_translation', array() );
 
             foreach ( $data_post_type_base as $values_array ) {
 
@@ -929,7 +929,7 @@ class TRP_Slug_Query{
                 $sql .= "WHERE LOWER( pm.meta_value ) IN (". implode( ',', $select_values ) . ") ";
                 $sql .= "AND ( pm.meta_key = %s OR pm.meta_key = %s ) ";
 
-                $prepared_query = $this->db->prepare( $sql, '_trp_automatically_translated_slug_' . $language, '_trp_translated_slug_' . $language );
+                $prepared_query = $this->db->prepare( $sql, '_lrp_automatically_translated_slug_' . $language, '_lrp_translated_slug_' . $language );
 
                 $sql_result = $this->db->get_results( $prepared_query, 'ARRAY_A' );
 
@@ -978,7 +978,7 @@ class TRP_Slug_Query{
                     $sql .= "WHERE LOWER( tm.meta_value ) IN (" . implode( ',', $select_values ) . ") ";
                     $sql .= "AND ( tm.meta_key = %s OR tm.meta_key = %s ) ";
 
-                    $prepared_query = $this->db->prepare( $sql, '_trp_automatically_translated_slug_' . $language, '_trp_translated_slug_' . $language );
+                    $prepared_query = $this->db->prepare( $sql, '_lrp_automatically_translated_slug_' . $language, '_lrp_translated_slug_' . $language );
 
                     $sql_result = $this->db->get_results( $prepared_query, 'ARRAY_A' );
 

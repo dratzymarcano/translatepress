@@ -10,19 +10,19 @@ if ( !defined('ABSPATH' ) )
  */
 
 
-if(!function_exists('trp_in_sp_activator')){
-    function trp_in_sp_activator( $addon ){
+if(!function_exists('lrp_in_sp_activator')){
+    function lrp_in_sp_activator( $addon ){
         if ( $addon === 'tp-add-on-seo-pack/tp-seo-pack.php' ) {
-            trp_in_sp_wpseo_clear_sitemap();
+            lrp_in_sp_wpseo_clear_sitemap();
         }
     }
 
-    add_action('trp_add_ons_activate', 'trp_in_sp_activator', 10, 1);
-    add_action('trp_add_ons_deactivate','trp_in_sp_activator', 10, 1);
+    add_action('lrp_add_ons_activate', 'lrp_in_sp_activator', 10, 1);
+    add_action('lrp_add_ons_deactivate','lrp_in_sp_activator', 10, 1);
 }
 
-if(!function_exists('trp_in_sp_wpseo_clear_sitemap')) {
-    function trp_in_sp_wpseo_clear_sitemap() {
+if(!function_exists('lrp_in_sp_wpseo_clear_sitemap')) {
+    function lrp_in_sp_wpseo_clear_sitemap() {
         global $wpdb;
         // delete all "yst_sm" transients
         $sql = "
